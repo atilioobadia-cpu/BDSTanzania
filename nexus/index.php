@@ -63,21 +63,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="alert alert-error"><?= bdst_e($error) ?></div>
         <?php endif; ?>
 
-        <form method="post" action="index.php" autocomplete="off">
+        <form method="post" action="index.php" autocomplete="off" id="loginForm">
             <div class="field">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required autofocus>
             </div>
             <div class="field">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <div class="password-wrap">
+                    <input type="password" id="password" name="password" required>
+                    <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password"></button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <button type="submit" id="loginBtn" class="btn btn-primary btn-block">
+                <span class="spinner"></span>
+                <span class="btn-label">Sign In</span>
+            </button>
         </form>
 
         <p class="login-footer">
             <a href="../index.html">&larr; Back to website</a>
         </p>
     </main>
+
+    <script>
+    (function () {
+        var iconEye = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        var iconEyeOff = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+        var password = document.getElementById('password');
+        var toggle = document.getElementById('togglePassword');
+        if (password && toggle) {
+            toggle.innerHTML = iconEye;
+            toggle.addEventListener('click', function () {
+                var show = password.type === 'password';
+                password.type = show ? 'text' : 'password';
+                toggle.innerHTML = show ? iconEyeOff : iconEye;
+                toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                password.focus();
+            });
+        }
+
+        var form = document.getElementById('loginForm');
+        var btn = document.getElementById('loginBtn');
+        if (form && btn) {
+            form.addEventListener('submit', function () {
+                if (btn.disabled) { return; }
+                btn.classList.add('loading');
+                btn.disabled = true;
+                var label = btn.querySelector('.btn-label');
+                if (label && label.textContent === 'Sign In') {
+                    label.textContent = 'Signing in...';
+                }
+            });
+        }
+    })();
+    </script>
 </body>
 </html>

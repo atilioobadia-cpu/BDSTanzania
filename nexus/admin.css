@@ -311,11 +311,18 @@ a:hover { color: var(--primary-dark); }
 .empty-state p { margin-bottom: 18px; }
 
 /* ---- Login ---- */
-body.login-body { display: flex; min-height: 100vh; background: var(--bg); }
+body.login-body {
+    display: flex;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: var(--font);
+}
 
 .login-side {
     flex: 1;
     background: linear-gradient(155deg, #0c1e21 0%, #14333a 55%, #1c5f74 120%);
+    background-size: 220% 220%;
+    animation: tj-pan 16s ease infinite;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -324,6 +331,25 @@ body.login-body { display: flex; min-height: 100vh; background: var(--bg); }
     position: relative;
     overflow: hidden;
 }
+
+@keyframes tj-pan {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes tj-fade-up {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+}
+
+.login-side-inner,
+.login-main,
+.login-footer {
+    animation: tj-fade-up 0.6s ease both;
+}
+
+.login-main { animation-delay: 0.12s; }
+.login-footer { animation-delay: 0.22s; }
 
 .login-side::before {
     content: '';
@@ -373,6 +399,43 @@ body.login-body { display: flex; min-height: 100vh; background: var(--bg); }
 .login-card-head p { color: var(--muted); margin-top: 4px; font-size: 14px; }
 
 .login-footer { text-align: center; margin-top: 22px; font-size: 14px; }
+
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 46px; }
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+.password-toggle:hover { color: var(--primary); background: var(--primary-soft); }
+.password-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    display: none;
+    animation: tj-spin 0.6s linear infinite;
+}
+.btn.loading { opacity: 0.85; cursor: progress; transform: none; }
+.btn.loading .spinner { display: inline-block; }
+
+@keyframes tj-spin { to { transform: rotate(360deg); } }
 
 /* ---- Responsive ---- */
 @media (max-width: 1024px) {
