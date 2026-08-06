@@ -109,6 +109,11 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
 
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/font-awesome-pro.min.css">
@@ -158,8 +163,6 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
 
         /* ------- Featured post ------- */
         .update-featured {
-            display: grid;
-            grid-template-columns: 1.05fr 0.95fr;
             background: #fff;
             border: 1px solid #e4ecec;
             border-radius: 18px;
@@ -176,10 +179,9 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
         .update-featured__thumb {
             position: relative;
             display: block;
-            aspect-ratio: 4 / 3;
+            aspect-ratio: 21 / 9;
             overflow: hidden;
             background: #eef2f3;
-            min-height: 100%;
         }
 
         .update-featured__thumb img {
@@ -191,31 +193,31 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
         }
 
         .update-featured:hover .update-featured__thumb img {
-            transform: scale(1.05);
+            transform: scale(1.04);
         }
 
         .update-featured__date {
             position: absolute;
-            left: 16px;
-            bottom: 16px;
+            right: 16px;
+            top: 16px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(12, 30, 33, 0.85);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.95);
+            color: #0c1e21;
             font-size: 12.5px;
-            font-weight: 600;
+            font-weight: 700;
             padding: 8px 15px;
             border-radius: 999px;
             letter-spacing: .3px;
-            backdrop-filter: blur(4px);
+        }
+
+        .update-featured__date i {
+            color: #1997C6;
         }
 
         .update-featured__body {
-            padding: 38px 36px 34px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            padding: 34px 38px 36px;
         }
 
         .update-featured__tag {
@@ -241,7 +243,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
         }
 
         .update-featured__title {
-            font-size: 28px;
+            font-size: 30px;
             line-height: 1.3;
             color: #0c1e21;
             margin: 16px 0 12px;
@@ -260,7 +262,46 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
             font-size: 15px;
             line-height: 1.75;
             color: #364e52;
-            margin: 0 0 22px;
+            margin: 0;
+        }
+
+        .update-featured__foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #eef3f4;
+        }
+
+        .update-featured__foot .update-meta {
+            margin-bottom: 0;
+        }
+
+        .update-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eef4f6 0%, #dfeaea 100%);
+        }
+
+        .update-placeholder img {
+            width: 120px;
+            height: auto;
+            opacity: .55;
+        }
+
+        .update-placeholder i {
+            font-size: 26px;
+            color: rgba(12, 30, 33, 0.28);
+        }
+
+        .update-placeholder--mini i {
+            font-size: 17px;
         }
 
         .update-meta {
@@ -620,16 +661,6 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
             pointer-events: none;
         }
 
-        @media (max-width: 1199.98px) {
-            .update-featured {
-                grid-template-columns: 1fr;
-            }
-
-            .update-featured__thumb {
-                aspect-ratio: 16 / 9;
-            }
-        }
-
         @media (max-width: 991.98px) {
             .tj-updates-section {
                 padding-bottom: 90px;
@@ -638,6 +669,26 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
             .updates-sidebar {
                 position: static;
             }
+
+            .update-featured__thumb {
+                aspect-ratio: 16 / 9;
+            }
+        }
+
+        /* ------- Clean fonts ------- */
+        .sec-heading .sub-title,
+        .sec-heading .sec-title,
+        .update-search-note,
+        .tj-updates-section .update-title a,
+        .tj-updates-section .update-featured__title a,
+        .tj-updates-section .side-widget__title,
+        .tj-updates-section .side-widget--cta h4,
+        .tj-updates-section .update-empty h3 {
+            font-family: 'Plus Jakarta Sans', 'Mona Sans', sans-serif;
+        }
+
+        .sec-heading .sec-title {
+            letter-spacing: -.5px;
         }
     </style>
 </head>
@@ -1059,7 +1110,11 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                             <?php if ($featured !== null): ?>
                                 <article class="update-featured wow fadeInUp">
                                     <a class="update-featured__thumb" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
-                                        <img src="<?= bdst_e($featured['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
+                                        <?php if (!empty($featured['image_path'])): ?>
+                                            <img src="<?= bdst_e($featured['image_path']) ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
+                                        <?php else: ?>
+                                            <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
+                                        <?php endif; ?>
                                         <span class="update-featured__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
                                     </a>
                                     <div class="update-featured__body">
@@ -1070,13 +1125,15 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                         <?php if (!empty($featured['excerpt'])): ?>
                                             <p class="update-featured__excerpt"><?= bdst_e(mb_strimwidth($featured['excerpt'], 0, 220, '...')) ?></p>
                                         <?php endif; ?>
-                                        <div class="update-meta">
-                                            <span><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
-                                            <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($featured['content'] ?? '') ?> min read</span>
+                                        <div class="update-featured__foot">
+                                            <div class="update-meta">
+                                                <span><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
+                                                <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($featured['content'] ?? '') ?> min read</span>
+                                            </div>
+                                            <a class="update-more" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
+                                                Read Full Update <i class="tji-arrow-right-long"></i>
+                                            </a>
                                         </div>
-                                        <a class="update-more" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
-                                            Read Full Update <i class="tji-arrow-right-long"></i>
-                                        </a>
                                     </div>
                                 </article>
                             <?php endif; ?>
@@ -1087,7 +1144,11 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                         <div class="col-md-6">
                                             <article class="update-card wow fadeInUp">
                                                 <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
-                                                    <img src="<?= bdst_e($post['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
+                                                    <?php if (!empty($post['image_path'])): ?>
+                                                        <img src="<?= bdst_e($post['image_path']) ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
+                                                    <?php else: ?>
+                                                        <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
+                                                    <?php endif; ?>
                                                     <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($post['published_at']))) ?></span>
                                                 </a>
                                                 <div class="update-body">
@@ -1158,7 +1219,11 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                             <li>
                                                 <a href="update.html?slug=<?= bdst_e($rp['slug']) ?>">
                                                     <span class="side-recent__thumb">
-                                                        <img src="<?= bdst_e($rp['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
+                                                        <?php if (!empty($rp['image_path'])): ?>
+                                                            <img src="<?= bdst_e($rp['image_path']) ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
+                                                        <?php else: ?>
+                                                            <span class="update-placeholder update-placeholder--mini"><i class="fa-regular fa-file-lines"></i></span>
+                                                        <?php endif; ?>
                                                     </span>
                                                     <span class="side-recent__info">
                                                         <span class="side-recent__title"><?= bdst_e($rp['title']) ?></span>

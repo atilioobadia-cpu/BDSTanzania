@@ -78,6 +78,11 @@ try {
 
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/font-awesome-pro.min.css">
@@ -128,6 +133,31 @@ try {
             max-height: 520px;
             object-fit: cover;
             display: block;
+        }
+
+        .update-article-placeholder {
+            position: relative;
+            height: 320px;
+        }
+
+        .update-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eef4f6 0%, #dfeaea 100%);
+        }
+
+        .update-placeholder img {
+            width: 120px;
+            height: auto;
+            opacity: .55;
+        }
+
+        .update-placeholder i {
+            font-size: 26px;
+            color: rgba(12, 30, 33, 0.28);
         }
 
         .update-article-body {
@@ -278,6 +308,20 @@ try {
             background: #1997C6;
             border-color: #1997C6;
             color: #fff;
+        }
+
+        /* ------- Clean fonts ------- */
+        .tj-page-header-content .tj-page-title,
+        .update-article-tag,
+        .update-article-title,
+        .more-updates__heading h3,
+        .update-title a,
+        .update-more {
+            font-family: 'Plus Jakarta Sans', 'Mona Sans', sans-serif;
+        }
+
+        .update-article-title {
+            letter-spacing: -.5px;
         }
 
         /* ------- More updates ------- */
@@ -843,6 +887,10 @@ try {
                         <article class="update-article wow fadeInUp">
                             <?php if ($post['image_path']): ?>
                                 <img class="update-article-thumb" src="<?= bdst_e($post['image_path']) ?>" alt="<?= bdst_e($pageTitle) ?>" decoding="async">
+                            <?php else: ?>
+                                <div class="update-article-placeholder">
+                                    <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
+                                </div>
                             <?php endif; ?>
 
                             <div class="update-article-body">
@@ -884,7 +932,11 @@ try {
                             <div class="col-md-4">
                                 <article class="update-card wow fadeInUp">
                                     <a class="update-thumb" href="update.html?slug=<?= bdst_e($more['slug']) ?>">
-                                        <img src="<?= bdst_e($more['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($more['title']) ?>" loading="lazy" decoding="async">
+                                        <?php if (!empty($more['image_path'])): ?>
+                                            <img src="<?= bdst_e($more['image_path']) ?>" alt="<?= bdst_e($more['title']) ?>" loading="lazy" decoding="async">
+                                        <?php else: ?>
+                                            <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
+                                        <?php endif; ?>
                                         <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($more['published_at']))) ?></span>
                                     </a>
                                     <div class="update-body">
