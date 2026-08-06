@@ -190,31 +190,50 @@ $flash = bdst_flash_consume();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= bdst_admin_title($isEdit ? 'Edit Update' : 'New Update') ?></title>
     <link rel="shortcut icon" type="image/x-icon" href="../assets/images/fav.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
 </head>
-<body>
-    <header class="topbar">
-        <div class="topbar-inner">
-            <a class="brand" href="dashboard.php">
-                <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania" height="32">
-                <span>Admin</span>
+<body class="admin-body">
+    <aside class="sidebar">
+        <a class="sidebar-brand" href="dashboard.php">
+            <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania" height="34">
+        </a>
+        <nav class="sidebar-nav">
+            <a class="nav-link" href="dashboard.php">
+                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span>
+                <span>Dashboard</span>
             </a>
-            <nav class="topnav">
-                <a href="../index.html" target="_blank" rel="noopener">View Site</a>
-                <a href="dashboard.php" class="btn btn-ghost">Dashboard</a>
-                <a href="logout.php" class="btn btn-ghost">Log Out</a>
-            </nav>
+            <a class="nav-link active" href="post.php">
+                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+                <span>New Update</span>
+            </a>
+        </nav>
+        <div class="sidebar-foot">
+            <a class="nav-link" href="../index.html" target="_blank" rel="noopener">
+                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
+                <span>View Site</span>
+            </a>
+            <a class="nav-link" href="logout.php">
+                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                <span>Log Out</span>
+            </a>
         </div>
-    </header>
+    </aside>
 
-    <main class="page">
-        <div class="page-head">
-            <div>
-                <h1><?= $isEdit ? 'Edit Update' : 'New Update' ?></h1>
-                <p><?= $isEdit ? 'Update the details below and save your changes.' : 'Fill in the details below to publish a news update.' ?></p>
+    <main class="main">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="page-title-block">
+                    <h1><?= $isEdit ? 'Edit Update' : 'New Update' ?></h1>
+                    <p><?= $isEdit ? 'Update the details below and save your changes.' : 'Fill in the details below to publish a news update.' ?></p>
+                </div>
+                <a href="dashboard.php" class="btn btn-ghost">&larr; Back to Dashboard</a>
             </div>
-            <a href="dashboard.php" class="btn btn-ghost">&larr; Back</a>
-        </div>
+        </header>
+
+        <div class="page">
 
         <?php if ($flash): ?>
             <div class="alert alert-<?= bdst_e($flash['type']) ?>"><?= bdst_e($flash['message']) ?></div>
@@ -292,6 +311,7 @@ $flash = bdst_flash_consume();
                 </aside>
             </div>
         </form>
+        </div>
     </main>
 </body>
 </html>
