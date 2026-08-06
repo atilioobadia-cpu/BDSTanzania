@@ -1,7 +1,9 @@
-<IfModule mod_authz_core.c>
-  Require all denied
-</IfModule>
-<IfModule mod_access_compat.c>
-  Order allow,deny
-  Deny from all
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Only the contact form endpoint is allowed through (POST to sendmail.php).
+  # Everything else in includes/ (db.php, PHPMailer source, logs) is blocked.
+  RewriteCond %{REQUEST_URI} !sendmail\.php$ [NC]
+  RewriteRule ^ - [F,L]
+  RewriteCond %{REQUEST_METHOD} !=POST [NC]
+  RewriteRule ^ - [F,L]
 </IfModule>
