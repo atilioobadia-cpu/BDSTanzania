@@ -25,6 +25,29 @@ $pageTitle   = $post['title'];
 $pageDesc    = mb_strimwidth(strip_tags((string) $post['excerpt']), 0, 160, '...');
 $pageImage   = $post['image_path'] ?: 'assets/images/logos/logo.webp';
 $contentHtml = $post['content'] ?: '<p>' . bdst_e($post['excerpt']) . '</p>';
+
+function bdst_reading_time(string $text): int
+{
+    $words = str_word_count(strip_tags($text));
+    return max(1, (int) ceil($words / 200));
+}
+
+$moreUpdates = [];
+try {
+    $stmt = $pdo->prepare(
+        "SELECT title, slug, excerpt, image_path, published_at
+         FROM updates
+         WHERE status = 'published' AND slug <> :slug
+         ORDER BY published_at DESC, id DESC
+         LIMIT 3"
+    );
+    $stmt->bindValue(':slug', $post['slug']);
+    $stmt->execute();
+    $moreUpdates = $stmt->fetchAll();
+} catch (Throwable $e) {
+    error_log('Update related error: ' . $e->getMessage());
+    $moreUpdates = [];
+}
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -65,89 +88,355 @@ $contentHtml = $post['content'] ?: '<p>' . bdst_e($post['excerpt']) . '</p>';
 
     <style>
         .update-article-section {
-            padding: 0 0 120px;
-        }
-
-        .update-article {
-            background: #fff;
-            border: 1px solid rgba(30, 138, 138, 0.12);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .update-article-thumb {
-            width: 100%;
-            max-height: 480px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .update-article-body {
-            padding: 40px 48px 48px;
-        }
-
-        .update-article-date {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1E8A8A;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-        }
-
-        .update-article-title {
-            font-size: 34px;
-            line-height: 1.25;
-            margin: 14px 0 24px;
-            color: #0d1f2d;
-        }
-
-        .update-article-content {
-            font-size: 16px;
-            line-height: 1.85;
-            color: #45525e;
-        }
-
-        .update-article-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        .update-article-content h2,
-        .update-article-content h3,
-        .update-article-content h4 {
-            color: #0d1f2d;
-            margin: 28px 0 12px;
-        }
-
-        .update-article-content p {
-            margin-bottom: 16px;
+            padding: 0 0 40px;
         }
 
         .update-back {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 40px;
+            margin-bottom: 28px;
             font-size: 14px;
             font-weight: 700;
-            color: #1E8A8A;
+            color: #1997C6;
             text-decoration: none;
+            transition: color .3s ease;
+        }
+
+        .update-back i {
+            transition: transform .3s ease;
         }
 
         .update-back:hover {
-            color: #0d1f2d;
+            color: #0c1e21;
+        }
+
+        .update-back:hover i {
+            transform: translateX(-5px);
+        }
+
+        .update-article {
+            background: #fff;
+            border: 1px solid #e4ecec;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 24px 60px -32px rgba(12, 30, 33, 0.22);
+        }
+
+        .update-article-thumb {
+            width: 100%;
+            max-height: 520px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .update-article-body {
+            padding: 44px 52px 52px;
+        }
+
+        .update-article-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(25, 151, 198, 0.1);
+            color: #1997C6;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        .update-article-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #1997C6;
+        }
+
+        .update-article-title {
+            font-size: 38px;
+            line-height: 1.25;
+            margin: 18px 0 18px;
+            color: #0c1e21;
+        }
+
+        .update-article-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            padding: 16px 0 24px;
+            margin-bottom: 28px;
+            border-top: 1px solid #eef3f4;
+            border-bottom: 1px solid #eef3f4;
+            font-size: 13.5px;
+            color: #67787a;
+        }
+
+        .update-article-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .update-article-meta i {
+            color: #1997C6;
+        }
+
+        .update-article-content {
+            font-size: 16.5px;
+            line-height: 1.9;
+            color: #37474f;
+        }
+
+        .update-article-content p {
+            margin-bottom: 20px;
+        }
+
+        .update-article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 8px 0 20px;
+        }
+
+        .update-article-content h2,
+        .update-article-content h3,
+        .update-article-content h4 {
+            color: #0c1e21;
+            margin: 32px 0 14px;
+            line-height: 1.4;
+        }
+
+        .update-article-content h2 {
+            font-size: 26px;
+        }
+
+        .update-article-content h3 {
+            font-size: 22px;
+        }
+
+        .update-article-content a {
+            color: #1997C6;
+            text-decoration: underline;
+        }
+
+        .update-article-content blockquote {
+            border-left: 3px solid #1997C6;
+            background: #f5f9fb;
+            padding: 18px 22px;
+            border-radius: 0 12px 12px 0;
+            margin: 24px 0;
+            color: #0c1e21;
+            font-style: italic;
+        }
+
+        .update-article-content ul,
+        .update-article-content ol {
+            margin: 0 0 20px;
+            padding-left: 22px;
+        }
+
+        .update-share {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid #eef3f4;
+        }
+
+        .update-share span {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0c1e21;
+        }
+
+        .update-share__links {
+            display: inline-flex;
+            gap: 8px;
+        }
+
+        .update-share__links a {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid #e4ecec;
+            color: #67787a;
+            text-decoration: none;
+            transition: all .25s ease;
+        }
+
+        .update-share__links a:hover {
+            background: #1997C6;
+            border-color: #1997C6;
+            color: #fff;
+        }
+
+        /* ------- More updates ------- */
+        .more-updates {
+            padding-bottom: 120px;
+        }
+
+        .more-updates__heading {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .more-updates__heading h3 {
+            font-size: 26px;
+            color: #0c1e21;
+            margin: 0;
+        }
+
+        .more-updates__heading a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1997C6;
+            text-decoration: none;
+        }
+
+        .more-updates__heading a:hover {
+            color: #0c1e21;
+        }
+
+        .update-card {
+            background: #fff;
+            border: 1px solid #e4ecec;
+            border-radius: 16px;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+        }
+
+        .update-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 50px -24px rgba(12, 30, 33, 0.22);
+            border-color: #d4e6ea;
+        }
+
+        .update-thumb {
+            position: relative;
+            display: block;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #eef2f3;
+        }
+
+        .update-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .5s ease;
+        }
+
+        .update-card:hover .update-thumb img {
+            transform: scale(1.06);
+        }
+
+        .update-thumb__date {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(12, 30, 33, 0.82);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 999px;
+            backdrop-filter: blur(4px);
+        }
+
+        .update-body {
+            padding: 22px 22px 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .update-title {
+            font-size: 18px;
+            line-height: 1.45;
+            margin: 0 0 12px;
+        }
+
+        .update-title a {
+            color: #0c1e21;
+            transition: color .3s ease;
+        }
+
+        .update-title a:hover {
+            color: #1997C6;
+        }
+
+        .update-excerpt {
+            font-size: 14.5px;
+            line-height: 1.7;
+            color: #5b6e72;
+            margin: 0 0 16px;
+            flex: 1;
+        }
+
+        .update-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1997C6;
+            text-decoration: none;
+            padding-bottom: 4px;
+            background-image: linear-gradient(#1997C6, #1997C6);
+            background-size: 0 2px;
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            transition: background-size .35s ease, color .3s ease;
+        }
+
+        .update-more i {
+            transition: transform .3s ease;
+        }
+
+        .update-more:hover {
+            color: #0c1e21;
+            background-size: 100% 2px;
+        }
+
+        .update-more:hover i {
+            transform: translateX(5px);
         }
 
         @media (max-width: 767.98px) {
             .update-article-body {
-                padding: 24px 20px 32px;
+                padding: 28px 20px 36px;
             }
+
             .update-article-title {
                 font-size: 26px;
+            }
+
+            .more-updates {
+                padding-bottom: 90px;
             }
         }
     </style>
@@ -557,12 +846,24 @@ $contentHtml = $post['content'] ?: '<p>' . bdst_e($post['excerpt']) . '</p>';
                             <?php endif; ?>
 
                             <div class="update-article-body">
-                                <span class="update-article-date">
-                                    <i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($post['published_at']))) ?>
-                                </span>
+                                <span class="update-article-tag">News &amp; Announcements</span>
                                 <h1 class="update-article-title"><?= bdst_e($pageTitle) ?></h1>
+                                <div class="update-article-meta">
+                                    <span><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($post['published_at']))) ?></span>
+                                    <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($contentHtml) ?> min read</span>
+                                    <span><i class="fa-regular fa-building"></i> BDS Tanzania</span>
+                                </div>
                                 <div class="update-article-content">
                                     <?= $contentHtml ?>
+                                </div>
+                                <div class="update-share">
+                                    <span>Share this update:</span>
+                                    <div class="update-share__links">
+                                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                        <a href="https://twitter.com/intent/tweet?url=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>&amp;text=<?= rawurlencode($pageTitle) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><i class="fa-brands fa-x-twitter"></i></a>
+                                        <a href="mailto:?subject=<?= rawurlencode($pageTitle) ?>&amp;body=<?= rawurlencode('Read the update: https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" aria-label="Share via email"><i class="fa-regular fa-envelope"></i></a>
+                                    </div>
                                 </div>
                             </div>
                         </article>
@@ -570,6 +871,40 @@ $contentHtml = $post['content'] ?: '<p>' . bdst_e($post['excerpt']) . '</p>';
                 </div>
             </div>
         </section>
+
+        <?php if (!empty($moreUpdates)): ?>
+            <section class="more-updates">
+                <div class="container">
+                    <div class="more-updates__heading">
+                        <h3>More Updates</h3>
+                        <a href="updates.html">View All Updates <i class="tji-arrow-right-long"></i></a>
+                    </div>
+                    <div class="row g-4">
+                        <?php foreach ($moreUpdates as $more): ?>
+                            <div class="col-md-4">
+                                <article class="update-card wow fadeInUp">
+                                    <a class="update-thumb" href="update.html?slug=<?= bdst_e($more['slug']) ?>">
+                                        <img src="<?= bdst_e($more['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($more['title']) ?>" loading="lazy" decoding="async">
+                                        <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($more['published_at']))) ?></span>
+                                    </a>
+                                    <div class="update-body">
+                                        <h3 class="update-title">
+                                            <a href="update.html?slug=<?= bdst_e($more['slug']) ?>"><?= bdst_e($more['title']) ?></a>
+                                        </h3>
+                                        <?php if (!empty($more['excerpt'])): ?>
+                                            <p class="update-excerpt"><?= bdst_e(mb_strimwidth($more['excerpt'], 0, 130, '...')) ?></p>
+                                        <?php endif; ?>
+                                        <a class="update-more" href="update.html?slug=<?= bdst_e($more['slug']) ?>">
+                                            Read More <i class="tji-arrow-right-long"></i>
+                                        </a>
+                                    </div>
+                                </article>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
 
     </main>
 

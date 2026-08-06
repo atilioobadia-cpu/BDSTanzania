@@ -29,7 +29,7 @@ try {
     $offset     = ($page - 1) * $perPage;
 
     $stmt = $pdo->prepare(
-        "SELECT id, title, slug, excerpt, image_path, published_at
+        "SELECT id, title, slug, excerpt, content, image_path, published_at
          FROM updates
          WHERE $where
          ORDER BY published_at DESC, id DESC
@@ -42,10 +42,31 @@ try {
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $posts = $stmt->fetchAll();
+
+    $recentPosts = $pdo->query(
+        "SELECT title, slug, image_path, published_at
+         FROM updates
+         WHERE status = 'published'
+         ORDER BY published_at DESC, id DESC
+         LIMIT 5"
+    )->fetchAll();
 } catch (Throwable $e) {
     error_log('Updates listing error: ' . $e->getMessage());
-    $posts = [];
+    $posts       = [];
+    $recentPosts = [];
 }
+
+function bdst_reading_time(string $text): int
+{
+    $words = str_word_count(strip_tags($text));
+    return max(1, (int) ceil($words / 200));
+}
+
+$featured = null;
+if ($page === 1 && $search === '' && !empty($posts)) {
+    $featured = $posts[0];
+}
+$gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -101,80 +122,164 @@ try {
             padding: 0 0 120px;
         }
 
-        .update-card {
-            background: #fff;
-            border: 1px solid rgba(30, 138, 138, 0.12);
-            border-radius: 12px;
-            overflow: hidden;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            transition: transform .3s ease, box-shadow .3s ease;
+        .updates-layout .col-lg-8,
+        .updates-layout .col-lg-4 {
+            margin-bottom: 40px;
         }
 
-        .update-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+        .update-empty {
+            padding: 80px 20px;
+            background: #f6f9f9;
+            border: 1px dashed rgba(25, 151, 198, 0.35);
+            border-radius: 16px;
+            color: #5a6772;
+            font-size: 16px;
+            text-align: center;
         }
 
-        .update-thumb {
+        .update-empty i {
+            font-size: 42px;
+            color: #1997C6;
             display: block;
-            aspect-ratio: 16 / 10;
-            overflow: hidden;
-            background: #d9d9d9;
+            margin-bottom: 18px;
         }
 
-        .update-thumb img {
+        .update-empty h3 {
+            font-size: 22px;
+            color: #0c1e21;
+            margin-bottom: 8px;
+        }
+
+        .update-search-note {
+            margin-top: 14px;
+            color: #67787a;
+            font-size: 15px;
+        }
+
+        /* ------- Featured post ------- */
+        .update-featured {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            background: #fff;
+            border: 1px solid #e4ecec;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 44px;
+            box-shadow: 0 20px 50px -24px rgba(12, 30, 33, 0.25);
+            transition: box-shadow .35s ease;
+        }
+
+        .update-featured:hover {
+            box-shadow: 0 30px 60px -26px rgba(12, 30, 33, 0.3);
+        }
+
+        .update-featured__thumb {
+            position: relative;
+            display: block;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            background: #eef2f3;
+            min-height: 100%;
+        }
+
+        .update-featured__thumb img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform .45s ease;
+            transition: transform .6s ease;
         }
 
-        .update-card:hover .update-thumb img {
+        .update-featured:hover .update-featured__thumb img {
             transform: scale(1.05);
         }
 
-        .update-body {
-            padding: 24px 24px 28px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .update-date {
+        .update-featured__date {
+            position: absolute;
+            left: 16px;
+            bottom: 16px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            background: rgba(12, 30, 33, 0.85);
+            color: #fff;
+            font-size: 12.5px;
             font-weight: 600;
-            color: #1E8A8A;
+            padding: 8px 15px;
+            border-radius: 999px;
+            letter-spacing: .3px;
+            backdrop-filter: blur(4px);
+        }
+
+        .update-featured__body {
+            padding: 38px 36px 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .update-featured__tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(25, 151, 198, 0.1);
+            color: #1997C6;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            letter-spacing: .5px;
+            padding: 6px 13px;
+            border-radius: 999px;
         }
 
-        .update-title {
-            font-size: 20px;
-            line-height: 1.35;
-            margin: 12px 0 10px;
+        .update-featured__tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #1997C6;
         }
 
-        .update-title a {
-            color: #0d1f2d;
+        .update-featured__title {
+            font-size: 28px;
+            line-height: 1.3;
+            color: #0c1e21;
+            margin: 16px 0 12px;
+        }
+
+        .update-featured__title a {
+            color: inherit;
             transition: color .3s ease;
         }
 
-        .update-title a:hover {
-            color: #1E8A8A;
+        .update-featured__title a:hover {
+            color: #1997C6;
         }
 
-        .update-excerpt {
+        .update-featured__excerpt {
             font-size: 15px;
-            line-height: 1.7;
-            color: #5a6772;
-            margin: 0 0 18px;
-            flex: 1;
+            line-height: 1.75;
+            color: #364e52;
+            margin: 0 0 22px;
+        }
+
+        .update-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 24px;
+            font-size: 13.5px;
+            color: #67787a;
+        }
+
+        .update-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .update-meta i {
+            color: #1997C6;
         }
 
         .update-more {
@@ -183,8 +288,14 @@ try {
             gap: 10px;
             font-size: 14px;
             font-weight: 700;
-            color: #1E8A8A;
+            color: #1997C6;
             text-decoration: none;
+            padding-bottom: 4px;
+            background-image: linear-gradient(#1997C6, #1997C6);
+            background-size: 0 2px;
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            transition: background-size .35s ease, color .3s ease;
         }
 
         .update-more i {
@@ -192,24 +303,283 @@ try {
         }
 
         .update-more:hover {
-            color: #0d1f2d;
+            color: #0c1e21;
+            background-size: 100% 2px;
         }
 
         .update-more:hover i {
             transform: translateX(5px);
         }
 
-        .update-empty {
-            padding: 80px 20px;
-            background: #f6f9f9;
-            border: 1px dashed rgba(30, 138, 138, 0.35);
-            border-radius: 12px;
-            color: #5a6772;
-            font-size: 16px;
+        /* ------- Standard cards ------- */
+        .update-card {
+            background: #fff;
+            border: 1px solid #e4ecec;
+            border-radius: 16px;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
         }
 
+        .update-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 50px -24px rgba(12, 30, 33, 0.22);
+            border-color: #d4e6ea;
+        }
+
+        .update-thumb {
+            position: relative;
+            display: block;
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            background: #eef2f3;
+        }
+
+        .update-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .5s ease;
+        }
+
+        .update-card:hover .update-thumb img {
+            transform: scale(1.06);
+        }
+
+        .update-thumb__date {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(12, 30, 33, 0.82);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 999px;
+            backdrop-filter: blur(4px);
+        }
+
+        .update-body {
+            padding: 22px 22px 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .update-body .update-meta {
+            gap: 14px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .update-title {
+            font-size: 18px;
+            line-height: 1.45;
+            margin: 0 0 10px;
+        }
+
+        .update-title a {
+            color: #0c1e21;
+            transition: color .3s ease;
+        }
+
+        .update-title a:hover {
+            color: #1997C6;
+        }
+
+        .update-excerpt {
+            font-size: 14.5px;
+            line-height: 1.7;
+            color: #5b6e72;
+            margin: 0 0 16px;
+            flex: 1;
+        }
+
+        .update-body .update-more {
+            align-self: flex-start;
+        }
+
+        /* ------- Sidebar ------- */
+        .updates-sidebar {
+            position: sticky;
+            top: 120px;
+        }
+
+        .side-widget {
+            background: #fff;
+            border: 1px solid #e4ecec;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 32px -22px rgba(12, 30, 33, 0.16);
+        }
+
+        .side-widget__title {
+            font-size: 17px;
+            color: #0c1e21;
+            margin-bottom: 18px;
+            padding-bottom: 13px;
+            border-bottom: 1px solid #eef3f4;
+            position: relative;
+        }
+
+        .side-widget__title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -1px;
+            width: 46px;
+            height: 2px;
+            background: #1997C6;
+        }
+
+        .side-search {
+            position: relative;
+        }
+
+        .side-search input {
+            width: 100%;
+            height: 50px;
+            padding: 0 54px 0 16px;
+            border: 1px solid #dfe8ea;
+            border-radius: 11px;
+            font-size: 14px;
+            color: #0c1e21;
+            background: #fff;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .side-search input:focus {
+            outline: none;
+            border-color: #1997C6;
+            box-shadow: 0 0 0 3px rgba(25, 151, 198, 0.14);
+        }
+
+        .side-search button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 9px;
+            background: #1997C6;
+            color: #fff;
+            cursor: pointer;
+            transition: background .2s ease;
+        }
+
+        .side-search button:hover {
+            background: #0c1e21;
+        }
+
+        .side-recent {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .side-recent li {
+            margin-bottom: 15px;
+        }
+
+        .side-recent li:last-child {
+            margin-bottom: 0;
+        }
+
+        .side-recent a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .side-recent__thumb {
+            flex: none;
+            width: 74px;
+            height: 56px;
+            border-radius: 9px;
+            overflow: hidden;
+            background: #eef2f3;
+        }
+
+        .side-recent__thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .side-recent__info {
+            min-width: 0;
+        }
+
+        .side-recent__title {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: #0c1e21;
+            margin-bottom: 4px;
+            transition: color .25s ease;
+        }
+
+        .side-recent__title:hover {
+            color: #1997C6;
+        }
+
+        .side-recent__date {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: #67787a;
+        }
+
+        .side-widget--cta {
+            background: linear-gradient(150deg, #0c1e21 0%, #15353a 100%);
+            border: 0;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .side-widget--cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(380px 200px at 0% 0%, rgba(25, 151, 198, 0.35), transparent 60%);
+        }
+
+        .side-widget--cta h4 {
+            position: relative;
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .side-widget--cta p {
+            position: relative;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 14px;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
+
+        .side-widget--cta .tj-primary-btn {
+            position: relative;
+        }
+
+        /* ------- Pagination ------- */
         .tj-pagination {
-            margin-top: 50px;
+            margin-top: 55px;
         }
 
         .tj-pagination ul {
@@ -229,9 +599,9 @@ try {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
-            border: 1px solid rgba(30, 138, 138, 0.2);
-            color: #0d1f2d;
+            border-radius: 11px;
+            border: 1px solid #e0e9ea;
+            color: #0c1e21;
             font-weight: 600;
             text-decoration: none;
             transition: all .3s ease;
@@ -239,14 +609,34 @@ try {
 
         .tj-pagination ul li a:hover,
         .tj-pagination ul li span.current {
-            background: #1E8A8A;
-            border-color: #1E8A8A;
+            background: #1997C6;
+            border-color: #1997C6;
             color: #fff;
+            box-shadow: 0 8px 20px -8px rgba(25, 151, 198, 0.5);
+        }
+
+        .tj-pagination ul li a.disabled {
+            opacity: .45;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1199.98px) {
+            .update-featured {
+                grid-template-columns: 1fr;
+            }
+
+            .update-featured__thumb {
+                aspect-ratio: 16 / 9;
+            }
         }
 
         @media (max-width: 991.98px) {
             .tj-updates-section {
                 padding-bottom: 90px;
+            }
+
+            .updates-sidebar {
+                position: static;
             }
         }
     </style>
@@ -664,49 +1054,139 @@ try {
         <section class="tj-updates-section">
             <div class="container">
                 <?php if (!empty($posts)): ?>
-                    <div class="row g-4">
-                        <?php foreach ($posts as $post): ?>
-                            <div class="col-lg-4 col-md-6">
-                                <article class="update-card wow fadeInUp">
-                                    <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
-                                        <img src="<?= bdst_e($post['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
+                    <div class="row updates-layout gx-lg-5">
+                        <div class="col-lg-8">
+                            <?php if ($featured !== null): ?>
+                                <article class="update-featured wow fadeInUp">
+                                    <a class="update-featured__thumb" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
+                                        <img src="<?= bdst_e($featured['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
+                                        <span class="update-featured__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
                                     </a>
-                                    <div class="update-body">
-                                        <span class="update-date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($post['published_at']))) ?></span>
-                                        <h3 class="update-title">
-                                            <a href="update.html?slug=<?= bdst_e($post['slug']) ?>"><?= bdst_e($post['title']) ?></a>
-                                        </h3>
-                                        <?php if (!empty($post['excerpt'])): ?>
-                                            <p class="update-excerpt"><?= bdst_e(mb_strimwidth($post['excerpt'], 0, 160, '...')) ?></p>
+                                    <div class="update-featured__body">
+                                        <span class="update-featured__tag">Latest Update</span>
+                                        <h2 class="update-featured__title">
+                                            <a href="update.html?slug=<?= bdst_e($featured['slug']) ?>"><?= bdst_e($featured['title']) ?></a>
+                                        </h2>
+                                        <?php if (!empty($featured['excerpt'])): ?>
+                                            <p class="update-featured__excerpt"><?= bdst_e(mb_strimwidth($featured['excerpt'], 0, 220, '...')) ?></p>
                                         <?php endif; ?>
-                                        <a class="update-more" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
-                                            Read More <i class="tji-arrow-right-long"></i>
+                                        <div class="update-meta">
+                                            <span><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
+                                            <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($featured['content'] ?? '') ?> min read</span>
+                                        </div>
+                                        <a class="update-more" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
+                                            Read Full Update <i class="tji-arrow-right-long"></i>
                                         </a>
                                     </div>
                                 </article>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <?php endif; ?>
 
-                    <?php if ($totalPages > 1): ?>
-                        <div class="tj-pagination">
-                            <ul>
-                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                    <?php if ($i === $page): ?>
-                                        <li><span class="current"><?= $i ?></span></li>
-                                    <?php else: ?>
+                            <?php if (!empty($gridPosts)): ?>
+                                <div class="row g-4">
+                                    <?php foreach ($gridPosts as $post): ?>
+                                        <div class="col-md-6">
+                                            <article class="update-card wow fadeInUp">
+                                                <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                                    <img src="<?= bdst_e($post['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
+                                                    <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($post['published_at']))) ?></span>
+                                                </a>
+                                                <div class="update-body">
+                                                    <div class="update-meta">
+                                                        <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($post['content'] ?? '') ?> min read</span>
+                                                    </div>
+                                                    <h3 class="update-title">
+                                                        <a href="update.html?slug=<?= bdst_e($post['slug']) ?>"><?= bdst_e($post['title']) ?></a>
+                                                    </h3>
+                                                    <?php if (!empty($post['excerpt'])): ?>
+                                                        <p class="update-excerpt"><?= bdst_e(mb_strimwidth($post['excerpt'], 0, 150, '...')) ?></p>
+                                                    <?php endif; ?>
+                                                    <a class="update-more" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                                        Read More <i class="tji-arrow-right-long"></i>
+                                                    </a>
+                                                </div>
+                                            </article>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($totalPages > 1): ?>
+                                <div class="tj-pagination">
+                                    <ul>
                                         <li>
-                                            <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $i ?>"><?= $i ?></a>
+                                            <?php if ($page > 1): ?>
+                                                <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page - 1 ?>"><i class="fa-regular fa-angle-left"></i></a>
+                                            <?php else: ?>
+                                                <a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-left"></i></a>
+                                            <?php endif; ?>
                                         </li>
-                                    <?php endif; ?>
-                                <?php endfor; ?>
-                            </ul>
+                                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                            <?php if ($i === $page): ?>
+                                                <li><span class="current"><?= $i ?></span></li>
+                                            <?php else: ?>
+                                                <li>
+                                                    <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $i ?>"><?= $i ?></a>
+                                                </li>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                        <li>
+                                            <?php if ($page < $totalPages): ?>
+                                                <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page + 1 ?>"><i class="fa-regular fa-angle-right"></i></a>
+                                            <?php else: ?>
+                                                <a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-right"></i></a>
+                                            <?php endif; ?>
+                                        </li>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                    <?php endif; ?>
+
+                        <div class="col-lg-4">
+                            <div class="updates-sidebar">
+                                <div class="side-widget wow fadeInUp" data-wow-delay=".1s">
+                                    <h4 class="side-widget__title">Search Updates</h4>
+                                    <form class="side-search" method="get" action="updates.html">
+                                        <input type="search" name="s" value="<?= bdst_e($search) ?>" placeholder="Search updates..." aria-label="Search updates">
+                                        <button type="submit" aria-label="Search"><i class="tji-search"></i></button>
+                                    </form>
+                                </div>
+
+                                <div class="side-widget wow fadeInUp" data-wow-delay=".2s">
+                                    <h4 class="side-widget__title">Recent Updates</h4>
+                                    <ul class="side-recent">
+                                        <?php foreach ($recentPosts as $rp): ?>
+                                            <li>
+                                                <a href="update.html?slug=<?= bdst_e($rp['slug']) ?>">
+                                                    <span class="side-recent__thumb">
+                                                        <img src="<?= bdst_e($rp['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
+                                                    </span>
+                                                    <span class="side-recent__info">
+                                                        <span class="side-recent__title"><?= bdst_e($rp['title']) ?></span>
+                                                        <span class="side-recent__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($rp['published_at']))) ?></span>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+
+                                <div class="side-widget side-widget--cta wow fadeInUp" data-wow-delay=".3s">
+                                    <h4>Become a Member</h4>
+                                    <p>Join Tanzania's national professional home for business development service providers and power enterprise growth.</p>
+                                    <a class="tj-primary-btn" href="why-join.html">
+                                        <span class="btn-text"><span>Why Join Us</span></span>
+                                        <span class="btn-icon"><i class="tji-arrow-right-long"></i></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 <?php else: ?>
                     <div class="row justify-content-center">
                         <div class="col-lg-8 text-center">
                             <div class="update-empty">
+                                <i class="fa-regular fa-inbox"></i>
+                                <h3>No Updates Yet</h3>
                                 <p>No updates have been published yet. Please check back soon.</p>
                             </div>
                         </div>
