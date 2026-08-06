@@ -44,7 +44,7 @@ function bdst_cover_path(array $row): string
 $moreUpdates = [];
 try {
     $stmt = $pdo->prepare(
-        "SELECT title, slug, excerpt, image_path, published_at
+        "SELECT id, title, slug, excerpt, image_path, published_at
          FROM updates
          WHERE status = 'published' AND slug <> :slug
          ORDER BY published_at DESC, id DESC
