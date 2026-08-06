@@ -44,7 +44,7 @@ try {
     $posts = $stmt->fetchAll();
 
     $recentPosts = $pdo->query(
-        "SELECT title, slug, image_path, published_at
+        "SELECT id, title, slug, image_path, published_at
          FROM updates
          WHERE status = 'published'
          ORDER BY published_at DESC, id DESC
