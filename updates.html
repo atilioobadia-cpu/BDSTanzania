@@ -1,3 +1,49 @@
+<?php
+require __DIR__ . '/includes/db.php';
+
+$search    = trim((string) ($_GET['s'] ?? ''));
+$page      = max(1, (int) ($_GET['page'] ?? 1));
+$perPage   = 6;
+$posts     = [];
+$totalPages = 1;
+
+try {
+    $pdo = bdst_db();
+
+    $where  = "status = 'published'";
+    $params = [];
+
+    if ($search !== '') {
+        $where        .= " AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)";
+        $params[':q']  = '%' . $search . '%';
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM updates WHERE $where");
+    $stmt->execute($params);
+    $total      = (int) $stmt->fetchColumn();
+    $totalPages = max(1, (int) ceil($total / $perPage));
+    $page       = min($page, $totalPages);
+    $offset     = ($page - 1) * $perPage;
+
+    $stmt = $pdo->prepare(
+        "SELECT id, title, slug, excerpt, image_path, published_at
+         FROM updates
+         WHERE $where
+         ORDER BY published_at DESC, id DESC
+         LIMIT :limit OFFSET :offset"
+    );
+    foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
+    }
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $posts = $stmt->fetchAll();
+} catch (Throwable $e) {
+    error_log('Updates listing error: ' . $e->getMessage());
+    $posts = [];
+}
+?>
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -46,6 +92,161 @@
     <link rel="stylesheet" href="assets/css/bexon-icons.css">
     <link rel="stylesheet" href="assets/css/meanmenu.css">
     <link rel="stylesheet" href="assets/css/main.css">
+
+    <style>
+        .tj-updates-section {
+            padding: 0 0 120px;
+        }
+
+        .update-card {
+            background: #fff;
+            border: 1px solid rgba(30, 138, 138, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+
+        .update-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .update-thumb {
+            display: block;
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            background: #d9d9d9;
+        }
+
+        .update-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .45s ease;
+        }
+
+        .update-card:hover .update-thumb img {
+            transform: scale(1.05);
+        }
+
+        .update-body {
+            padding: 24px 24px 28px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .update-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1E8A8A;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .update-title {
+            font-size: 20px;
+            line-height: 1.35;
+            margin: 12px 0 10px;
+        }
+
+        .update-title a {
+            color: #0d1f2d;
+            transition: color .3s ease;
+        }
+
+        .update-title a:hover {
+            color: #1E8A8A;
+        }
+
+        .update-excerpt {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #5a6772;
+            margin: 0 0 18px;
+            flex: 1;
+        }
+
+        .update-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1E8A8A;
+            text-decoration: none;
+        }
+
+        .update-more i {
+            transition: transform .3s ease;
+        }
+
+        .update-more:hover {
+            color: #0d1f2d;
+        }
+
+        .update-more:hover i {
+            transform: translateX(5px);
+        }
+
+        .update-empty {
+            padding: 80px 20px;
+            background: #f6f9f9;
+            border: 1px dashed rgba(30, 138, 138, 0.35);
+            border-radius: 12px;
+            color: #5a6772;
+            font-size: 16px;
+        }
+
+        .tj-pagination {
+            margin-top: 50px;
+        }
+
+        .tj-pagination ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tj-pagination ul li a,
+        .tj-pagination ul li span {
+            min-width: 46px;
+            height: 46px;
+            padding: 0 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid rgba(30, 138, 138, 0.2);
+            color: #0d1f2d;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all .3s ease;
+        }
+
+        .tj-pagination ul li a:hover,
+        .tj-pagination ul li span.current {
+            background: #1E8A8A;
+            border-color: #1E8A8A;
+            color: #fff;
+        }
+
+        @media (max-width: 991.98px) {
+            .tj-updates-section {
+                padding-bottom: 90px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -435,6 +636,81 @@
             <div class="page-header-overlay" data-bg-image="assets/images/shape/pheader-overlay.jpg"></div>
         </section>
 
+        <!-- Updates Intro -->
+        <section class="section-gap">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="sec-heading text-center">
+                            <span class="sub-title wow fadeInUp" data-wow-delay=".1s">
+                                <i class="tji-box"></i>News &amp; Announcements
+                            </span>
+                            <h2 class="sec-title wow fadeInUp" data-wow-delay=".2s">Latest Updates from BDS Tanzania</h2>
+                            <?php if ($search !== ''): ?>
+                                <p class="update-search-note wow fadeInUp" data-wow-delay=".3s">
+                                    Search results for &ldquo;<strong><?= bdst_e($search) ?></strong>&rdquo;
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Updates Listing -->
+        <section class="tj-updates-section">
+            <div class="container">
+                <?php if (!empty($posts)): ?>
+                    <div class="row g-4">
+                        <?php foreach ($posts as $post): ?>
+                            <div class="col-lg-4 col-md-6">
+                                <article class="update-card wow fadeInUp">
+                                    <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                        <img src="<?= bdst_e($post['image_path'] ?: 'assets/images/bg/1.jpg') ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
+                                    </a>
+                                    <div class="update-body">
+                                        <span class="update-date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($post['published_at']))) ?></span>
+                                        <h3 class="update-title">
+                                            <a href="update.html?slug=<?= bdst_e($post['slug']) ?>"><?= bdst_e($post['title']) ?></a>
+                                        </h3>
+                                        <?php if (!empty($post['excerpt'])): ?>
+                                            <p class="update-excerpt"><?= bdst_e(mb_strimwidth($post['excerpt'], 0, 160, '...')) ?></p>
+                                        <?php endif; ?>
+                                        <a class="update-more" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                            Read More <i class="tji-arrow-right-long"></i>
+                                        </a>
+                                    </div>
+                                </article>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php if ($totalPages > 1): ?>
+                        <div class="tj-pagination">
+                            <ul>
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <?php if ($i === $page): ?>
+                                        <li><span class="current"><?= $i ?></span></li>
+                                    <?php else: ?>
+                                        <li>
+                                            <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $i ?>"><?= $i ?></a>
+                                        </li>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8 text-center">
+                            <div class="update-empty">
+                                <p>No updates have been published yet. Please check back soon.</p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
 
     </main>
 

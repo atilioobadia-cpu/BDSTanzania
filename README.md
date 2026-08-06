@@ -34,7 +34,6 @@
 - [Getting Started](#getting-started)
   - [Local Development](#local-development)
   - [Deployment (cPanel)](#deployment-cpanel)
-- [Configuration](#configuration)
 - [Updates & News Backend](#updates--news-backend)
 - [Roadmap](#roadmap)
 - [Security Notes](#security-notes)
@@ -46,7 +45,7 @@
 
 **BDS Tanzania** is the official website of the *Business Development Society of Tanzania* — a voluntary, non-governmental professional association headquartered in Dodoma that sets professional standards, builds practitioner capacity and coordinates business development services (BDS) across seven national zones.
 
-The site is a performance-focused, SEO-optimized multi-page website built with static HTML/CSS/JS and a light PHP backend for contact handling and (upcoming) news updates. It is hosted on cPanel (Apache / PHP 8.2) and uses clean, extension-less URLs via `.htaccess`.
+The site is a performance-focused, SEO-optimized multi-page website built with static HTML/CSS/JS and a light PHP backend for contact handling and news updates (PHP + MySQL). It is hosted on cPanel (Apache / PHP 8.2) and uses clean, extension-less URLs via `.htaccess`.
 
 ---
 
@@ -83,15 +82,25 @@ bdst/
 ├── leadership.html         # Governance & leadership
 ├── gallery.html            # Photo gallery + lightbox
 ├── contact.html            # Contact info, map & AJAX form
-├── updates.html            # News/updates listing (PHP-driven)   [in progress]
-├── .htaccess               # Clean URLs, HTTPS, caching rules
-├── includes/
-│   ├── sendmail.php        # SMTP contact-form handler (PHPMailer)
-│   └── PHPMailer/src/      # Bundled PHPMailer library
-└── assets/
-    ├── css/                # Bootstrap, theme & page styles
-    ├── js/                 # Vendors + main.js
-    └── images/             # Logos, home, about, gallery, testimonial
+├── updates.html            # News/updates listing (PHP-driven, paginated + search)
+├── update.html             # Single post detail page (?slug=...)
+├── database.sql            # MySQL schema for the updates table
+├── mail-config.sample.php  # Template for mail-config.php (gitignored)
+├── .htaccess               # Clean URLs, HTTPS, caching + PHP-for-.html rules
+├── admin/                  # Password-protected news backend
+│   ├── index.php           # Login
+│   ├── dashboard.php       # Manage updates
+│   ├── post.php            # Create/edit update + image upload
+│   ├── delete.php          # Delete update
+│   ├── logout.php
+│   ├── auth.php            # Session + CSRF helpers
+│   ├── admin.css
+│   └── .htaccess
+└── includes/
+    ├── sendmail.php        # SMTP contact-form handler (PHPMailer)
+    ├── db.php              # Config lookup + PDO helper (bdst_db, bdst_e)
+    ├── .htaccess           # Denies direct access to includes/
+    └── PHPMailer/src/      # Bundled PHPMailer library
 ```
 
 ---
@@ -100,37 +109,41 @@ bdst/
 
 ### Local Development
 
+> Note: the dynamic pages (`updates.html`, `update.html`) are `.html` files executed as PHP by the Apache `.htaccess` rule. Use XAMPP or Laragon (Apache + MySQL + PHP) so that rule applies and the database is available. `php -S` will not parse `.html` files as PHP.
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/atilioobadia-cpu/BDSTanzania.git
    cd BDSTanzania
    ```
-2. Serve the folder with any PHP-enabled web server (XAMPP / Laragon / `php -S`):
-   ```bash
-   php -S localhost:8000
-   ```
-3. Open `http://localhost:8000` in your browser.
+2. Serve the folder from XAMPP/Laragon's web root (or any Apache vhost).
+3. Create a local MySQL database and a `mail-config.php` (copy from `mail-config.sample.php`).
+4. Import `database.sql`, then open the site in your browser.
 
 ### Deployment (cPanel)
 
 1. Upload the project contents into `public_html/` (or a subfolder).
 2. Create a MySQL database + user in **MySQL® Databases**.
-3. Copy `mail-config.sample.php` → `mail-config.php` (above `public_html` if possible) and fill in SMTP + DB credentials.
-4. Import the schema (see [Updates & News Backend](#updates--news-backend)).
-5. Done — the `.htaccess` handles clean URLs, HTTPS redirect and caching.
-
----
+3. Copy `mail-config.sample.php` → `mail-config.php` (one level **above** `public_html` if possible) and fill in SMTP + DB credentials.
+4. Import `database.sql` in **phpMyAdmin** to create the `updates` table.
+5. Generate the admin password hash and add it to `mail-config.php`:
+   ```bash
+   php -r "echo password_hash('CHANGE_ME', PASSWORD_DEFAULT);"
+   ```
+6. Done — the `.htaccess` handles clean URLs, HTTPS redirect, caching and parsing `.html` files as PHP.
 
 ---
 
 ## Updates & News Backend
 
-A lightweight **PHP + MySQL** admin is planned/under development to let editors publish news updates (image, title, description, date) without touching code:
+A lightweight **PHP + MySQL** admin lets editors publish news updates (image, title, description, date) without touching code:
 
-- `/admin/` — password-protected dashboard for posting, editing and deleting updates.
-- `updates.html` — PHP-driven listing with image, title, date, excerpt and pagination.
-- Secure image upload to `assets/images/uploads/` with type/size validation.
-- All queries via **PDO prepared statements**.
+- `/admin/` — password-protected dashboard (session + CSRF tokens) for posting, editing, publishing/drafting and deleting updates.
+- `updates.html` — PHP-driven listing with featured image, title, date, excerpt, search (`?s=`) and pagination (`?page=`).
+- `update.html` — single post detail page (`?slug=...`), with dynamic SEO/OpenGraph meta tags.
+- Secure image upload to `assets/images/uploads/` (JPG/PNG/WEBP/GIF, max 2 MB, verified with `getimagesize`).
+- All queries use **PDO prepared statements**; output is HTML-escaped via `bdst_e()`.
+- `.html` files are executed as PHP by the `.htaccess` `AddHandler` rule (outside the cPanel-managed block).
 
 ---
 
@@ -139,18 +152,20 @@ A lightweight **PHP + MySQL** admin is planned/under development to let editors 
 - [x] Static site shell (Home / About / Leadership / Gallery / Contact)
 - [x] SMTP contact forms via PHPMailer
 - [x] Clean URLs + HTTPS enforcement
-- [ ] PHP + MySQL news backend (admin dashboard + `updates.html`)
-- [ ] Post detail page with clean URL (`/updates/{slug}`)
+- [x] PHP + MySQL news backend (admin dashboard, `updates.html`, `update.html`)
+- [ ] Friendly post URLs (`/updates/{slug}`)
 - [ ] Category filtering & search across updates
 
 ---
 
 ## Security Notes
 
-- `mail-config.php` and `*.log` are **gitignored** — never commit credentials or email logs.
+- `mail-config.php`, `*.log` and `assets/images/uploads/` are **gitignored** — never commit credentials, email logs or user-uploaded images.
 - All user input is sanitized (strip tags, email validation) and output is HTML-escaped.
 - The contact handler rejects non-POST requests and validates required fields server-side.
-- Keep the admin directory restricted (`/admin/.htaccess`) and use strong, hashed passwords.
+- The admin panel uses **PHP sessions** with `password_hash`/`password_verify` authentication, **CSRF tokens** on every form, and `session_regenerate_id()` on login.
+- `includes/` denies direct access and PHP execution is blocked inside `assets/images/uploads/` (`.htaccess`).
+- Keep the admin directory restricted (`/admin/.htaccess`) and use a strong password.
 
 ---
 
