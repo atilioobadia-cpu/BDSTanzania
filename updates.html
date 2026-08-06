@@ -62,6 +62,15 @@ function bdst_reading_time(string $text): int
     return max(1, (int) ceil($words / 200));
 }
 
+function bdst_cover_path(array $row): string
+{
+    if (!empty($row['image_path'])) {
+        return $row['image_path'];
+    }
+    $index = ((int) $row['id'] % 9) + 1;
+    return 'assets/images/gallery/gallery-' . $index . '.jpg';
+}
+
 $featured = null;
 if ($page === 1 && $search === '' && !empty($posts)) {
     $featured = $posts[0];
@@ -278,30 +287,6 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
 
         .update-featured__foot .update-meta {
             margin-bottom: 0;
-        }
-
-        .update-placeholder {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #eef4f6 0%, #dfeaea 100%);
-        }
-
-        .update-placeholder img {
-            width: 120px;
-            height: auto;
-            opacity: .55;
-        }
-
-        .update-placeholder i {
-            font-size: 26px;
-            color: rgba(12, 30, 33, 0.28);
-        }
-
-        .update-placeholder--mini i {
-            font-size: 17px;
         }
 
         .update-meta {
@@ -1108,13 +1093,9 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                     <div class="row updates-layout gx-lg-5">
                         <div class="col-lg-8">
                             <?php if ($featured !== null): ?>
-                                <article class="update-featured wow fadeInUp">
+                                <article class="update-featured">
                                     <a class="update-featured__thumb" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
-                                        <?php if (!empty($featured['image_path'])): ?>
-                                            <img src="<?= bdst_e($featured['image_path']) ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
-                                        <?php else: ?>
-                                            <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
-                                        <?php endif; ?>
+                                        <img src="<?= bdst_e(bdst_cover_path($featured)) ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
                                         <span class="update-featured__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
                                     </a>
                                     <div class="update-featured__body">
@@ -1142,13 +1123,9 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                 <div class="row g-4">
                                     <?php foreach ($gridPosts as $post): ?>
                                         <div class="col-md-6">
-                                            <article class="update-card wow fadeInUp">
+                                            <article class="update-card">
                                                 <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
-                                                    <?php if (!empty($post['image_path'])): ?>
-                                                        <img src="<?= bdst_e($post['image_path']) ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
-                                                    <?php else: ?>
-                                                        <span class="update-placeholder"><img src="assets/images/logos/logo-icon.webp" alt="BDS Tanzania"></span>
-                                                    <?php endif; ?>
+                                                    <img src="<?= bdst_e(bdst_cover_path($post)) ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
                                                     <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($post['published_at']))) ?></span>
                                                 </a>
                                                 <div class="update-body">
@@ -1199,12 +1176,20 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                         </li>
                                     </ul>
                                 </div>
+                            <?php else: ?>
+                                <div class="tj-pagination">
+                                    <ul>
+                                        <li><a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-left"></i></a></li>
+                                        <li><span class="current">1</span></li>
+                                        <li><a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-right"></i></a></li>
+                                    </ul>
+                                </div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-lg-4">
                             <div class="updates-sidebar">
-                                <div class="side-widget wow fadeInUp" data-wow-delay=".1s">
+                                <div class="side-widget">
                                     <h4 class="side-widget__title">Search Updates</h4>
                                     <form class="side-search" method="get" action="updates.html">
                                         <input type="search" name="s" value="<?= bdst_e($search) ?>" placeholder="Search updates..." aria-label="Search updates">
@@ -1212,18 +1197,14 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     </form>
                                 </div>
 
-                                <div class="side-widget wow fadeInUp" data-wow-delay=".2s">
+                                <div class="side-widget">
                                     <h4 class="side-widget__title">Recent Updates</h4>
                                     <ul class="side-recent">
                                         <?php foreach ($recentPosts as $rp): ?>
                                             <li>
                                                 <a href="update.html?slug=<?= bdst_e($rp['slug']) ?>">
                                                     <span class="side-recent__thumb">
-                                                        <?php if (!empty($rp['image_path'])): ?>
-                                                            <img src="<?= bdst_e($rp['image_path']) ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
-                                                        <?php else: ?>
-                                                            <span class="update-placeholder update-placeholder--mini"><i class="fa-regular fa-file-lines"></i></span>
-                                                        <?php endif; ?>
+                                                        <img src="<?= bdst_e(bdst_cover_path($rp)) ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
                                                     </span>
                                                     <span class="side-recent__info">
                                                         <span class="side-recent__title"><?= bdst_e($rp['title']) ?></span>
@@ -1235,7 +1216,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     </ul>
                                 </div>
 
-                                <div class="side-widget side-widget--cta wow fadeInUp" data-wow-delay=".3s">
+                                <div class="side-widget side-widget--cta">
                                     <h4>Become a Member</h4>
                                     <p>Join Tanzania's national professional home for business development service providers and power enterprise growth.</p>
                                     <a class="tj-primary-btn" href="why-join.html">
