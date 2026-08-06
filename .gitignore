@@ -1,0 +1,43 @@
+# ------------------------------------------------------------------
+# Sensitive configuration (never commit real credentials)
+# ------------------------------------------------------------------
+mail-config.php
+mail-config.sample.php
+.env
+.env.*
+*.local.php
+
+# ------------------------------------------------------------------
+# Runtime logs (may contain personal data / SMTP debug output)
+# ------------------------------------------------------------------
+*.log
+includes/*.log
+logs/
+error_log
+
+# ------------------------------------------------------------------
+# Uploaded media & temporary uploads
+# ------------------------------------------------------------------
+assets/images/uploads/
+uploads/
+tmp/
+
+# Browser-download duplicates
+htaccess (1)
+
+# ------------------------------------------------------------------
+# OS / editor noise
+# ------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ------------------------------------------------------------------
+# Misc
+# ------------------------------------------------------------------
+*.bak
+*.swp

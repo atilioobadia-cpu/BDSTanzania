@@ -1,0 +1,110 @@
+@font-face {
+	font-family: "bexon-icons";
+	src: url("../fonts/bexon-icons.eot@1ck5xg");
+	src: url("../fonts/bexon-icons.eot@1ck5xg") format("embedded-opentype"),
+		url("../fonts/bexon-icons.ttf@1ck5xg") format("truetype"),
+		url("../fonts/bexon-icons.woff@1ck5xg") format("woff"),
+		url("../fonts/bexon-icons.svg@1ck5xg") format("svg");
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+[class^="tji-"],
+[class*=" tji-"] {
+	/* use !important to prevent issues with browser extensions that change fonts */
+	font-family: "bexon-icons" !important;
+	speak: never;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+.tji-arrow-left:before {
+	content: "\e914";
+}
+.tji-arrow-right:before {
+	content: "\e913";
+}
+.tji-arrow-right-long:before {
+	content: "\e916";
+}
+.tji-arrow-up-long:before {
+	content: "\e915";
+}
+.tji-award:before {
+	content: "\e908";
+}
+.tji-box:before {
+	content: "\e90d";
+}
+.tji-chat:before {
+	content: "\e906";
+}
+.tji-check:before {
+	content: "\e911";
+}
+.tji-clock:before {
+	content: "\e912";
+}
+.tji-complete:before {
+	content: "\e90e";
+}
+.tji-envelop:before {
+	content: "\e907";
+}
+.tji-growth:before {
+	content: "\e90f";
+}
+.tji-home:before {
+	content: "\e925";
+}
+.tji-innovative:before {
+	content: "\e930";
+}
+.tji-location:before {
+	content: "\e92b";
+}
+.tji-location-3:before {
+	content: "\e91e";
+}
+.tji-phone:before {
+	content: "\e919";
+}
+.tji-phone-3:before {
+	content: "\e92c";
+}
+.tji-plus:before {
+	content: "\e927";
+}
+.tji-quote:before {
+	content: "\e92e";
+}
+.tji-search:before {
+	content: "\e91c";
+}
+.tji-service-1:before {
+	content: "\e905";
+}
+.tji-service-2:before {
+	content: "\e904";
+}
+.tji-service-3:before {
+	content: "\e903";
+}
+.tji-support:before {
+	content: "\e90a";
+}
+.tji-team:before {
+	content: "\e909";
+}
+.tji-window:before {
+	content: "\e91d";
+}
+.tji-worldwide:before {
+	content: "\e910";
+}
