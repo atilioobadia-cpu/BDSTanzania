@@ -50,7 +50,14 @@ function bdst_db(): PDO
         throw new RuntimeException('Database configuration missing from mail-config.php.');
     }
 
-    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8mb4', $config['dbHost'], $config['dbName']);
+    $dsn = sprintf(
+        'mysql:host=%s;dbname=%s;charset=utf8mb4',
+        $config['dbHost'],
+        $config['dbName']
+    );
+    if (!empty($config['dbPort'])) {
+        $dsn .= ';port=' . (int) $config['dbPort'];
+    }
 
     $pdo = new PDO($dsn, $config['dbUser'], $config['dbPass'], [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

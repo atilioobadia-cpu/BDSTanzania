@@ -20,6 +20,7 @@ return [
 
     // --- Database (news updates backend) ---
     'dbHost'           => 'localhost',
+    'dbPort'           => 3306, // leave 3306 for the default cPanel port
     'dbName'           => 'bdst_updates',
     'dbUser'           => 'bdst_updates_user',
     'dbPass'           => '',

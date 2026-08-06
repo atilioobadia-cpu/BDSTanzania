@@ -14,8 +14,11 @@ try {
     $params = [];
 
     if ($search !== '') {
-        $where        .= " AND (title LIKE :q OR excerpt LIKE :q OR content LIKE :q)";
-        $params[':q']  = '%' . $search . '%';
+        $where         .= " AND (title LIKE :q1 OR excerpt LIKE :q2 OR content LIKE :q3)";
+        $q              = '%' . $search . '%';
+        $params[':q1']  = $q;
+        $params[':q2']  = $q;
+        $params[':q3']  = $q;
     }
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM updates WHERE $where");

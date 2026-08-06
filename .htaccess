@@ -8,7 +8,8 @@ AddDefaultCharset UTF-8
   RewriteEngine On
   # Block execution of PHP files inside the uploaded-images folder
   RewriteRule ^assets/images/uploads/.*\.(php|php8|phtml|phar)$ - [F,L]
-  # Force HTTPS + www
+  # Force HTTPS + www (skip local development hosts)
+  RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
   RewriteCond %{HTTPS} !=on [OR]
   RewriteCond %{HTTP_HOST} !^www\.bdst\.or\.tz$ [NC]
   RewriteRule ^ https://www.bdst.or.tz%{REQUEST_URI} [R=302,L]
