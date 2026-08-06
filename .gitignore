@@ -2,6 +2,7 @@
 # Sensitive configuration (never commit real credentials)
 # ------------------------------------------------------------------
 mail-config.php
+mail-config.live.php
 .env
 .env.*
 *.local.php
