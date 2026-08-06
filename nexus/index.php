@@ -69,9 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" id="username" name="username" required autofocus>
             </div>
             <div class="field">
-                <label for="password">Password</label>
+                <label for="passwordMask">Password</label>
                 <div class="password-wrap">
-                    <input type="password" id="password" name="password" required>
+                    <input type="text" id="passwordMask" class="password-mask" placeholder="Password" autocomplete="off" aria-label="Password">
+                    <input type="password" id="password" name="password" class="sr-only" autocomplete="off" tabindex="-1" aria-hidden="true">
                     <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password"></button>
                 </div>
             </div>
@@ -91,24 +92,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         var iconEye = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
         var iconEyeOff = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 
-        var password = document.getElementById('password');
+        var mask = document.getElementById('passwordMask');
+        var real = document.getElementById('password');
         var toggle = document.getElementById('togglePassword');
-        if (password && toggle) {
+        var form = document.getElementById('loginForm');
+        var btn = document.getElementById('loginBtn');
+        var revealed = false;
+
+        if (!mask || !real) { return; }
+
+        function reMask() {
+            var caret = mask.selectionStart || mask.value.length;
+            var len = mask.value.length;
+            mask.value = new Array(len + 1).join('*');
+            var pos = Math.min(caret, mask.value.length);
+            mask.setSelectionRange(pos, pos);
+        }
+
+        mask.addEventListener('input', function () {
+            real.value = mask.value;
+            if (!revealed) { reMask(); }
+        });
+
+        if (toggle) {
             toggle.innerHTML = iconEye;
             toggle.addEventListener('click', function () {
-                var show = password.type === 'password';
-                password.type = show ? 'text' : 'password';
-                toggle.innerHTML = show ? iconEyeOff : iconEye;
-                toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-                password.focus();
+                revealed = !revealed;
+                if (revealed) {
+                    var caret = mask.selectionStart || mask.value.length;
+                    mask.value = real.value;
+                    var pos = Math.min(caret, mask.value.length);
+                    mask.setSelectionRange(pos, pos);
+                    toggle.innerHTML = iconEyeOff;
+                    toggle.setAttribute('aria-label', 'Hide password');
+                } else {
+                    reMask();
+                    toggle.innerHTML = iconEye;
+                    toggle.setAttribute('aria-label', 'Show password');
+                }
+                mask.focus();
             });
         }
 
-        var form = document.getElementById('loginForm');
-        var btn = document.getElementById('loginBtn');
         if (form && btn) {
-            form.addEventListener('submit', function () {
-                if (btn.disabled) { return; }
+            form.addEventListener('submit', function (e) {
+                if (btn.disabled) { e.preventDefault(); return; }
+                if (real.value === '') {
+                    e.preventDefault();
+                    mask.focus();
+                    return;
+                }
                 btn.classList.add('loading');
                 btn.disabled = true;
                 var label = btn.querySelector('.btn-label');
