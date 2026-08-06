@@ -121,29 +121,6 @@ bdst/
 
 ---
 
-## Configuration
-
-The site reads environment-specific settings from `mail-config.php` (never committed):
-
-```php
-<?php
-return [
-    'toEmail'      => 'info@bdst.or.tz',
-    'fromEmail'    => 'no-reply@bdst.or.tz',
-    'siteName'     => 'BDS Tanzania',
-    'smtpHost'     => 'mail.bdst.or.tz',
-    'smtpUsername' => 'no-reply@bdst.or.tz',
-    'smtpPassword' => '***',
-    'smtpPort'     => 465,
-    'smtpEncryption' => 'ssl',           // 'ssl' (SMTPS) or 'tls' (STARTTLS)
-    // DB (used by the updates backend)
-    'dbHost'       => 'localhost',
-    'dbName'       => 'bdst_updates',
-    'dbUser'       => 'bdst_admin',
-    'dbPass'       => '***',
-];
-```
-
 ---
 
 ## Updates & News Backend
