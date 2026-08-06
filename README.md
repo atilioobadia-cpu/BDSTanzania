@@ -87,7 +87,7 @@ bdst/
 ├── database.sql            # MySQL schema for the updates table
 ├── mail-config.sample.php  # Template for mail-config.php (gitignored)
 ├── .htaccess               # Clean URLs, HTTPS, caching + PHP-for-.html rules
-├── admin/                  # Password-protected news backend
+├── nexus/                   # Password-protected news backend (renamed from admin/)
 │   ├── index.php           # Login
 │   ├── dashboard.php       # Manage updates
 │   ├── post.php            # Create/edit update + image upload
@@ -138,7 +138,7 @@ bdst/
 
 A lightweight **PHP + MySQL** admin lets editors publish news updates (image, title, description, date) without touching code:
 
-- `/admin/` — password-protected dashboard (session + CSRF tokens) for posting, editing, publishing/drafting and deleting updates.
+- `/nexus/` - password-protected dashboard (session + CSRF tokens) for posting, editing, publishing/drafting and deleting updates.
 - `updates.html` — PHP-driven listing with featured image, title, date, excerpt, search (`?s=`) and pagination (`?page=`).
 - `update.html` — single post detail page (`?slug=...`), with dynamic SEO/OpenGraph meta tags.
 - Secure image upload to `assets/images/uploads/` (JPG/PNG/WEBP/GIF, max 2 MB, verified with `getimagesize`).
@@ -165,7 +165,7 @@ A lightweight **PHP + MySQL** admin lets editors publish news updates (image, ti
 - The contact handler rejects non-POST requests and validates required fields server-side.
 - The admin panel uses **PHP sessions** with `password_hash`/`password_verify` authentication, **CSRF tokens** on every form, and `session_regenerate_id()` on login.
 - `includes/` denies direct access and PHP execution is blocked inside `assets/images/uploads/` (`.htaccess`).
-- Keep the admin directory restricted (`/admin/.htaccess`) and use a strong password.
+- Keep the admin directory restricted (`/nexus/.htaccess`) and use a strong password.
 
 ---
 
