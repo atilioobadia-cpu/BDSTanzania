@@ -17,7 +17,9 @@ require __DIR__ . '/PHPMailer/src/Exception.php';
 require __DIR__ . '/PHPMailer/src/PHPMailer.php';
 require __DIR__ . '/PHPMailer/src/SMTP.php';
 
-$config = require __DIR__ . '/../../mail-config.php';
+require_once __DIR__ . '/db.php';
+
+$config = bdst_config();
 
 $toEmail        = $config['toEmail'];
 $fromEmail      = $config['fromEmail'];
