@@ -24,9 +24,15 @@ try {
     $stmt->execute();
 
     if ($post && $post['image_path']) {
-        $image = __DIR__ . '/../' . $post['image_path'];
-        if (is_file($image)) {
-            @unlink($image);
+        $images = json_decode((string) $post['image_path'], true);
+        if (!is_array($images)) {
+            $images = [(string) $post['image_path']];
+        }
+        foreach ($images as $image) {
+            $file = __DIR__ . '/../' . $image;
+            if (is_file($file)) {
+                @unlink($file);
+            }
         }
     }
 

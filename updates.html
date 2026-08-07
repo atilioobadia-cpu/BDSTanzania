@@ -64,8 +64,13 @@ function bdst_reading_time(string $text): int
 
 function bdst_cover_path(array $row): string
 {
-    if (!empty($row['image_path'])) {
-        return $row['image_path'];
+    $raw  = (string) ($row['image_path'] ?? '');
+    if ($raw !== '') {
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded) && isset($decoded[0])) {
+            return (string) $decoded[0];
+        }
+        return $raw;
     }
     $index = ((int) $row['id'] % 9) + 1;
     return 'assets/images/gallery/gallery-' . $index . '.jpg';

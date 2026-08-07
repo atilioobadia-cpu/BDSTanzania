@@ -28,7 +28,7 @@ CREATE TABLE `updates` (
   `slug` varchar(220) NOT NULL,
   `excerpt` varchar(500) DEFAULT NULL,
   `content` mediumtext DEFAULT NULL,
-  `image_path` varchar(255) DEFAULT NULL,
+  `image_path` text DEFAULT NULL,
   `status` enum('draft','published') NOT NULL DEFAULT 'draft',
   `published_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

@@ -140,8 +140,13 @@ foreach ($posts as $p) {
                                     <tr>
                                         <td>
                                             <div class="cell-title">
-                                                <?php if ($post['image_path']): ?>
-                                                    <img class="cell-thumb" src="../<?= bdst_e($post['image_path']) ?>" alt="">
+                                                <?php
+                                                $thumbRaw = (string) ($post['image_path'] ?? '');
+                                                $thumbDec = json_decode($thumbRaw, true);
+                                                $thumb    = is_array($thumbDec) ? (string) ($thumbDec[0] ?? '') : $thumbRaw;
+                                                ?>
+                                                <?php if ($thumb !== ''): ?>
+                                                    <img class="cell-thumb" src="../<?= bdst_e($thumb) ?>" alt="">
                                                 <?php else: ?>
                                                     <span class="cell-thumb cell-thumb--empty">BDS</span>
                                                 <?php endif; ?>

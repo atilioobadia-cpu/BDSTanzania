@@ -270,6 +270,11 @@ a:hover { color: var(--primary-dark); }
 .preview-img { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
 .preview-img img { display: block; width: 100%; height: auto; max-height: 180px; object-fit: cover; }
 
+.image-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.image-list__item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.image-list__item img { display: block; width: 100%; height: 74px; object-fit: cover; }
+.image-list__item .checkbox { margin: 8px 10px; gap: 6px; font-size: 13px; }
+
 /* ---- Table ---- */
 .table-wrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; }

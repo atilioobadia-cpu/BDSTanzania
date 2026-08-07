@@ -23,8 +23,22 @@ if (!$post) {
 
 $pageTitle   = $post['title'];
 $pageDesc    = mb_strimwidth(strip_tags((string) $post['excerpt']), 0, 160, '...');
-$pageImage   = $post['image_path'] ?: 'assets/images/logos/logo.webp';
+$imageList   = bdst_images($post);
+$pageImage   = $imageList[0] ?? 'assets/images/logos/logo.webp';
 $contentHtml = $post['content'] ?: '<p>' . bdst_e($post['excerpt']) . '</p>';
+
+function bdst_images(array $row): array
+{
+    $raw = (string) ($row['image_path'] ?? '');
+    if ($raw === '') {
+        return [];
+    }
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) {
+        return array_values(array_filter(array_map('strval', $decoded)));
+    }
+    return [$raw];
+}
 
 function bdst_reading_time(string $text): int
 {
@@ -34,8 +48,13 @@ function bdst_reading_time(string $text): int
 
 function bdst_cover_path(array $row): string
 {
-    if (!empty($row['image_path'])) {
-        return $row['image_path'];
+    $raw = (string) ($row['image_path'] ?? '');
+    if ($raw !== '') {
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded) && isset($decoded[0])) {
+            return (string) $decoded[0];
+        }
+        return $raw;
     }
     $index = ((int) $row['id'] % 9) + 1;
     return 'assets/images/gallery/gallery-' . $index . '.jpg';
@@ -142,6 +161,51 @@ try {
             max-height: 520px;
             object-fit: cover;
             display: block;
+        }
+
+        .update-gallery {
+            margin-top: 34px;
+        }
+
+        .update-gallery__title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0d2b33;
+            margin-bottom: 16px;
+        }
+
+        .update-gallery__grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .update-gallery__item {
+            display: block;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #e4ecec;
+        }
+
+        .update-gallery__item img {
+            display: block;
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .update-gallery__item:hover img {
+            transform: scale(1.04);
+        }
+
+        @media (max-width: 767px) {
+            .update-gallery__grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .update-gallery__item img {
+                height: 160px;
+            }
         }
 
         .update-article-body {
@@ -882,6 +946,18 @@ try {
                                 <div class="update-article-content">
                                     <?= $contentHtml ?>
                                 </div>
+                                <?php if (count($imageList) > 1): ?>
+                                    <div class="update-gallery">
+                                        <h3 class="update-gallery__title">Photos</h3>
+                                        <div class="update-gallery__grid">
+                                            <?php foreach (array_slice($imageList, 1) as $gi => $img): ?>
+                                                <a class="update-gallery__item" href="../<?= bdst_e($img) ?>" target="_blank" rel="noopener" aria-label="View photo <?= (int) $gi + 2 ?>">
+                                                    <img src="../<?= bdst_e($img) ?>" alt="<?= bdst_e($pageTitle) ?> photo <?= (int) $gi + 2 ?>" loading="lazy" decoding="async">
+                                                </a>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="update-share">
                                     <span>Share this update:</span>
                                     <div class="update-share__links">

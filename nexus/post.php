@@ -94,6 +94,53 @@ function bdst_handle_upload(array $file, string $targetDir): array
     return [true, '', 'assets/images/uploads/' . $name];
 }
 
+function bdst_images_from(string $raw): array
+{
+    if ($raw === '') {
+        return [];
+    }
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) {
+        return array_values(array_filter(array_map('strval', $decoded)));
+    }
+    return [$raw];
+}
+
+function bdst_handle_multi_upload(array $files, string $targetDir): array
+{
+    $names  = $files['name'] ?? [];
+    $errors = $files['error'] ?? [];
+    $tmps   = $files['tmp_name'] ?? [];
+    $sizes  = $files['size'] ?? [];
+
+    $uploaded = [];
+    if (!is_array($names)) {
+        return [true, '', $uploaded];
+    }
+
+    for ($i = 0, $count = count($names); $i < $count; $i++) {
+        if (($errors[$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+
+        [$ok, $error, $path] = bdst_handle_upload([
+            'name'     => $names[$i] ?? '',
+            'tmp_name' => $tmps[$i] ?? '',
+            'error'    => $errors[$i] ?? UPLOAD_ERR_OK,
+            'size'     => $sizes[$i] ?? 0,
+        ], $targetDir);
+
+        if (!$ok) {
+            return [false, $error, []];
+        }
+        if ($path !== '') {
+            $uploaded[] = $path;
+        }
+    }
+
+    return [true, '', $uploaded];
+}
+
 $saved = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -103,13 +150,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $title       = trim((string) ($_POST['title'] ?? ''));
-    $excerpt     = trim((string) ($_POST['excerpt'] ?? ''));
-    $content     = (string) ($_POST['content'] ?? '');
-    $status      = ($_POST['status'] ?? 'draft') === 'published' ? 'published' : 'draft';
-    $publishedAt = trim((string) ($_POST['published_at'] ?? ''));
-    $keepImage   = (string) ($_POST['existing_image'] ?? '');
-    $deleteImage = isset($_POST['remove_image']);
+    $title        = trim((string) ($_POST['title'] ?? ''));
+    $excerpt      = trim((string) ($_POST['excerpt'] ?? ''));
+    $content      = (string) ($_POST['content'] ?? '');
+    $status       = ($_POST['status'] ?? 'draft') === 'published' ? 'published' : 'draft';
+    $publishedAt  = trim((string) ($_POST['published_at'] ?? ''));
+    $removeImages = array_map('strval', (array) ($_POST['remove_images'] ?? []));
 
     if ($title === '') {
         $saved = [false, 'Title is required.'];
@@ -118,22 +164,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $publishedAt = $post['published_at'] ?? date('Y-m-d H:i:s');
         }
 
-        [$uploadOk, $uploadError, $uploadPath] = bdst_handle_upload(
-            $_FILES['image'] ?? [],
+        $existingImages = $post !== null ? bdst_images_from((string) ($post['image_path'] ?? '')) : [];
+        $keptImages     = [];
+        foreach ($existingImages as $index => $path) {
+            if (in_array((string) $index, $removeImages, true) || in_array($path, $removeImages, true)) {
+                continue;
+            }
+            $keptImages[] = $path;
+        }
+
+        [$uploadOk, $uploadError, $uploadedImages] = bdst_handle_multi_upload(
+            $_FILES['images'] ?? [],
             __DIR__ . '/../assets/images/uploads'
         );
 
         if (!$uploadOk) {
             $saved = [false, $uploadError];
         } else {
-            $imagePath = $post['image_path'] ?? '';
-            if ($uploadPath !== '') {
-                $imagePath = $uploadPath;
-            } elseif ($deleteImage) {
-                $imagePath = '';
-            } else {
-                $imagePath = $keepImage;
-            }
+            $allImages = array_values(array_filter(array_merge($keptImages, $uploadedImages)));
+            $imagePath = $allImages ? json_encode($allImages) : '';
 
             $slugInput = trim((string) ($_POST['slug'] ?? ''));
             $slug      = $slugInput !== '' ? bdst_slugify($slugInput) : bdst_slugify($title);
@@ -179,7 +228,7 @@ $excerpt     = $post['excerpt'] ?? '';
 $content     = $post['content'] ?? '';
 $status      = $post['status'] ?? 'draft';
 $publishedAt = $post['published_at'] ?? '';
-$imagePath   = $post['image_path'] ?? '';
+$existingImages = $post !== null ? bdst_images_from((string) ($post['image_path'] ?? '')) : [];
 
 $flash = bdst_flash_consume();
 ?>
@@ -246,7 +295,6 @@ $flash = bdst_flash_consume();
         <form method="post" action="post.php<?= $isEdit ? '?id=' . $id : '' ?>" enctype="multipart/form-data">
             <input type="hidden" name="csrf" value="<?= bdst_e(bdst_csrf_token()) ?>">
             <input type="hidden" name="id" value="<?= (int) $id ?>">
-            <input type="hidden" name="existing_image" value="<?= bdst_e($imagePath) ?>">
 
             <div class="grid">
                 <div class="panel col-main">
@@ -289,22 +337,27 @@ $flash = bdst_flash_consume();
 
                     <hr class="divider">
 
-                    <h3 class="panel-title">Featured Image</h3>
+                    <h3 class="panel-title">Images</h3>
+                    <p class="hint">Upload one or more images. The first image is used as the cover.</p>
 
-                    <?php if ($imagePath !== ''): ?>
-                        <div class="preview-img">
-                            <img src="../<?= bdst_e($imagePath) ?>" alt="Current image">
+                    <?php if ($existingImages): ?>
+                        <div class="image-list">
+                            <?php foreach ($existingImages as $index => $img): ?>
+                                <div class="image-list__item">
+                                    <img src="../<?= bdst_e($img) ?>" alt="Image <?= (int) $index + 1 ?>">
+                                    <label class="checkbox">
+                                        <input type="checkbox" name="remove_images[]" value="<?= (int) $index ?>">
+                                        <span>Remove</span>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <label class="checkbox">
-                            <input type="checkbox" name="remove_image" value="1">
-                            <span>Remove current image</span>
-                        </label>
                     <?php endif; ?>
 
                     <div class="field">
-                        <label for="image"><?= $imagePath !== '' ? 'Replace Image' : 'Upload Image' ?></label>
-                        <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
-                        <p class="hint">JPG, PNG, WEBP or GIF. Max 2 MB.</p>
+                        <label for="images"><?= $existingImages ? 'Add More Images' : 'Upload Images' ?></label>
+                        <input type="file" id="images" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif">
+                        <p class="hint">Hold Ctrl/Cmd to select several. JPG, PNG, WEBP or GIF. Max 2 MB each.</p>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block"><?= $isEdit ? 'Save Changes' : 'Create Update' ?></button>
