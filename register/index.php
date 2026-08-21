@@ -23,10 +23,11 @@ $old = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Honeypot: real users never fill this hidden field.
-    if (!empty($_POST['website'])) {
-        header('Location: ../index.html');
-        exit;
+    // Honeypot: real users never fill this hidden field (bots do).
+    // Humans who trip it (e.g. aggressive autofill) get the normal error
+    // path so they are never silently bounced to another page.
+    if (!empty($_POST['hc_token'])) {
+        $errors[] = 'Your submission could not be verified. Please clear the form and try again.';
     }
 
     if (!hash_equals($_SESSION['reg_csrf'], (string) ($_POST['csrf'] ?? ''))) {
@@ -242,7 +243,7 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
         <form id="regForm" class="reg-form" method="post" action="index.php" enctype="multipart/form-data" autocomplete="on" novalidate>
             <input type="hidden" name="csrf" value="<?= reg_e($_SESSION['reg_csrf']) ?>">
             <input type="hidden" name="form_time" value="<?= time() ?>">
-            <input type="text" name="website" value="" tabindex="-1" aria-hidden="true" class="reg-hp">
+            <input type="text" name="hc_token" value="" tabindex="-1" autocomplete="off" aria-hidden="true" class="reg-hp">
 
             <div class="reg-form-head">
                 <div>

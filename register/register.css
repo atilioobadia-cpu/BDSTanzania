@@ -967,6 +967,60 @@ select.reg-control {
 }
 
 /* ------------------------------------------------------------------
+   Confirmation popup (success.php)
+------------------------------------------------------------------ */
+.reg-modal {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 440px;
+    width: calc(100% - 32px);
+    box-shadow: 0 24px 70px rgba(12, 30, 33, 0.35);
+}
+
+.reg-modal::backdrop {
+    background: rgba(12, 30, 33, 0.55);
+}
+
+.reg-modal-box {
+    position: relative;
+    padding: 38px 30px 30px;
+    text-align: center;
+    font-family: inherit;
+}
+
+.reg-modal-box h3 {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--reg-ink);
+    margin: 0 0 10px;
+}
+
+.reg-modal-box p {
+    color: var(--reg-body);
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0 0 18px;
+}
+
+.reg-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--reg-muted);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.reg-modal-close:hover {
+    color: var(--reg-ink);
+}
+
+/* ------------------------------------------------------------------
    Responsive
 ------------------------------------------------------------------ */
 @media (max-width: 991px) {

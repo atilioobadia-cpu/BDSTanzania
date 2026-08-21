@@ -66,6 +66,39 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                     </a>
                 </div>
             </div>
+
+            <dialog id="regConfirmModal" class="reg-modal">
+                <div class="reg-modal-box">
+                    <button type="button" class="reg-modal-close" id="regModalClose" aria-label="Close">&times;</button>
+                    <span class="reg-panel-icon ok"><i class="fa-solid fa-check"></i></span>
+                    <h3>Registration Received!</h3>
+                    <p>
+                        Thank you, <strong><?= htmlspecialchars($reg['full_name'], ENT_QUOTES, 'UTF-8') ?></strong>.
+                        Your application has been submitted successfully. Keep your reference number safe —
+                        you can use it at any time to check your registration status.
+                    </p>
+                    <div class="reg-ref-box">
+                        <small>Reference Number</small>
+                        <strong><?= htmlspecialchars($reg['reference_no'], ENT_QUOTES, 'UTF-8') ?></strong>
+                    </div>
+                    <div class="reg-actions">
+                        <a class="reg-btn reg-btn-primary" href="check.php?ref=<?= urlencode($reg['reference_no']) ?>&email=<?= urlencode($reg['email']) ?>">Check Status</a>
+                        <button type="button" class="reg-btn reg-btn-outline" id="regModalOk">Continue</button>
+                    </div>
+                </div>
+            </dialog>
+            <script>
+                (function () {
+                    var m = document.getElementById('regConfirmModal');
+                    if (!m || sessionStorage.getItem('regModalShown')) {
+                        return;
+                    }
+                    sessionStorage.setItem('regModalShown', '1');
+                    m.showModal();
+                    document.getElementById('regModalOk').addEventListener('click', function () { m.close(); });
+                    document.getElementById('regModalClose').addEventListener('click', function () { m.close(); });
+                })();
+            </script>
         <?php else: ?>
             <div class="reg-panel wow fadeInUp" data-wow-delay=".1s">
                 <span class="reg-panel-icon info"><i class="fa-solid fa-circle-info"></i></span>
