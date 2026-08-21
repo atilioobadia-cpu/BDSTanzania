@@ -209,17 +209,22 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
     <div class="container">
 
         <div class="reg-intro">
-            <h1>BDS Tanzania Membership Registration</h1>
+            <h1>BDS Tanzania Member Registration Form</h1>
             <p>
-                Thank you for your interest in joining BDS Tanzania, the national association of business development
-                service professionals. This form collects your professional profile ??? expertise, experience, sector
-                specialization and geographic coverage ??? so the Secretariat can review your eligibility and determine
-                the right membership category for you.
+                Thank you for your interest in joining BDS Tanzania, a fully registered association for business
+                development service professionals in Tanzania. This form is designed to collect essential professional
+                information about prospective members, including their areas of expertise, experience, sector
+                specialization and geographic coverage. The information provided will help the association build a
+                reliable and structured database of business development service providers, support networking among
+                professionals and facilitate the effective deployment of members in various programs, partnerships
+                and advisory initiatives.
             </p>
             <p>
-                All information you provide is treated with strict confidentiality and used only for legitimate
-                association purposes such as member profiling, program coordination and professional engagement within
-                the BDS Tanzania network.
+                Please be assured that all personal and professional information collected through this form will be
+                handled with the highest level of confidentiality and professionalism. The data will be used strictly
+                for legitimate association purposes such as member profiling, coordination of activities, professional
+                engagement and communication within the BDS Tanzania network. The association is committed to ethical
+                data management and will not share or use your information for any unauthorized or unrelated purposes.
             </p>
         </div>
 
