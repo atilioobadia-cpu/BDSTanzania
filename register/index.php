@@ -162,7 +162,7 @@ function reg_chip(string $name, string $value, string $checked, string $reveal =
     if ($reveal !== '') {
         echo ' data-reveal="' . reg_e($reveal) . '"';
     }
-    echo '><span><span class="reg-box" aria-hidden="true"></span>' . reg_e($value) . '</span></label>';
+    echo '><span>' . reg_e($value) . '</span></label>';
 }
 
 /**
@@ -177,7 +177,7 @@ function reg_choice(string $name, string $value, string $checked, array $old, st
     } else {
         echo ' data-clear="' . reg_e($name) . '-other"';
     }
-        echo '><span><span class="reg-box" aria-hidden="true"></span>' . reg_e($value) . '</span></label>';
+        echo '><span>' . reg_e($value) . '</span></label>';
 }
 
 /** Section heading inside the single card. */
@@ -279,8 +279,8 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                             <span class="reg-label-main">Gender <span class="reg-req">*</span></span>
                         </span>
                         <div class="reg-chip-row">
-                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-mars"></i> Male</span></label>
-                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-venus"></i> Female</span></label>
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><i class="fa-solid fa-mars"></i> Male</span></label>
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><i class="fa-solid fa-venus"></i> Female</span></label>
                         </div>
                     </div>
                 </div>
@@ -483,11 +483,11 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 <div class="reg-chip-row">
                     <label class="reg-chip reg-choice">
                         <input type="radio" name="has_certification" value="yes"<?= reg_pill_checked($old, 'has_certification', 'yes') ?> data-cert-toggle required>
-                        <span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-circle-check"></i> Yes</span>
+                        <span><i class="fa-solid fa-circle-check"></i> Yes</span>
                     </label>
                     <label class="reg-chip reg-choice">
                         <input type="radio" name="has_certification" value="no"<?= reg_pill_checked($old, 'has_certification', 'no') ?> data-cert-toggle>
-                        <span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-circle-xmark"></i> No</span>
+                        <span><i class="fa-solid fa-circle-xmark"></i> No</span>
                     </label>
                 </div>
             </div>
