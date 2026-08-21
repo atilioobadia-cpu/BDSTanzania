@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/auth.php';
+require __DIR__ . '/_sidebar.php';
 bdst_require_login();
 
 $pdo = null;
@@ -245,31 +246,7 @@ $flash = bdst_flash_consume();
     <link rel="stylesheet" href="admin.css">
 </head>
 <body class="admin-body">
-    <aside class="sidebar">
-        <a class="sidebar-brand" href="dashboard.php">
-            <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania" height="34">
-        </a>
-        <nav class="sidebar-nav">
-            <a class="nav-link" href="dashboard.php">
-                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span>
-                <span>Dashboard</span>
-            </a>
-            <a class="nav-link active" href="post.php">
-                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
-                <span>New Update</span>
-            </a>
-        </nav>
-        <div class="sidebar-foot">
-            <a class="nav-link" href="../index.html" target="_blank" rel="noopener">
-                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
-                <span>View Site</span>
-            </a>
-            <a class="nav-link" href="logout.php">
-                <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                <span>Log Out</span>
-            </a>
-        </div>
-    </aside>
+<?php bdst_admin_sidebar('new-update'); ?>
 
     <main class="main">
         <header class="topbar">

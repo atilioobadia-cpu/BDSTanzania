@@ -1,0 +1,567 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * BDS Tanzania — shared themed layout for the /register/ area.
+ *
+ * Every public registration page calls:
+ *   bdst_reg_page_start($title, $metaDescription, $crumbLabel, $extraHead);
+ *   ...page content...
+ *   bdst_reg_page_end();
+ *
+ * Markup mirrors the static Bexon-based pages one level up, with all
+ * asset/link paths prefixed "../".
+ */
+
+function bdst_reg_page_start(
+    string $title,
+    string $metaDescription,
+    string $crumbLabel,
+    string $extraHead = ''
+): void {
+    $siteUrl      = 'https://www.bdst.or.tz';
+    $eTitle       = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+    $eDesc        = htmlspecialchars($metaDescription, ENT_QUOTES, 'UTF-8');
+    $eCrumb       = htmlspecialchars($crumbLabel, ENT_QUOTES, 'UTF-8');
+    $canonical    = $siteUrl . '/register/' . basename($_SERVER['PHP_SELF']);
+    ?>
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="<?= $eDesc ?>">
+    <meta name="author" content="BDS Tanzania">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<?= htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8') ?>">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= $eTitle ?>">
+    <meta property="og:description" content="<?= $eDesc ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:site_name" content="BDS Tanzania">
+    <meta property="og:image" content="<?= $siteUrl ?>/assets/images/logos/logo.webp">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= $eTitle ?>">
+    <meta name="twitter:description" content="<?= $eDesc ?>">
+    <meta name="twitter:image" content="<?= $siteUrl ?>/assets/images/logos/logo.webp">
+
+    <title><?= $eTitle ?></title>
+
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/images/fav.png">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/font-awesome-pro.min.css">
+    <link rel="stylesheet" href="../assets/css/animate.min.css">
+    <link rel="stylesheet" href="../assets/css/bexon-icons.css">
+    <link rel="stylesheet" href="../assets/css/meanmenu.css">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="register.css">
+<?= $extraHead ?>
+</head>
+
+<body>
+    <div class="body-overlay"></div>
+
+    <!-- Back to top -->
+    <div class="back-to-top-wrapper">
+        <button id="back_to_top" type="button" class="back-to-top-btn" aria-label="Back to top">
+            <span><i class="tji-arrow-up-long"></i></span>
+        </button>
+    </div>
+
+    <!-- Search Popup -->
+    <div class="search-popup-overlay"></div>
+
+    <!-- Offcanvas Menu -->
+    <div class="tj-offcanvas-area d-none d-lg-block">
+        <div class="hamburger_bg"></div>
+        <div class="hamburger_wrapper">
+            <div class="hamburger_inner">
+                <div class="hamburger_top d-flex align-items-center justify-content-between">
+                    <div class="hamburger_logo">
+                        <a href="../index.html" class="mobile_logo">
+                            <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania Logo">
+                        </a>
+                    </div>
+                    <div class="hamburger_close">
+                        <button class="hamburger_close_btn" type="button" aria-label="Close menu"><i class="fa-thin fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="offcanvas-text">
+                    <p>Tanzania's national professional home for business development service providers; setting standards, building capacity, powering enterprise growth.</p>
+                </div>
+
+                <div class="hamburger-search-area">
+                    <h5 class="hamburger-title">Search BDS Tanzania</h5>
+                    <div class="hamburger_search">
+                        <form method="get" action="../updates.html">
+                            <button type="submit" aria-label="Search"><i class="tji-search"></i></button>
+                            <input type="search" autocomplete="off" name="s" placeholder="Search updates, services, membership...">
+                        </form>
+                    </div>
+                </div>
+
+                <div class="hamburger-infos">
+                    <h5 class="hamburger-title">Contact Information</h5>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="subtitle">Phone</span>
+                            <a class="contact-link" href="tel:+255655211777">+255655211777</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="subtitle">Email</span>
+                            <a class="contact-link" href="mailto:info@bdst.or.tz">info@bdst.or.tz</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="subtitle">Location</span>
+                            <span class="contact-link">Dodoma, Tanzania</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hamburger-socials">
+                <h5 class="hamburger-title">Follow BDS Tanzania</h5>
+                <div class="social-links style-3">
+                    <ul>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Hamburger Menu -->
+    <div class="hamburger-area d-lg-none">
+        <div class="hamburger_bg"></div>
+        <div class="hamburger_wrapper">
+            <div class="hamburger_inner">
+                <div class="hamburger_top d-flex align-items-center justify-content-between">
+                    <div class="hamburger_logo">
+                        <a href="../index.html" class="mobile_logo">
+                            <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania Logo">
+                        </a>
+                    </div>
+                    <div class="hamburger_close">
+                        <button class="hamburger_close_btn" type="button" aria-label="Close menu"><i class="fa-thin fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="hamburger_menu">
+                    <div class="mobile_menu"></div>
+                </div>
+
+                <div class="hamburger-infos">
+                    <h5 class="hamburger-title">Contact Information</h5>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="subtitle">Phone</span>
+                            <a class="contact-link" href="tel:+255655211777">+255655211777</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="subtitle">Email</span>
+                            <a class="contact-link" href="mailto:info@bdst.or.tz">info@bdst.or.tz</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="subtitle">Location</span>
+                            <span class="contact-link">Dodoma, Tanzania</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hamburger-socials">
+                <h5 class="hamburger-title">Follow BDS Tanzania</h5>
+                <div class="social-links style-3">
+                    <ul>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+                        <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header-area header-1 section-gap-x">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="header-wrapper">
+                        <div class="site_logo">
+                            <a class="logo" href="../index.html">
+                                <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania Logo">
+                            </a>
+                        </div>
+
+                        <div class="menu-area d-none d-lg-inline-flex align-items-center">
+                            <nav id="mobile-menu" class="mainmenu">
+                                <ul>
+                                    <li><a href="../index.html">Home</a></li>
+                                    <li class="has-dropdown">
+                                        <a href="#">About</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../about.html">About BDS Tanzania</a></li>
+                                            <li><a href="../leadership.html">Leadership</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Services</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../business-advisory-support.html">Business Advisory Support</a></li>
+                                            <li><a href="../capacity-building.html">Capacity Building</a></li>
+                                            <li><a href="../sme-support.html">SME Support</a></li>
+                                            <li><a href="../professional-development.html">Professional Development</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Membership</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../why-join.html">Why Join</a></li>
+                                            <li><a href="../membership-benefits.html">Membership Benefits</a></li>
+                                            <li><a href="../how-to-join.html">How to Join</a></li>
+                                            <li><a href="index.php">Become a Member</a></li>
+                                            <li><a href="members.php">Member Directory</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Updates</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../updates.html">Latest Updates</a></li>
+                                            <li><a href="../gallery.html">Gallery</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="../contact.html">Contact Us</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+
+                        <div class="header-right-item d-none d-lg-inline-flex">
+                            <a class="header-contact d-none d-xl-inline-flex" href="tel:+255655211777">
+                                <span class="call-icon"><i class="tji-phone"></i></span>
+                                <span class="call-text">+255655211777</span>
+                            </a>
+                            <div class="header-button">
+                                <a class="tj-primary-btn" href="index.php">
+                                    <span class="btn-text"><span>Become a Member</span></span>
+                                    <span class="btn-icon"><i class="tji-arrow-right-long"></i></span>
+                                </a>
+                            </div>
+                            <div class="menu_bar menu_offcanvas d-none d-lg-inline-flex">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div class="menu_bar mobile_menu_bar d-lg-none">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search_popup">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        <div class="tj_search_wrapper">
+                            <div class="search_form">
+                                <form action="../updates.html" method="get">
+                                    <div class="search_input">
+                                        <div class="search-box">
+                                            <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
+                                            <button type="submit" aria-label="Search">
+                                                <i class="tji-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sticky Header -->
+    <header class="header-area header-1 header-duplicate header-sticky section-gap-x">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="header-wrapper">
+                        <div class="site_logo">
+                            <a class="logo" href="../index.html">
+                                <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania Logo">
+                            </a>
+                        </div>
+
+                        <div class="menu-area d-none d-lg-inline-flex align-items-center">
+                            <nav class="mainmenu">
+                                <ul>
+                                    <li><a href="../index.html">Home</a></li>
+                                    <li class="has-dropdown">
+                                        <a href="#">About</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../about.html">About BDS Tanzania</a></li>
+                                            <li><a href="../leadership.html">Leadership</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Services</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../business-advisory-support.html">Business Advisory Support</a></li>
+                                            <li><a href="../capacity-building.html">Capacity Building</a></li>
+                                            <li><a href="../sme-support.html">SME Support</a></li>
+                                            <li><a href="../professional-development.html">Professional Development</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Membership</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../why-join.html">Why Join</a></li>
+                                            <li><a href="../membership-benefits.html">Membership Benefits</a></li>
+                                            <li><a href="../how-to-join.html">How to Join</a></li>
+                                            <li><a href="index.php">Become a Member</a></li>
+                                            <li><a href="members.php">Member Directory</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="has-dropdown">
+                                        <a href="#">Updates</a>
+                                        <ul class="sub-menu">
+                                            <li><a href="../updates.html">Latest Updates</a></li>
+                                            <li><a href="../gallery.html">Gallery</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="../contact.html">Contact Us</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+
+                        <div class="header-right-item d-none d-lg-inline-flex">
+                            <div class="header-search">
+                                <button class="search" type="button" aria-label="Open search">
+                                    <i class="tji-search"></i>
+                                </button>
+                                <button type="button" class="search_close_btn" aria-label="Close search">
+                                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17 1L1 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M1 1L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="header-button">
+                                <a class="tj-primary-btn" href="index.php">
+                                    <span class="btn-text"><span>Become a Member</span></span>
+                                    <span class="btn-icon"><i class="tji-arrow-right-long"></i></span>
+                                </a>
+                            </div>
+                            <div class="menu_bar menu_offcanvas d-none d-lg-inline-flex">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div class="menu_bar mobile_menu_bar d-lg-none">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search_popup">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        <div class="tj_search_wrapper">
+                            <div class="search_form">
+                                <form action="../updates.html" method="get">
+                                    <div class="search_input">
+                                        <div class="search-box">
+                                            <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
+                                            <button type="submit" aria-label="Search">
+                                                <i class="tji-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="primary" class="site-main">
+        <div class="space-for-header"></div>
+
+        <!-- Breadcrumb Section -->
+        <section class="tj-page-header section-gap-x" data-bg-image="../assets/images/bg/1.jpg">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="tj-page-header-content text-center">
+                            <h1 class="tj-page-title"><?= $eCrumb ?></h1>
+                            <div class="tj-page-link">
+                                <span><i class="tji-home"></i></span>
+                                <span><a href="../index.html">Home</a></span>
+                                <span><i class="tji-arrow-right"></i></span>
+                                <span><span><?= $eCrumb ?></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-header-overlay" data-bg-image="../assets/images/shape/pheader-overlay.jpg"></div>
+        </section>
+    <?php
+}
+
+function bdst_reg_page_end(): void
+{
+    ?>
+        <!-- Footer -->
+        <footer class="tj-footer-section footer-4 section-gap-x">
+            <div class="footer-top">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6">
+                            <div class="footer-cta"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-main-area">
+                    <div class="container">
+                        <div class="row justify-content-between">
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="footer-widget wow fadeInUp" data-wow-delay=".1s">
+                                    <h5 class="title">About BDS Tanzania</h5>
+                                    <div class="footer-text">
+                                        <p>BDS Tanzania (the Business Development Society of Tanzania) is the national professional association uniting business development service providers, enterprise advisors and institutional partners to promote standards,
+                                            capacity building, advocacy and practical enterprise support for inclusive economic growth in Tanzania.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="footer-widget footer-col-2 widget-nav-menu wow fadeInUp" data-wow-delay=".3s">
+                                    <h5 class="title">Our Programme Areas</h5>
+                                    <ul>
+                                        <li><a href="../business-advisory-support.html">Business Advisory Support</a></li>
+                                        <li><a href="../capacity-building.html">Capacity Building</a></li>
+                                        <li><a href="../sme-support.html">SME Support</a></li>
+                                        <li><a href="../professional-development.html">Professional Development</a></li>
+                                        <li><a href="../why-join.html">Membership</a></li>
+                                        <li><a href="../contact.html">Get in Touch</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="footer-widget footer-col-3 widget-nav-menu wow fadeInUp" data-wow-delay=".5s">
+                                    <h5 class="title">Quick Links</h5>
+                                    <ul>
+                                        <li><a href="../about.html">About BDS Tanzania</a></li>
+                                        <li><a href="../leadership.html">Leadership</a></li>
+                                        <li><a href="../how-to-join.html">How to Join</a></li>
+                                        <li><a href="index.php">Become a Member</a></li>
+                                        <li><a href="members.php">Member Directory</a></li>
+                                        <li><a href="../updates.html">Updates</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="footer-widget widget-contact style-2 wow fadeInUp" data-wow-delay=".7s">
+                                    <h5 class="title">Contact Us</h5>
+                                    <div class="footer-contact-info">
+                                        <div class="contact-item">
+                                            <span><i class="tji-location"></i> Dodoma, Tanzania</span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span><i class="tji-phone"></i> <a href="tel:+255655211777">+255655211777</a></span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span><i class="tji-phone"></i> <a href="tel:+255621371328">+255621371328</a></span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span><i class="fa-regular fa-envelope"></i> <a href="mailto:info@bdst.or.tz">info@bdst.or.tz</a></span>
+                                        </div>
+                                        <div class="contact-item">
+                                            <span><i class="tji-clock"></i> Monday - Saturday</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tj-copyright-area-4">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="copyright-content-area">
+                                    <div class="copyright-text">
+                                        <p>&copy; 2026 <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">BDS Tanzania</a>. All rights reserved.</p>
+                                    </div>
+
+                                    <div class="social-links style-2">
+                                        <ul>
+                                            <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                            <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a></li>
+                                            <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+                                            <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="copyright-menu">
+                                        <ul>
+                                            <li><a href="../privacy-policy.html">Privacy Policy</a></li>
+                                            <li><a href="../terms-and-conditions.html">Terms &amp; Conditions</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- JS -->
+    <script src="../assets/js/jquery.min.js" defer></script>
+    <script src="../assets/js/bootstrap.bundle.min.js" defer></script>
+    <script src="../assets/js/wow.min.js" defer></script>
+    <script src="../assets/js/meanmenu.js" defer></script>
+    <script src="../assets/js/main.js" defer></script>
+</body>
+
+</html>
+    <?php
+}

@@ -6,6 +6,7 @@ mail-config.live.php
 .env
 .env.*
 *.local.php
+BDST_email_passwords.pdf
 
 # ------------------------------------------------------------------
 # Runtime logs (may contain personal data / SMTP debug output)
@@ -20,6 +21,9 @@ error_log
 # ------------------------------------------------------------------
 assets/images/uploads/
 uploads/
+register/uploads/*
+!register/uploads/.htaccess
+!register/uploads/.gitkeep
 tmp/
 
 # Browser-download duplicates
