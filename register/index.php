@@ -17,7 +17,7 @@ $old = [
     'region' => '', 'district' => '', 'professional_status' => '', 'professional_status_other' => '',
     'firm_name' => '', 'experience_years' => '', 'education' => '', 'education_other' => '',
     'service_areas' => [], 'service_areas_other' => '', 'industries' => [], 'industries_other' => '',
-    'client_segments' => [], 'client_segments_other' => '', 'clients_served' => '',
+    'client_segments' => '', 'client_segments_other' => '', 'clients_served' => '',
     'service_nature' => [], 'service_nature_other' => '', 'has_certification' => '',
     'certifications' => [], 'certifications_other' => '', 'zones' => [], 'declaration' => 0,
 ];
@@ -153,16 +153,43 @@ function reg_chip_checked(array $old, string $key, string $value): string
 }
 
 /**
- * Render one styled checkbox chip.
+ * Render one styled multi-select chip.
  */
 function reg_chip(string $name, string $value, string $checked, string $reveal = ''): void
 {
-    echo '<label class="reg-pill reg-chip">';
+    echo '<label class="reg-chip">';
     echo '<input type="checkbox" name="' . reg_e($name) . '[]" value="' . reg_e($value) . '"' . $checked;
     if ($reveal !== '') {
         echo ' data-reveal="' . reg_e($reveal) . '"';
     }
     echo '><span>' . reg_e($value) . '</span></label>';
+}
+
+/**
+ * Render one single-choice pill (radio).
+ */
+function reg_choice(string $name, string $value, string $checked, array $old, string $key, string $reveal = ''): void
+{
+    echo '<label class="reg-chip reg-choice">';
+    echo '<input type="radio" name="' . reg_e($name) . '" value="' . reg_e($value) . '"' . $checked;
+    if ($reveal !== '') {
+        echo ' data-reveal="' . reg_e($reveal) . '"';
+    } else {
+        echo ' data-clear="' . reg_e($name) . '-other"';
+    }
+    echo '><span>' . reg_e($value) . '</span></label>';
+}
+
+/** Section heading inside the single card. */
+function reg_section(string $num, string $title, string $sub = ''): void
+{
+    echo '<div class="reg-sec">';
+    echo '<span class="reg-sec-num">' . reg_e($num) . '</span>';
+    echo '<div class="reg-sec-text"><h3>' . reg_e($title) . '</h3>';
+    if ($sub !== '') {
+        echo '<p>' . reg_e($sub) . '</p>';
+    }
+    echo '</div></div>';
 }
 
 $metaDescription = 'Register as a member of BDS Tanzania - the national association of business development service providers. Submit your professional profile, expertise and CV online.';
@@ -177,402 +204,324 @@ $extraHead = ob_get_clean();
 bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDescription, 'Member Registration', $extraHead);
 ?>
 
-<!-- Registration Section -->
-<section class="tj-blog-section section-gap">
+<!-- Registration -->
+<section class="reg-section">
     <div class="container">
-        <div class="reg-intro wow fadeInUp" data-wow-delay=".1s">
-            <h2 class="title" style="font-size:30px;font-weight:800;color:#0c1e21;margin-bottom:18px;">
-                BDS Tanzania Member Registration Form
-            </h2>
+
+        <div class="reg-intro">
+            <h1>BDS Tanzania Membership Registration</h1>
             <p>
-                Thank you for your interest in joining BDS Tanzania, a fully registered association for business
-                development service professionals in Tanzania. This form collects essential professional information
-                about prospective members, including areas of expertise, experience, sector specialization and
-                geographic coverage. The information provided helps the association build a reliable and structured
-                database of business development service providers, support networking among professionals and
-                facilitate the effective deployment of members in various programs, partnerships and advisory
-                initiatives.
+                Thank you for your interest in joining BDS Tanzania, the national association of business development
+                service professionals. This form collects your professional profile — expertise, experience, sector
+                specialization and geographic coverage — so the Secretariat can review your eligibility and determine
+                the right membership category for you.
             </p>
             <p>
-                Please be assured that all personal and professional information collected through this form will be
-                handled with the highest level of confidentiality and professionalism. The data will be used strictly
-                for legitimate association purposes such as member profiling, coordination of activities, professional
-                engagement and communication within the BDS Tanzania network. The association is committed to ethical
-                data management and will not share or use your information for any unauthorized or unrelated purposes.
+                All information you provide is treated with strict confidentiality and used only for legitimate
+                association purposes such as member profiling, program coordination and professional engagement within
+                the BDS Tanzania network.
             </p>
-            <span class="reg-confidential"><i class="fa-solid fa-shield-halved"></i> Your information is kept confidential</span>
         </div>
 
-        <div class="reg-form-shell">
-            <?php if ($errors !== []): ?>
-                <div class="reg-alert reg-alert-error wow fadeInUp" role="alert">
-                    <strong><i class="fa-solid fa-circle-exclamation"></i> Please correct the following:</strong>
-                    <ul>
-                        <?php foreach (array_unique($errors) as $error): ?>
-                            <li><?= reg_e($error) ?></li>
+        <?php if ($errors !== []): ?>
+            <div class="reg-alert reg-alert-error" role="alert">
+                <strong><i class="fa-solid fa-circle-exclamation"></i> Please correct the following:</strong>
+                <ul>
+                    <?php foreach (array_unique($errors) as $error): ?>
+                        <li><?= reg_e($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <form id="regForm" class="reg-form" method="post" action="index.php" enctype="multipart/form-data" autocomplete="on" novalidate>
+            <input type="hidden" name="csrf" value="<?= reg_e($_SESSION['reg_csrf']) ?>">
+            <input type="hidden" name="form_time" value="<?= time() ?>">
+            <input type="text" name="website" value="" tabindex="-1" aria-hidden="true" class="reg-hp">
+
+            <div class="reg-form-head">
+                <div>
+                    <h2>Registration Form</h2>
+                    <p>Fields marked <span class="reg-req">*</span> are required.</p>
+                </div>
+            </div>
+
+            <?php reg_section('01', 'Personal Information', 'Tell us who you are and how we can reach you.'); ?>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="full_name">Full Name <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="text" id="full_name" name="full_name" maxlength="150"
+                               placeholder="e.g. Amina Juma Mwakalinga" required
+                               value="<?= reg_old($old, 'full_name') ?>">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="phone">Phone Number <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="tel" id="phone" name="phone" maxlength="20"
+                               placeholder="e.g. +255 712 345 678" required
+                               value="<?= reg_old($old, 'phone') ?>">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="email">Email Address <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="email" id="email" name="email" maxlength="150"
+                               placeholder="you@example.com" required
+                               value="<?= reg_old($old, 'email') ?>">
+                        <small class="reg-hint">Your registration confirmation will be sent here.</small>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="reg-field">
+                        <span class="reg-label">Gender <span class="reg-req">*</span></span>
+                        <div class="reg-chip-row">
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><i class="fa-solid fa-mars"></i> Male</span></label>
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><i class="fa-solid fa-venus"></i> Female</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="age_group">Age Group <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="age_group" name="age_group" required>
+                            <option value="">Select...</option>
+                            <?php foreach (bdst_age_groups() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'age_group', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <?php reg_section('02', 'Location', 'Where you are based in Tanzania.'); ?>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="region">Region <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="region" name="region" required>
+                            <option value="">Select region...</option>
+                            <?php foreach (bdst_regions() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'region', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="district">District <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="text" id="district" name="district" maxlength="80"
+                               placeholder="e.g. Ilala" required
+                               value="<?= reg_old($old, 'district') ?>">
+                    </div>
+                </div>
+            </div>
+
+            <?php reg_section('03', 'Professional Background', 'Your current professional standing and experience.'); ?>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="professional_status">Current Professional Status <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="professional_status" name="professional_status"
+                                data-other-target="wrap-professional_status_other" required>
+                            <option value="">Select status...</option>
+                            <?php foreach (bdst_professional_statuses() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'professional_status', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="reg-other-wrap" id="wrap-professional_status_other">
+                        <label class="reg-label" for="professional_status_other">Specify Your Status <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="text" id="professional_status_other"
+                               name="professional_status_other" maxlength="100"
+                               placeholder="Describe your professional status"
+                               value="<?= reg_old($old, 'professional_status_other') ?>">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="firm_name">Firm / Organization Name <span class="reg-opt">(if you operate in a firm)</span></label>
+                        <input class="reg-control" type="text" id="firm_name" name="firm_name" maxlength="150"
+                               placeholder="e.g. Bright Advisory Ltd"
+                               value="<?= reg_old($old, 'firm_name') ?>">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="experience_years">Years of Experience in Business Advisory / Consulting <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="experience_years" name="experience_years" required>
+                            <option value="">Select...</option>
+                            <?php foreach (bdst_experience_levels() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'experience_years', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="clients_served">Clients Served in the Past 3 Years <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="clients_served" name="clients_served" required>
+                            <option value="">Select...</option>
+                            <?php foreach (bdst_clients_served() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'clients_served', $opt) ?>><?= reg_e(bdst_clients_served_label($opt)) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reg-field">
+                        <label class="reg-label" for="education">Highest Education Level <span class="reg-req">*</span></label>
+                        <select class="reg-control" id="education" name="education"
+                                data-other-target="wrap-education_other" required>
+                            <option value="">Select...</option>
+                            <?php foreach (bdst_education_levels() as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'education', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="reg-other-wrap" id="wrap-education_other">
+                        <label class="reg-label" for="education_other">Specify Your Education <span class="reg-req">*</span></label>
+                        <input class="reg-control" type="text" id="education_other"
+                               name="education_other" maxlength="100"
+                               placeholder="Describe your highest qualification"
+                               value="<?= reg_old($old, 'education_other') ?>">
+                    </div>
+                </div>
+            </div>
+
+            <?php reg_section('04', 'Expertise & Services', 'Select all options that apply to you.'); ?>
+            <div class="reg-field">
+                <span class="reg-label">Primary BDS Service Areas <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <div class="reg-chip-grid">
+                    <?php foreach (bdst_service_areas() as $opt): ?>
+                        <?php reg_chip('service_areas', $opt, reg_chip_checked($old, 'service_areas', $opt)); ?>
+                    <?php endforeach; ?>
+                    <?php reg_chip('service_areas', 'Other', reg_chip_checked($old, 'service_areas', 'Other'), 'wrap-service_areas_other'); ?>
+                </div>
+                <div class="reg-other-wrap" id="wrap-service_areas_other">
+                    <input class="reg-control" type="text" name="service_areas_other" maxlength="100"
+                           placeholder="Specify other service areas"
+                           value="<?= reg_old($old, 'service_areas_other') ?>">
+                </div>
+            </div>
+
+            <div class="reg-field">
+                <span class="reg-label">Industries You Have Experience Serving <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <div class="reg-chip-grid">
+                    <?php foreach (bdst_industries() as $opt): ?>
+                        <?php reg_chip('industries', $opt, reg_chip_checked($old, 'industries', $opt)); ?>
+                    <?php endforeach; ?>
+                    <?php reg_chip('industries', 'Other', reg_chip_checked($old, 'industries', 'Other'), 'wrap-industries_other'); ?>
+                </div>
+                <div class="reg-other-wrap" id="wrap-industries_other">
+                    <input class="reg-control" type="text" name="industries_other" maxlength="100"
+                           placeholder="Specify other industries"
+                           value="<?= reg_old($old, 'industries_other') ?>">
+                </div>
+            </div>
+
+            <div class="reg-field">
+                <span class="reg-label">Client Segment You Mostly Serve <span class="reg-req">*</span> <span class="reg-opt">(select one)</span></span>
+                <div class="reg-chip-grid">
+                    <?php foreach (bdst_client_segments() as $opt): ?>
+                        <?php reg_choice('client_segments', $opt, reg_pill_checked($old, 'client_segments', $opt), $old, 'client_segments'); ?>
+                    <?php endforeach; ?>
+                    <?php reg_choice('client_segments', 'Other', reg_pill_checked($old, 'client_segments', 'Other'), $old, 'client_segments', 'wrap-client_segments_other'); ?>
+                </div>
+                <div class="reg-other-wrap" id="wrap-client_segments_other">
+                    <input class="reg-control" type="text" name="client_segments_other" maxlength="100"
+                           placeholder="Describe your client segment"
+                           value="<?= reg_old($old, 'client_segments_other') ?>">
+                </div>
+            </div>
+
+            <div class="reg-field">
+                <span class="reg-label">Nature of Services You Mostly Deliver <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <div class="reg-chip-grid">
+                    <?php foreach (bdst_service_natures() as $opt): ?>
+                        <?php reg_chip('service_nature', $opt, reg_chip_checked($old, 'service_nature', $opt)); ?>
+                    <?php endforeach; ?>
+                    <?php reg_chip('service_nature', 'Other', reg_chip_checked($old, 'service_nature', 'Other'), 'wrap-service_nature_other'); ?>
+                </div>
+                <div class="reg-other-wrap" id="wrap-service_nature_other">
+                    <input class="reg-control" type="text" name="service_nature_other" maxlength="100"
+                           placeholder="Specify other services"
+                           value="<?= reg_old($old, 'service_nature_other') ?>">
+                </div>
+            </div>
+
+            <?php reg_section('05', 'Professional Certifications', 'Do you hold any professional certifications?'); ?>
+            <div class="reg-field">
+                <div class="reg-chip-row">
+                    <label class="reg-chip reg-choice">
+                        <input type="radio" name="has_certification" value="yes"<?= reg_pill_checked($old, 'has_certification', 'yes') ?> data-cert-toggle required>
+                        <span><i class="fa-solid fa-circle-check"></i> Yes</span>
+                    </label>
+                    <label class="reg-chip reg-choice">
+                        <input type="radio" name="has_certification" value="no"<?= reg_pill_checked($old, 'has_certification', 'no') ?> data-cert-toggle>
+                        <span><i class="fa-solid fa-circle-xmark"></i> No</span>
+                    </label>
+                </div>
+            </div>
+            <div id="cert-block" class="reg-cert-block">
+                <div class="reg-field">
+                    <span class="reg-label">Type of Certification <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                    <div class="reg-chip-grid">
+                        <?php foreach (bdst_certification_types() as $opt): ?>
+                            <?php reg_chip('certifications', $opt, reg_chip_checked($old, 'certifications', $opt)); ?>
                         <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <form id="regForm" method="post" action="index.php" enctype="multipart/form-data" autocomplete="on">
-                <input type="hidden" name="csrf" value="<?= reg_e($_SESSION['reg_csrf']) ?>">
-                <input type="hidden" name="form_time" value="<?= time() ?>">
-                <input type="text" name="website" value="" tabindex="-1" aria-hidden="true" class="reg-hp">
-
-                <!-- 1. Personal Information -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".15s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">01</span>
-                        <div>
-                            <h3 class="reg-section-title">Personal Information</h3>
-                            <span class="reg-section-sub">Tell us who you are and how we can reach you.</span>
-                        </div>
+                        <?php reg_chip('certifications', 'Other', reg_chip_checked($old, 'certifications', 'Other'), 'wrap-certifications_other'); ?>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="full_name">Member Full Name <span class="reg-req">*</span></label>
-                                <input class="reg-control" type="text" id="full_name" name="full_name" maxlength="150"
-                                       placeholder="e.g. Amina Juma Mwakalinga" required
-                                       value="<?= reg_old($old, 'full_name') ?>">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="phone">Phone Number <span class="reg-req">*</span></label>
-                                <input class="reg-control" type="tel" id="phone" name="phone" maxlength="20"
-                                       placeholder="e.g. +255 712 345 678" required
-                                       value="<?= reg_old($old, 'phone') ?>">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="email">Email Address <span class="reg-req">*</span></label>
-                                <input class="reg-control" type="email" id="email" name="email" maxlength="150"
-                                       placeholder="you@example.com" required
-                                       value="<?= reg_old($old, 'email') ?>">
-                                <small style="color:#67787a;font-size:12.5px;">Your registration confirmation will be sent here.</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="reg-field">
-                                <span class="reg-label">Gender <span class="reg-req">*</span></span>
-                                <div class="reg-pills">
-                                    <label class="reg-pill">
-                                        <input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><i class="fa-solid fa-mars"></i> Male</span>
-                                    </label>
-                                    <label class="reg-pill">
-                                        <input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><i class="fa-solid fa-venus"></i> Female</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="age_group">Age Group <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="age_group" name="age_group" required>
-                                    <option value="">Select...</option>
-                                    <?php foreach (bdst_age_groups() as $group): ?>
-                                        <option value="<?= reg_e($group) ?>"<?= reg_selected($old, 'age_group', $group) ?>><?= reg_e($group) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="reg-other-wrap" id="wrap-certifications_other">
+                        <input class="reg-control" type="text" name="certifications_other" maxlength="100"
+                               placeholder="Specify other certification"
+                               value="<?= reg_old($old, 'certifications_other') ?>">
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. Location -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".2s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">02</span>
-                        <div>
-                            <h3 class="reg-section-title">Location</h3>
-                            <span class="reg-section-sub">Where you are based in Tanzania.</span>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="region">Region <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="region" name="region" required>
-                                    <option value="">Select region...</option>
-                                    <?php foreach (bdst_regions() as $regionOption): ?>
-                                        <option value="<?= reg_e($regionOption) ?>"<?= reg_selected($old, 'region', $regionOption) ?>><?= reg_e($regionOption) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="district">District <span class="reg-req">*</span></label>
-                                <input class="reg-control" type="text" id="district" name="district" maxlength="80"
-                                       placeholder="e.g. Ilala" required
-                                       value="<?= reg_old($old, 'district') ?>">
-                            </div>
-                        </div>
-                    </div>
+            <?php reg_section('06', 'Geographic Coverage', 'Zones where you can deliver services.'); ?>
+            <div class="reg-field">
+                <div class="reg-chip-grid">
+                    <?php foreach (bdst_zones() as $opt): ?>
+                        <?php reg_chip('zones', $opt, reg_chip_checked($old, 'zones', $opt)); ?>
+                    <?php endforeach; ?>
                 </div>
+            </div>
 
-                <!-- 3. Professional Background -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".25s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">03</span>
-                        <div>
-                            <h3 class="reg-section-title">Professional Background</h3>
-                            <span class="reg-section-sub">Your current professional standing and experience.</span>
-                        </div>
-                    </div>
+            <?php reg_section('07', 'Declaration & CV', 'Final step before submission.'); ?>
+            <div class="reg-field">
+                <label class="reg-declare">
+                    <input type="checkbox" name="declaration" value="1"<?= $old['declaration'] ? ' checked' : '' ?> required>
+                    <span>I hereby declare that the information provided in this form is true and correct to the best
+                        of my knowledge, and I commit to abide by the code of conduct and professional standards of
+                        BDS Tanzania. <span class="reg-req">*</span></span>
+                </label>
+            </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="professional_status">Current Professional Status <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="professional_status" name="professional_status"
-                                        data-other-target="wrap-professional_status_other" required>
-                                    <option value="">Select status...</option>
-                                    <?php foreach (bdst_professional_statuses() as $statusOption): ?>
-                                        <option value="<?= reg_e($statusOption) ?>"<?= reg_selected($old, 'professional_status', $statusOption) ?>><?= reg_e($statusOption) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="reg-field">
-                                <div class="reg-other-wrap" id="wrap-professional_status_other">
-                                    <label class="reg-label" for="professional_status_other">Specify your status <span class="reg-req">*</span></label>
-                                    <input class="reg-control" type="text" id="professional_status_other"
-                                           name="professional_status_other" maxlength="100"
-                                           placeholder="Describe your professional status"
-                                           value="<?= reg_old($old, 'professional_status_other') ?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="firm_name">Firm / Organization Name <span class="reg-opt">(if you operate in a firm)</span></label>
-                                <input class="reg-control" type="text" id="firm_name" name="firm_name" maxlength="150"
-                                       placeholder="e.g. Bright Advisory Ltd"
-                                       value="<?= reg_old($old, 'firm_name') ?>">
-                            </div>
-                            <div class="reg-field">
-                                <label class="reg-label" for="experience_years">Years of Experience in Business Advisory / Consulting <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="experience_years" name="experience_years" required>
-                                    <option value="">Select...</option>
-                                    <?php foreach (bdst_experience_levels() as $level): ?>
-                                        <option value="<?= reg_e($level) ?>"<?= reg_selected($old, 'experience_years', $level) ?>><?= reg_e($level) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="education">Highest Education Level <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="education" name="education"
-                                        data-other-target="wrap-education_other" required>
-                                    <option value="">Select...</option>
-                                    <?php foreach (bdst_education_levels() as $eduOption): ?>
-                                        <option value="<?= reg_e($eduOption) ?>"<?= reg_selected($old, 'education', $eduOption) ?>><?= reg_e($eduOption) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="reg-field">
-                                <div class="reg-other-wrap" id="wrap-education_other">
-                                    <label class="reg-label" for="education_other">Specify your education <span class="reg-req">*</span></label>
-                                    <input class="reg-control" type="text" id="education_other"
-                                           name="education_other" maxlength="100"
-                                           placeholder="Describe your highest qualification"
-                                           value="<?= reg_old($old, 'education_other') ?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="reg-field">
-                                <label class="reg-label" for="clients_served">Clients Served in the Past 3 Years <span class="reg-req">*</span></label>
-                                <select class="reg-control" id="clients_served" name="clients_served" required>
-                                    <option value="">Select...</option>
-                                    <?php foreach (bdst_clients_served() as $range): ?>
-                                        <option value="<?= reg_e($range) ?>"<?= reg_selected($old, 'clients_served', $range) ?>><?= reg_e($range) ?> clients</option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="reg-field">
+                <span class="reg-label">Upload Your CV <span class="reg-req">*</span></span>
+                <label class="reg-file-box" id="cvBox">
+                    <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required>
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <strong>Click to upload or drag your CV here</strong>
+                    <small>PDF or Word document &middot; Maximum size 10 MB</small>
+                    <span class="reg-file-name" id="cvName"></span>
+                </label>
+            </div>
 
-                <!-- 4. Expertise & Services -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".3s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">04</span>
-                        <div>
-                            <h3 class="reg-section-title">Expertise &amp; Services</h3>
-                            <span class="reg-section-sub">Select all options that apply to you.</span>
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Primary BDS Service Areas <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                        <div class="reg-pills">
-                            <?php foreach (bdst_service_areas() as $area): ?>
-                                <?php reg_chip('service_areas', $area, reg_chip_checked($old, 'service_areas', $area)); ?>
-                            <?php endforeach; ?>
-                            <?php reg_chip('service_areas', 'Other', reg_chip_checked($old, 'service_areas', 'Other'), 'wrap-service_areas_other'); ?>
-                        </div>
-                        <div class="reg-other-wrap" id="wrap-service_areas_other">
-                            <input class="reg-control" type="text" name="service_areas_other" maxlength="100"
-                                   placeholder="Specify other service areas" style="margin-top:10px;"
-                                   value="<?= reg_old($old, 'service_areas_other') ?>">
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Industries You Have Experience Serving <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                        <div class="reg-pills">
-                            <?php foreach (bdst_industries() as $industry): ?>
-                                <?php reg_chip('industries', $industry, reg_chip_checked($old, 'industries', $industry)); ?>
-                            <?php endforeach; ?>
-                            <?php reg_chip('industries', 'Other', reg_chip_checked($old, 'industries', 'Other'), 'wrap-industries_other'); ?>
-                        </div>
-                        <div class="reg-other-wrap" id="wrap-industries_other">
-                            <input class="reg-control" type="text" name="industries_other" maxlength="100"
-                                   placeholder="Specify other industries" style="margin-top:10px;"
-                                   value="<?= reg_old($old, 'industries_other') ?>">
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Client Segments You Mostly Serve <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                        <div class="reg-pills">
-                            <?php foreach (bdst_client_segments() as $segment): ?>
-                                <?php reg_chip('client_segments', $segment, reg_chip_checked($old, 'client_segments', $segment)); ?>
-                            <?php endforeach; ?>
-                            <?php reg_chip('client_segments', 'Other', reg_chip_checked($old, 'client_segments', 'Other'), 'wrap-client_segments_other'); ?>
-                        </div>
-                        <div class="reg-other-wrap" id="wrap-client_segments_other">
-                            <input class="reg-control" type="text" name="client_segments_other" maxlength="100"
-                                   placeholder="Specify other client segments" style="margin-top:10px;"
-                                   value="<?= reg_old($old, 'client_segments_other') ?>">
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Nature of Services You Mostly Deliver <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                        <div class="reg-pills">
-                            <?php foreach (bdst_service_natures() as $nature): ?>
-                                <?php reg_chip('service_nature', $nature, reg_chip_checked($old, 'service_nature', $nature)); ?>
-                            <?php endforeach; ?>
-                            <?php reg_chip('service_nature', 'Other', reg_chip_checked($old, 'service_nature', 'Other'), 'wrap-service_nature_other'); ?>
-                        </div>
-                        <div class="reg-other-wrap" id="wrap-service_nature_other">
-                            <input class="reg-control" type="text" name="service_nature_other" maxlength="100"
-                                   placeholder="Specify other services" style="margin-top:10px;"
-                                   value="<?= reg_old($old, 'service_nature_other') ?>">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 5. Certifications -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".35s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">05</span>
-                        <div>
-                            <h3 class="reg-section-title">Professional Certifications</h3>
-                            <span class="reg-section-sub">Do you hold any professional certifications?</span>
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Do you hold any professional certifications? <span class="reg-req">*</span></span>
-                        <div class="reg-pills">
-                            <label class="reg-pill">
-                                <input type="radio" name="has_certification" value="yes"<?= reg_pill_checked($old, 'has_certification', 'yes') ?> data-cert-toggle required><span>Yes</span>
-                            </label>
-                            <label class="reg-pill">
-                                <input type="radio" name="has_certification" value="no"<?= reg_pill_checked($old, 'has_certification', 'no') ?> data-cert-toggle><span>No</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="cert-block" style="display:none;">
-                        <div class="reg-field">
-                            <span class="reg-label">Type of Certification <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                            <div class="reg-pills">
-                                <?php foreach (bdst_certification_types() as $cert): ?>
-                                    <?php reg_chip('certifications', $cert, reg_chip_checked($old, 'certifications', $cert)); ?>
-                                <?php endforeach; ?>
-                                <?php reg_chip('certifications', 'Other', reg_chip_checked($old, 'certifications', 'Other'), 'wrap-certifications_other'); ?>
-                            </div>
-                            <div class="reg-other-wrap" id="wrap-certifications_other">
-                                <input class="reg-control" type="text" name="certifications_other" maxlength="100"
-                                       placeholder="Specify other certification" style="margin-top:10px;"
-                                       value="<?= reg_old($old, 'certifications_other') ?>">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Coverage -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".4s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">06</span>
-                        <div>
-                            <h3 class="reg-section-title">Geographic Coverage</h3>
-                            <span class="reg-section-sub">Zones where you can deliver services.</span>
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Zones Where You Can Deliver Services <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
-                        <div class="reg-pills">
-                            <?php foreach (bdst_zones() as $zone): ?>
-                                <?php reg_chip('zones', $zone, reg_chip_checked($old, 'zones', $zone)); ?>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 7. Declaration & CV -->
-                <div class="reg-card wow fadeInUp" data-wow-delay=".45s">
-                    <div class="reg-section-head">
-                        <span class="reg-section-num">07</span>
-                        <div>
-                            <h3 class="reg-section-title">Declaration &amp; CV</h3>
-                            <span class="reg-section-sub">Final step before submission.</span>
-                        </div>
-                    </div>
-
-                    <div class="reg-field">
-                        <label class="reg-declare">
-                            <input type="checkbox" name="declaration" value="1"<?= ($old['declaration'] ?? 0) == 1 ? ' checked' : '' ?> required>
-                            <p>I hereby declare that the information provided in this form is true and correct to the best
-                                of my knowledge and I commit to abide by the code of conduct and professional standards
-                                of BDS Tanzania.</p>
-                        </label>
-                    </div>
-
-                    <div class="reg-field">
-                        <span class="reg-label">Upload Your CV <span class="reg-req">*</span></span>
-                        <label class="reg-file-box" id="cvBox">
-                            <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required>
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <strong>Click to upload or drag your CV here</strong>
-                            <small>PDF or Word document &middot; Maximum size 10 MB</small>
-                            <div class="reg-file-name" id="cvName"></div>
-                        </label>
-                    </div>
-
-                    <div class="reg-submit-row">
-                        <button type="submit" class="reg-submit-btn" id="submitBtn">
-                            <span>Submit Registration</span>
-                            <i class="tji-arrow-right-long"></i>
-                        </button>
-                        <p class="reg-note">
-                            After submitting you will receive a confirmation email with your unique reference number.
-                        </p>
-                    </div>
-                </div>
-            </form>
-        </div>
+            <div class="reg-submit-row">
+                <button type="submit" class="reg-submit-btn" id="submitBtn">
+                    <span>Submit Registration</span>
+                    <i class="tji-arrow-right-long"></i>
+                </button>
+                <p class="reg-note">
+                    After submitting you will receive a confirmation email with your unique reference number, which you
+                    can use to check your registration status at any time.
+                </p>
+            </div>
+        </form>
     </div>
 </section>
 
@@ -589,8 +538,8 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
         apply();
     });
 
-    // Checkbox "Other" reveals
-    document.querySelectorAll('input[type="checkbox"][data-reveal]').forEach(function (box) {
+    // Checkbox / radio "Other" reveals
+    document.querySelectorAll('input[data-reveal]').forEach(function (box) {
         var target = document.getElementById(box.getAttribute('data-reveal'));
         if (!target) return;
         var apply = function () {
@@ -600,12 +549,27 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
         apply();
     });
 
+    // Single-choice groups: choosing any non-Other option clears its Other input
+    document.querySelectorAll('input[data-clear]').forEach(function (box) {
+        box.addEventListener('change', function () {
+            var wrapId = 'wrap-' + box.getAttribute('data-clear');
+            var wrap = document.getElementById(wrapId);
+            if (!wrap) return;
+            var input = wrap.querySelector('input[type="text"]');
+            if (input && input.value !== '') {
+                input.value = '';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            wrap.classList.remove('is-visible');
+        });
+    });
+
     // Certifications block toggles with Yes/No
     var certBlock = document.getElementById('cert-block');
     var syncCert = function () {
         var picked = document.querySelector('input[name="has_certification"]:checked');
         var on = !!picked && picked.value === 'yes';
-        certBlock.style.display = on ? '' : 'none';
+        certBlock.classList.toggle('is-visible', on);
         certBlock.querySelectorAll('input').forEach(function (input) {
             input.disabled = !on;
         });
@@ -621,6 +585,7 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
     var cvName = document.getElementById('cvName');
     cvInput.addEventListener('change', function () {
         cvName.textContent = cvInput.files.length ? cvInput.files[0].name : '';
+        cvBox.classList.toggle('has-file', cvInput.files.length > 0);
     });
     ['dragenter', 'dragover'].forEach(function (evt) {
         cvBox.addEventListener(evt, function (e) {
@@ -645,6 +610,7 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
     document.getElementById('regForm').addEventListener('submit', function () {
         var btn = document.getElementById('submitBtn');
         btn.disabled = true;
+        btn.classList.add('is-loading');
         btn.innerHTML = '<span>Submitting...</span>';
     });
 })();

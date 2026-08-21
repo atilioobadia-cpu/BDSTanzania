@@ -309,10 +309,9 @@ $flash = bdst_flash_consume();
                 <div class="panel">
                     <h2 class="panel-title">Expertise &amp; Coverage</h2>
                     <?php
-                    [$areasStd, $areasCustom]     = reg_split_list($reg['service_areas'] ?? null, bdst_service_areas());
-                    [$indsStd, $indsCustom]       = reg_split_list($reg['industries'] ?? null, bdst_industries());
-                    [$segStd, $segCustom]         = reg_split_list($reg['client_segments'] ?? null, bdst_client_segments());
-                    [$natStd, $natCustom]         = reg_split_list($reg['service_nature'] ?? null, bdst_service_natures());
+[$areasStd, $areasCustom]     = reg_split_list($reg['service_areas'] ?? null, bdst_service_areas());
+                            [$indsStd, $indsCustom]       = reg_split_list($reg['industries'] ?? null, bdst_industries());
+                            [$natStd, $natCustom]         = reg_split_list($reg['service_nature'] ?? null, bdst_service_natures());
                     [$certsStd, $certsCustom]     = reg_split_list($reg['certifications'] ?? null, bdst_certification_types());
                     [$zonesStd, $zonesCustom]     = reg_split_list($reg['zones'] ?? null, bdst_zones());
                     ?>
@@ -331,10 +330,13 @@ $flash = bdst_flash_consume();
                         <?php if (isset($errors['industries'])): ?><small class="field-error"><?= bdst_e($errors['industries']) ?></small><?php endif; ?>
                     </div>
                     <div class="field">
-                        <label>Client Segments *</label>
-                        <div class="achip-grid"><?php reg_admin_chips('client_segments', bdst_client_segments(), $segStd); ?></div>
-                        <input type="text" name="client_segments_other" placeholder="Other (comma separated)"
-                               value="<?= bdst_e(implode(', ', $segCustom)) ?>">
+                        <label>Client Segment (select one) *</label>
+                        <select name="client_segments">
+                            <?php
+                            $segList  = bdst_decode_list($reg['client_segments'] ?? null);
+                            reg_admin_options(bdst_client_segments(), (string) ($segList[0] ?? ''));
+                            ?>
+                        </select>
                         <?php if (isset($errors['client_segments'])): ?><small class="field-error"><?= bdst_e($errors['client_segments']) ?></small><?php endif; ?>
                     </div>
                     <div class="field">

@@ -54,11 +54,18 @@ function bdst_reg_page_start(
 
     <link rel="shortcut icon" type="image/x-icon" href="../assets/images/fav.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700;800&display=swap">
+
     <!-- CSS -->
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/css/font-awesome-pro.min.css">
     <link rel="stylesheet" href="../assets/css/animate.min.css">
     <link rel="stylesheet" href="../assets/css/bexon-icons.css">
+    <link rel="stylesheet" href="../assets/css/nice-select.css">
+    <link rel="stylesheet" href="../assets/css/swiper.min.css">
+    <link rel="stylesheet" href="../assets/css/odometer-theme-default.css">
     <link rel="stylesheet" href="../assets/css/meanmenu.css">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="register.css">
@@ -556,7 +563,13 @@ function bdst_reg_page_end(): void
 
     <!-- JS -->
     <script src="../assets/js/jquery.min.js" defer></script>
-    <script src="../assets/js/bootstrap.bundle.min.js" defer></script>
+    <script src="../assets/js/gsap.min.js" defer></script>
+    <script src="../assets/js/gsap-scroll-trigger.min.js" defer></script>
+    <script src="../assets/js/gsap-split-text.min.js" defer></script>
+    <script src="../assets/js/jquery.nice-select.min.js" defer></script>
+    <script src="../assets/js/swiper.min.js" defer></script>
+    <script src="../assets/js/odometer.min.js" defer></script>
+    <script src="../assets/js/appear.min.js" defer></script>
     <script src="../assets/js/wow.min.js" defer></script>
     <script src="../assets/js/meanmenu.js" defer></script>
     <script src="../assets/js/main.js" defer></script>

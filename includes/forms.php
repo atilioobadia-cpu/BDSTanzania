@@ -106,6 +106,11 @@ function bdst_clients_served(): array
     return ['1-5', '6-10', '11-20', '21-50', '50+'];
 }
 
+function bdst_clients_served_label(string $value): string
+{
+    return $value === '50+' ? 'More than 50 clients' : $value . ' clients';
+}
+
 function bdst_service_natures(): array
 {
     return [
