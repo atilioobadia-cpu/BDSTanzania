@@ -51,14 +51,14 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                         <strong><?= htmlspecialchars($reg['email'], ENT_QUOTES, 'UTF-8') ?></strong>.</li>
                     <li><i class="fa-solid fa-magnifying-glass"></i> The Secretariat will review your application for
                         eligibility and membership category.</li>
-                    <li><i class="fa-solid fa-key"></i> Keep your reference number safe — use it any time to check your
+                    <li><i class="fa-solid fa-key"></i> Keep your reference number safe ??? use it any time to check your
                         registration status.</li>
                     <li><i class="fa-solid fa-envelope-open-text"></i> Admission decisions are communicated formally in
                         writing.</li>
                 </ul>
 
                 <div class="reg-actions">
-                    <a class="reg-btn reg-btn-primary" href="check.php?ref=<?= urlencode($reg['reference_no']) ?>&email=<?= urlencode($reg['email']) ?>">
+                    <a class="reg-btn reg-btn-primary" href="check.php?email=<?= urlencode($reg['email']) ?>">
                         <i class="fa-solid fa-magnifying-glass"></i> Check Status
                     </a>
                     <a class="reg-btn reg-btn-outline" href="../index.html">
@@ -74,7 +74,7 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                     <h3>Registration Received!</h3>
                     <p>
                         Thank you, <strong><?= htmlspecialchars($reg['full_name'], ENT_QUOTES, 'UTF-8') ?></strong>.
-                        Your application has been submitted successfully. Keep your reference number safe —
+                        Your application has been submitted successfully. Keep your reference number safe ???
                         you can use it at any time to check your registration status.
                     </p>
                     <div class="reg-ref-box">
@@ -82,7 +82,7 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                         <strong><?= htmlspecialchars($reg['reference_no'], ENT_QUOTES, 'UTF-8') ?></strong>
                     </div>
                     <div class="reg-actions">
-                        <a class="reg-btn reg-btn-primary" href="check.php?ref=<?= urlencode($reg['reference_no']) ?>&email=<?= urlencode($reg['email']) ?>">Check Status</a>
+                        <a class="reg-btn reg-btn-primary" href="check.php?email=<?= urlencode($reg['email']) ?>">Check Status</a>
                         <button type="button" class="reg-btn reg-btn-outline" id="regModalOk">Continue</button>
                     </div>
                 </div>

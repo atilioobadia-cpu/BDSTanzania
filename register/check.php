@@ -5,32 +5,38 @@ require __DIR__ . '/../includes/db.php';
 require __DIR__ . '/../includes/forms.php';
 require __DIR__ . '/_layout.php';
 
-$ref     = trim((string) ($_GET['ref'] ?? ''));
-$email   = trim((string) ($_GET['email'] ?? ''));
-$checked = false;
-$reg     = null;
+$email    = trim((string) ($_GET['email'] ?? ''));
+$checked  = false;
+$reg      = null;
 $notFound = false;
+$invalid  = false;
 
-if ($ref !== '' && $email !== '') {
-    try {
-        $stmt = bdst_db()->prepare(
-            "SELECT reference_no, full_name, status, submitted_at, region, district
-             FROM bds_registrations
-             WHERE reference_no = :ref AND email = :email
-             LIMIT 1"
-        );
-        $stmt->execute([':ref' => $ref, ':email' => strtolower($email)]);
-        $reg = $stmt->fetch() ?: null;
+if ($email !== '') {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $checked = true;
-        $notFound = $reg === null;
-    } catch (Throwable $e) {
-        error_log('Status check error: ' . $e->getMessage());
-        $checked = true;
-        $notFound = true;
+        $invalid = true;
+    } else {
+        try {
+            $stmt = bdst_db()->prepare(
+                "SELECT reference_no, full_name, status, submitted_at, region, district
+                 FROM bds_registrations
+                 WHERE email = :email
+                 ORDER BY id DESC
+                 LIMIT 1"
+            );
+            $stmt->execute([':email' => strtolower($email)]);
+            $reg = $stmt->fetch() ?: null;
+            $checked = true;
+            $notFound = $reg === null;
+        } catch (Throwable $e) {
+            error_log('Status check error: ' . $e->getMessage());
+            $checked = true;
+            $notFound = true;
+        }
     }
 }
 
-$metaDescription = 'Check the status of your BDS Tanzania membership registration using your reference number and email address.';
+$metaDescription = 'Check the status of your BDS Tanzania membership registration using your email address.';
 bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $metaDescription, 'Check Status');
 ?>
 
@@ -40,27 +46,17 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
             <div style="text-align:center;margin-bottom:26px;">
                 <span class="reg-panel-icon info"><i class="fa-solid fa-magnifying-glass"></i></span>
                 <h2>Check Your Registration Status</h2>
-                <p>Enter the reference number you received when registering, together with your email address.</p>
+                <p>Enter the email address you used when registering — your reference number and current status will be shown.</p>
             </div>
 
             <form method="get" action="check.php">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="reg-field">
-                            <label class="reg-label" for="ref">Reference Number <span class="reg-req">*</span></label>
-                            <input class="reg-control" type="text" id="ref" name="ref" maxlength="30"
-                                   placeholder="e.g. BDS-TZ-2026-0001" required
-                                   value="<?= htmlspecialchars($ref, ENT_QUOTES, 'UTF-8') ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="reg-field">
-                            <label class="reg-label" for="email">Email Address <span class="reg-req">*</span></label>
-                            <input class="reg-control" type="email" id="email" name="email" maxlength="150"
-                                   placeholder="The email used during registration" required
-                                   value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>">
-                        </div>
-                    </div>
+                <div class="reg-field">
+                    <label class="reg-label" for="email">
+                        <span class="reg-label-main">Email Address <span class="reg-req">*</span></span>
+                    </label>
+                    <input class="reg-control" type="email" id="email" name="email" maxlength="150"
+                           placeholder="The email used during registration" required
+                           value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>">
                 </div>
                 <div style="text-align:center;">
                     <button type="submit" class="reg-btn reg-btn-primary">
@@ -117,10 +113,15 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
                     </div>
                 <?php elseif ($notFound): ?>
                     <div class="reg-alert reg-alert-error" style="margin-top:30px;" role="alert">
-                        <strong><i class="fa-solid fa-circle-exclamation"></i> No matching registration found.</strong><br>
-                        Please double-check your reference number and email address. Reference numbers look like
-                        <strong>BDS-TZ-2026-0001</strong>. If you cannot find yours, contact the Secretariat at
+                        <strong><i class="fa-solid fa-circle-exclamation"></i> No registration found for this email.</strong><br>
+                        Please double-check the address you used when registering. If you cannot find yours, contact
+                        the Secretariat at
                         <a href="mailto:info@bdst.or.tz" style="color:#1997C6;">info@bdst.or.tz</a>.
+                    </div>
+                <?php elseif ($invalid): ?>
+                    <div class="reg-alert reg-alert-error" style="margin-top:30px;" role="alert">
+                        <strong><i class="fa-solid fa-circle-exclamation"></i> That email address does not look valid.</strong><br>
+                        Please check it and try again.
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

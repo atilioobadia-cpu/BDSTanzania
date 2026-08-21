@@ -57,6 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $pdo = bdst_db();
 
+                // One application per email address.
+                $dupe = $pdo->prepare("SELECT reference_no FROM bds_registrations WHERE email = :email LIMIT 1");
+                $dupe->execute([':email' => strtolower($data['email'])]);
+                if ($dupe->fetch()) {
+                    $errors[] = 'This email address is already registered. Use the "Check Registration Status" '
+                        . 'button above to follow your existing application, or contact info@bdst.or.tz.';
+                }
+
+                if (!$errors) {
                 $stmt = $pdo->prepare(
                     "INSERT INTO bds_registrations
                         (full_name, gender, age_group, phone, email, region, district,
@@ -119,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['reg_csrf'] = bin2hex(random_bytes(32));
                     header('Location: success.php?ref=' . urlencode($ref));
                     exit;
+                }
                 }
             } catch (Throwable $dbError) {
                 error_log('Registration save error: ' . $dbError->getMessage());

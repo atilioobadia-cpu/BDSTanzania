@@ -1,5 +1,5 @@
 -- ============================================================
--- BDS Tanzania — Member Registrations table
+-- BDS Tanzania ??? Member Registrations table
 -- Import via cPanel > phpMyAdmin (select the site database first)
 -- ============================================================
 
@@ -35,5 +35,5 @@ CREATE TABLE IF NOT EXISTS `bds_registrations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_bds_reg_reference` (`reference_no`),
   KEY `idx_bds_reg_status` (`status`,`submitted_at`),
-  KEY `idx_bds_reg_email` (`email`)
+  UNIQUE KEY `uq_bds_reg_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
