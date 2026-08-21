@@ -114,9 +114,9 @@ GSAP Animations
     });
 
     ////////////////////////////////////////////////////
-    // Nice Select Js
+    // Nice Select Js (skip custom registration-form controls)
     if ($("select").length > 0 && $.fn.niceSelect) {
-        $("select").niceSelect();
+        $("select").not(".reg-control, .reg-native").niceSelect();
     }
 
     ////////////////////////////////////////////////////

@@ -76,7 +76,7 @@ bdst_reg_page_start('Member Directory | BDS Tanzania Professionals', $metaDescri
                 <input type="text" name="q" placeholder="Search by name, profession or expertise..."
                        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
             </div>
-            <select name="region">
+            <select name="region" class="reg-native">
                 <option value="">All Regions</option>
                 <?php foreach (bdst_regions() as $regionOption): ?>
                     <option value="<?= htmlspecialchars($regionOption, ENT_QUOTES, 'UTF-8') ?>"<?= $region === $regionOption ? ' selected' : '' ?>>

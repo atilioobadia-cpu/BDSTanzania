@@ -214,33 +214,13 @@
     min-width: 180px;
 }
 
-/* "this field needs a selection" hint badge */
-.reg-pick {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    flex: 0 0 auto;
-    padding: 3px 11px;
-    background: rgba(25, 151, 198, 0.09);
-    border: 1px solid rgba(25, 151, 198, 0.22);
-    color: var(--reg-primary-dark);
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-}
-
-.reg-pick i {
-    font-size: 10px;
-}
-
 .reg-control {
     display: block;
     width: 100%;
-    padding: 11px 14px;
+    padding: 12px 14px;
     font-family: inherit;
-    font-size: 14.5px;
+    font-size: 15px;
+    font-weight: 500;
     color: var(--reg-ink);
     background: #fff;
     border: 1px solid var(--reg-line);
@@ -264,6 +244,160 @@ select.reg-control {
 .reg-control:focus {
     border-color: var(--reg-primary);
     box-shadow: 0 0 0 3px rgba(25, 151, 198, 0.15);
+}
+
+/* ------------------------------------------------------------------
+   Searchable select (custom combobox)
+------------------------------------------------------------------ */
+.reg-combo {
+    position: relative;
+}
+
+.reg-combo-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    color: var(--reg-ink);
+    background: #fff;
+    border: 1px solid var(--reg-line);
+    border-radius: var(--reg-radius);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reg-combo-toggle:hover {
+    border-color: var(--reg-primary);
+}
+
+.reg-combo-toggle:focus-visible,
+.reg-combo.is-open .reg-combo-toggle {
+    border-color: var(--reg-primary);
+    box-shadow: 0 0 0 3px rgba(25, 151, 198, 0.15);
+    outline: none;
+}
+
+.reg-combo-label {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.reg-combo-label.is-placeholder {
+    color: #9fb0b2;
+    font-weight: 400;
+}
+
+.reg-combo-toggle > i {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: var(--reg-muted);
+    transition: transform 0.18s ease;
+}
+
+.reg-combo.is-open .reg-combo-toggle > i {
+    transform: rotate(180deg);
+}
+
+.reg-combo-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background: #fff;
+    border: 1px solid var(--reg-line);
+    border-radius: 12px;
+    box-shadow: 0 16px 42px rgba(12, 30, 33, 0.16);
+    overflow: hidden;
+}
+
+.reg-combo.is-open .reg-combo-panel {
+    display: block;
+    animation: regSlideDown 0.15s ease;
+}
+
+.reg-combo-search {
+    position: relative;
+    border-bottom: 1px solid var(--reg-line);
+}
+
+.reg-combo-search input {
+    width: 100%;
+    padding: 11px 40px 11px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--reg-ink);
+    border: none;
+    outline: none;
+    background: transparent;
+}
+
+.reg-combo-search input::placeholder {
+    color: #9fb0b2;
+}
+
+.reg-combo-search > i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--reg-muted);
+    pointer-events: none;
+}
+
+.reg-combo-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 236px;
+    overflow-y: auto;
+}
+
+.reg-combo-list li {
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--reg-body);
+    cursor: pointer;
+    transition: background 0.1s ease, color 0.1s ease;
+}
+
+.reg-combo-list li:hover {
+    background: var(--reg-bg-soft);
+    color: var(--reg-ink);
+}
+
+.reg-combo-list li.is-selected {
+    background: rgba(25, 151, 198, 0.12);
+    color: var(--reg-primary-dark);
+    font-weight: 700;
+}
+
+.reg-combo-list li.is-hidden {
+    display: none;
+}
+
+.reg-combo-list .reg-combo-empty {
+    padding: 14px 12px;
+    text-align: center;
+    color: var(--reg-muted);
+    font-size: 13px;
+    cursor: default;
+}
+
+.reg-combo-list .reg-combo-empty:hover {
+    background: none;
 }
 
 .reg-hint {
@@ -304,12 +438,12 @@ select.reg-control {
 .reg-chip span {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 10px;
     width: 100%;
-    padding: 9px 14px;
+    padding: 11px 14px;
     background: #fff;
     border: 1px solid var(--reg-line);
-    border-radius: 999px;
+    border-radius: 10px;
     font-size: 13.5px;
     font-weight: 500;
     color: var(--reg-body);
@@ -331,6 +465,60 @@ select.reg-control {
 
 .reg-chip input:focus-visible + span {
     box-shadow: 0 0 0 3px rgba(25, 151, 198, 0.25);
+}
+
+/* visible checkbox / radio indicator inside each chip */
+.reg-box {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border: 2px solid #b9ced2;
+    border-radius: 5px;
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+.reg-box::after {
+    content: '';
+    position: absolute;
+    left: 4.5px;
+    top: 1.5px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--reg-primary-dark);
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) scale(0);
+    transform-origin: center;
+    transition: transform 0.12s ease;
+}
+
+.reg-choice .reg-box {
+    border-radius: 50%;
+}
+
+.reg-choice .reg-box::after {
+    width: 7px;
+    height: 7px;
+    left: 3.5px;
+    top: 3.5px;
+    border: none;
+    border-radius: 50%;
+    background: var(--reg-primary-dark);
+    transform: scale(0);
+}
+
+.reg-chip input:checked + span .reg-box {
+    background: #fff;
+    border-color: #fff;
+}
+
+.reg-chip input:checked + span .reg-box::after {
+    transform: rotate(45deg) scale(1);
+}
+
+.reg-chip.reg-choice input:checked + span .reg-box::after {
+    transform: scale(1);
 }
 
 /* ------------------------------------------------------------------

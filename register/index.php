@@ -162,7 +162,7 @@ function reg_chip(string $name, string $value, string $checked, string $reveal =
     if ($reveal !== '') {
         echo ' data-reveal="' . reg_e($reveal) . '"';
     }
-    echo '><span>' . reg_e($value) . '</span></label>';
+    echo '><span><span class="reg-box" aria-hidden="true"></span>' . reg_e($value) . '</span></label>';
 }
 
 /**
@@ -177,7 +177,7 @@ function reg_choice(string $name, string $value, string $checked, array $old, st
     } else {
         echo ' data-clear="' . reg_e($name) . '-other"';
     }
-    echo '><span>' . reg_e($value) . '</span></label>';
+        echo '><span><span class="reg-box" aria-hidden="true"></span>' . reg_e($value) . '</span></label>';
 }
 
 /** Section heading inside the single card. */
@@ -212,8 +212,8 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <h1>BDS Tanzania Membership Registration</h1>
             <p>
                 Thank you for your interest in joining BDS Tanzania, the national association of business development
-                service professionals. This form collects your professional profile — expertise, experience, sector
-                specialization and geographic coverage — so the Secretariat can review your eligibility and determine
+                service professionals. This form collects your professional profile ??? expertise, experience, sector
+                specialization and geographic coverage ??? so the Secretariat can review your eligibility and determine
                 the right membership category for you.
             </p>
             <p>
@@ -277,11 +277,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <span class="reg-label">
                             <span class="reg-label-main">Gender <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </span>
                         <div class="reg-chip-row">
-                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><i class="fa-solid fa-mars"></i> Male</span></label>
-                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><i class="fa-solid fa-venus"></i> Female</span></label>
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-mars"></i> Male</span></label>
+                            <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-venus"></i> Female</span></label>
                         </div>
                     </div>
                 </div>
@@ -289,7 +288,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="age_group">
                             <span class="reg-label-main">Age Group <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="age_group" name="age_group" required>
                             <option value="">Select...</option>
@@ -307,7 +305,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="region">
                             <span class="reg-label-main">Region <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="region" name="region" required>
                             <option value="">Select region...</option>
@@ -333,7 +330,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="professional_status">
                             <span class="reg-label-main">Current Professional Status <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="professional_status" name="professional_status"
                                 data-other-target="wrap-professional_status_other" required>
@@ -365,7 +361,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="experience_years">
                             <span class="reg-label-main">Years of Experience in Business Advisory / Consulting <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="experience_years" name="experience_years" required>
                             <option value="">Select...</option>
@@ -379,7 +374,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="clients_served">
                             <span class="reg-label-main">Clients Served in the Past 3 Years <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="clients_served" name="clients_served" required>
                             <option value="">Select...</option>
@@ -393,7 +387,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <div class="reg-field">
                         <label class="reg-label" for="education">
                             <span class="reg-label-main">Highest Education Level <span class="reg-req">*</span></span>
-                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                         </label>
                         <select class="reg-control" id="education" name="education"
                                 data-other-target="wrap-education_other" required>
@@ -417,7 +410,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Primary BDS Service Areas <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
                 </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_service_areas() as $opt): ?>
@@ -435,7 +427,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Industries You Have Experience Serving <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
                 </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_industries() as $opt): ?>
@@ -453,7 +444,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Client Segment You Mostly Serve <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                 </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_client_segments() as $opt): ?>
@@ -471,7 +461,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Nature of Services You Mostly Deliver <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
                 </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_service_natures() as $opt): ?>
@@ -490,16 +479,15 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Do You Hold Any Professional Certifications? <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
                 </span>
                 <div class="reg-chip-row">
                     <label class="reg-chip reg-choice">
                         <input type="radio" name="has_certification" value="yes"<?= reg_pill_checked($old, 'has_certification', 'yes') ?> data-cert-toggle required>
-                        <span><i class="fa-solid fa-circle-check"></i> Yes</span>
+                        <span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-circle-check"></i> Yes</span>
                     </label>
                     <label class="reg-chip reg-choice">
                         <input type="radio" name="has_certification" value="no"<?= reg_pill_checked($old, 'has_certification', 'no') ?> data-cert-toggle>
-                        <span><i class="fa-solid fa-circle-xmark"></i> No</span>
+                        <span><span class="reg-box" aria-hidden="true"></span><i class="fa-solid fa-circle-xmark"></i> No</span>
                     </label>
                 </div>
             </div>
@@ -507,7 +495,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 <div class="reg-field">
                     <span class="reg-label">
                         <span class="reg-label-main">Type of Certification <span class="reg-req">*</span></span>
-                        <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
                     </span>
                     <div class="reg-chip-grid">
                         <?php foreach (bdst_certification_types() as $opt): ?>
@@ -527,7 +514,6 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="reg-field">
                 <span class="reg-label">
                     <span class="reg-label-main">Zones Where You Can Deliver Services <span class="reg-req">*</span></span>
-                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
                 </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_zones() as $opt): ?>
@@ -660,6 +646,146 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
         btn.innerHTML = '<span>Submitting...</span>';
     });
 })();
+
+// ------------------------------------------------------------------
+// Searchable dropdowns (runs after the theme's deferred scripts)
+// ------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', function () {
+    var combos = [];
+
+    function closeAll(except) {
+        combos.forEach(function (c) {
+            if (c !== except) {
+                c.classList.remove('is-open');
+            }
+        });
+    }
+
+    document.querySelectorAll('select.reg-control').forEach(function (sel) {
+        if (sel.dataset.comboBuilt) {
+            return;
+        }
+        sel.dataset.comboBuilt = '1';
+
+        var placeholder = '';
+        var options = [];
+        Array.prototype.forEach.call(sel.options, function (opt) {
+            if (opt.value === '' && placeholder === '') {
+                placeholder = opt.text;
+            } else {
+                options.push({ value: opt.value, text: opt.text });
+            }
+        });
+
+        var wrap = document.createElement('div');
+        wrap.className = 'reg-combo';
+        wrap.innerHTML =
+            '<button type="button" class="reg-combo-toggle" aria-haspopup="listbox">' +
+            '<span class="reg-combo-label"></span>' +
+            '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>' +
+            '<div class="reg-combo-panel">' +
+            '<div class="reg-combo-search"><input type="text" placeholder="Type to search..." aria-label="Search options">' +
+            '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></div>' +
+            '<ul class="reg-combo-list" role="listbox"></ul></div>';
+
+        sel.parentNode.insertBefore(wrap, sel);
+        sel.style.display = 'none';
+
+        var label = wrap.querySelector('.reg-combo-label');
+        var list = wrap.querySelector('.reg-combo-list');
+        var search = wrap.querySelector('.reg-combo-search input');
+
+        options.forEach(function (opt) {
+            var li = document.createElement('li');
+            li.setAttribute('role', 'option');
+            li.dataset.value = opt.value;
+            li.textContent = opt.text;
+            list.appendChild(li);
+        });
+
+        function sync() {
+            var has = sel.value !== '';
+            label.textContent = has ? sel.options[sel.selectedIndex].text : placeholder;
+            label.classList.toggle('is-placeholder', !has);
+            Array.prototype.forEach.call(list.children, function (li) {
+                li.classList.toggle('is-selected', li.dataset.value === sel.value);
+            });
+        }
+
+        function applyFilter() {
+            var q = search.value.trim().toLowerCase();
+            var visible = 0;
+            Array.prototype.forEach.call(list.children, function (li) {
+                var hit = q === '' || li.textContent.toLowerCase().indexOf(q) !== -1;
+                li.classList.toggle('is-hidden', !hit);
+                if (hit) {
+                    visible++;
+                }
+            });
+            var empty = list.querySelector('.reg-combo-empty');
+            if (visible === 0 && !empty) {
+                empty = document.createElement('li');
+                empty.className = 'reg-combo-empty';
+                empty.textContent = 'No matches found';
+                list.appendChild(empty);
+            } else if (visible > 0 && empty) {
+                empty.remove();
+            }
+        }
+
+        wrap.querySelector('.reg-combo-toggle').addEventListener('click', function () {
+            var opening = !wrap.classList.contains('is-open');
+            closeAll(wrap);
+            wrap.classList.toggle('is-open', opening);
+            if (opening) {
+                search.value = '';
+                applyFilter();
+                setTimeout(function () { search.focus(); }, 40);
+            }
+        });
+
+        search.addEventListener('input', applyFilter);
+        search.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var first = list.querySelector('li:not(.is-hidden):not(.reg-combo-empty)');
+                if (first) {
+                    first.click();
+                }
+            } else if (e.key === 'Escape') {
+                wrap.classList.remove('is-open');
+            }
+        });
+
+        list.addEventListener('click', function (e) {
+            var li = e.target.closest('li');
+            if (!li || li.classList.contains('reg-combo-empty') || li.classList.contains('is-hidden')) {
+                return;
+            }
+            sel.value = li.dataset.value;
+            sync();
+            wrap.classList.remove('is-open');
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        // keep native select authoritative for "other" reveals etc.
+        sel.addEventListener('change', sync);
+
+        combos.push(wrap);
+        sync();
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.reg-combo')) {
+            closeAll(null);
+        }
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeAll(null);
+        }
+    });
+});
 </script>
 
 <?php bdst_reg_page_end(); ?>
