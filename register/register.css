@@ -45,7 +45,6 @@
     font-size: 15.5px;
     line-height: 1.75;
     margin-bottom: 12px;
-    max-width: 78ch;
 }
 
 .reg-intro p:last-child {
@@ -198,12 +197,42 @@
 }
 
 .reg-label {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
     font-weight: 600;
     font-size: 13.5px;
     color: var(--reg-ink);
     margin-bottom: 8px;
     letter-spacing: 0.01em;
+}
+
+.reg-label-main {
+    flex: 1 1 auto;
+    min-width: 180px;
+}
+
+/* "this field needs a selection" hint badge */
+.reg-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    padding: 3px 11px;
+    background: rgba(25, 151, 198, 0.09);
+    border: 1px solid rgba(25, 151, 198, 0.22);
+    color: var(--reg-primary-dark);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.reg-pick i {
+    font-size: 10px;
 }
 
 .reg-control {

@@ -275,7 +275,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="reg-field">
-                        <span class="reg-label">Gender <span class="reg-req">*</span></span>
+                        <span class="reg-label">
+                            <span class="reg-label-main">Gender <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </span>
                         <div class="reg-chip-row">
                             <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Male"<?= reg_pill_checked($old, 'gender', 'Male') ?> required><span><i class="fa-solid fa-mars"></i> Male</span></label>
                             <label class="reg-chip reg-choice"><input type="radio" name="gender" value="Female"<?= reg_pill_checked($old, 'gender', 'Female') ?>><span><i class="fa-solid fa-venus"></i> Female</span></label>
@@ -284,7 +287,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="age_group">Age Group <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="age_group">
+                            <span class="reg-label-main">Age Group <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="age_group" name="age_group" required>
                             <option value="">Select...</option>
                             <?php foreach (bdst_age_groups() as $opt): ?>
@@ -299,7 +305,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="row">
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="region">Region <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="region">
+                            <span class="reg-label-main">Region <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="region" name="region" required>
                             <option value="">Select region...</option>
                             <?php foreach (bdst_regions() as $opt): ?>
@@ -322,7 +331,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             <div class="row">
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="professional_status">Current Professional Status <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="professional_status">
+                            <span class="reg-label-main">Current Professional Status <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="professional_status" name="professional_status"
                                 data-other-target="wrap-professional_status_other" required>
                             <option value="">Select status...</option>
@@ -341,7 +353,9 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="firm_name">Firm / Organization Name <span class="reg-opt">(if you operate in a firm)</span></label>
+                        <label class="reg-label" for="firm_name">
+                            <span class="reg-label-main">Firm / Organization Name <span class="reg-opt">(if you operate within a firm)</span></span>
+                        </label>
                         <input class="reg-control" type="text" id="firm_name" name="firm_name" maxlength="150"
                                placeholder="e.g. Bright Advisory Ltd"
                                value="<?= reg_old($old, 'firm_name') ?>">
@@ -349,7 +363,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="experience_years">Years of Experience in Business Advisory / Consulting <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="experience_years">
+                            <span class="reg-label-main">Years of Experience in Business Advisory / Consulting <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="experience_years" name="experience_years" required>
                             <option value="">Select...</option>
                             <?php foreach (bdst_experience_levels() as $opt): ?>
@@ -360,7 +377,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="clients_served">Clients Served in the Past 3 Years <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="clients_served">
+                            <span class="reg-label-main">Clients Served in the Past 3 Years <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="clients_served" name="clients_served" required>
                             <option value="">Select...</option>
                             <?php foreach (bdst_clients_served() as $opt): ?>
@@ -371,7 +391,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
                 <div class="col-lg-6">
                     <div class="reg-field">
-                        <label class="reg-label" for="education">Highest Education Level <span class="reg-req">*</span></label>
+                        <label class="reg-label" for="education">
+                            <span class="reg-label-main">Highest Education Level <span class="reg-req">*</span></span>
+                            <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                        </label>
                         <select class="reg-control" id="education" name="education"
                                 data-other-target="wrap-education_other" required>
                             <option value="">Select...</option>
@@ -392,7 +415,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
 
             <?php reg_section('04', 'Expertise & Services', 'Select all options that apply to you.'); ?>
             <div class="reg-field">
-                <span class="reg-label">Primary BDS Service Areas <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <span class="reg-label">
+                    <span class="reg-label-main">Primary BDS Service Areas <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
+                </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_service_areas() as $opt): ?>
                         <?php reg_chip('service_areas', $opt, reg_chip_checked($old, 'service_areas', $opt)); ?>
@@ -407,7 +433,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             </div>
 
             <div class="reg-field">
-                <span class="reg-label">Industries You Have Experience Serving <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <span class="reg-label">
+                    <span class="reg-label-main">Industries You Have Experience Serving <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
+                </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_industries() as $opt): ?>
                         <?php reg_chip('industries', $opt, reg_chip_checked($old, 'industries', $opt)); ?>
@@ -422,7 +451,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             </div>
 
             <div class="reg-field">
-                <span class="reg-label">Client Segment You Mostly Serve <span class="reg-req">*</span> <span class="reg-opt">(select one)</span></span>
+                <span class="reg-label">
+                    <span class="reg-label-main">Client Segment You Mostly Serve <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_client_segments() as $opt): ?>
                         <?php reg_choice('client_segments', $opt, reg_pill_checked($old, 'client_segments', $opt), $old, 'client_segments'); ?>
@@ -437,7 +469,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             </div>
 
             <div class="reg-field">
-                <span class="reg-label">Nature of Services You Mostly Deliver <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                <span class="reg-label">
+                    <span class="reg-label-main">Nature of Services You Mostly Deliver <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
+                </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_service_natures() as $opt): ?>
                         <?php reg_chip('service_nature', $opt, reg_chip_checked($old, 'service_nature', $opt)); ?>
@@ -451,8 +486,12 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
             </div>
 
-            <?php reg_section('05', 'Professional Certifications', 'Do you hold any professional certifications?'); ?>
+            <?php reg_section('05', 'Professional Certifications', 'Formal credentials that strengthen your professional profile.'); ?>
             <div class="reg-field">
+                <span class="reg-label">
+                    <span class="reg-label-main">Do You Hold Any Professional Certifications? <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-hand-pointer"></i> Select one</span>
+                </span>
                 <div class="reg-chip-row">
                     <label class="reg-chip reg-choice">
                         <input type="radio" name="has_certification" value="yes"<?= reg_pill_checked($old, 'has_certification', 'yes') ?> data-cert-toggle required>
@@ -466,7 +505,10 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             </div>
             <div id="cert-block" class="reg-cert-block">
                 <div class="reg-field">
-                    <span class="reg-label">Type of Certification <span class="reg-req">*</span> <span class="reg-opt">(multiple allowed)</span></span>
+                    <span class="reg-label">
+                        <span class="reg-label-main">Type of Certification <span class="reg-req">*</span></span>
+                        <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
+                    </span>
                     <div class="reg-chip-grid">
                         <?php foreach (bdst_certification_types() as $opt): ?>
                             <?php reg_chip('certifications', $opt, reg_chip_checked($old, 'certifications', $opt)); ?>
@@ -481,8 +523,12 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 </div>
             </div>
 
-            <?php reg_section('06', 'Geographic Coverage', 'Zones where you can deliver services.'); ?>
+<?php reg_section('06', 'Geographic Coverage', 'Zones where you can deliver services.'); ?>
             <div class="reg-field">
+                <span class="reg-label">
+                    <span class="reg-label-main">Zones Where You Can Deliver Services <span class="reg-req">*</span></span>
+                    <span class="reg-pick"><i class="fa-solid fa-layer-group"></i> Select all that apply</span>
+                </span>
                 <div class="reg-chip-grid">
                     <?php foreach (bdst_zones() as $opt): ?>
                         <?php reg_chip('zones', $opt, reg_chip_checked($old, 'zones', $opt)); ?>

@@ -139,7 +139,7 @@ foreach ($posts as $p) {
                                         <td class="th-actions">
                                             <div class="row-actions">
                                                 <a class="btn btn-ghost btn-sm" href="post.php?id=<?= (int) $post['id'] ?>">Edit</a>
-                                                <a class="btn btn-ghost btn-sm" href="../update.html?slug=<?= bdst_e($post['slug']) ?>" target="_blank" rel="noopener">View</a>
+                                                <a class="btn btn-ghost btn-sm" href="../update.php?slug=<?= bdst_e($post['slug']) ?>" target="_blank" rel="noopener">View</a>
                                                 <form method="post" action="delete.php" onsubmit="return confirm('Delete this update permanently?');">
                                                     <input type="hidden" name="csrf" value="<?= bdst_e(bdst_csrf_token()) ?>">
                                                     <input type="hidden" name="id" value="<?= (int) $post['id'] ?>">

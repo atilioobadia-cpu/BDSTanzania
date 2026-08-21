@@ -26,17 +26,19 @@ AddDefaultCharset UTF-8
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-  # Internally map clean URLs to root .html files
+  # Internally map clean URLs to root .html files, then .php files
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f
   RewriteRule ^([A-Za-z0-9_-]+)/?$ $1.html [L]
+  RewriteCond %{DOCUMENT_ROOT}/$1.php -f
+  RewriteRule ^([A-Za-z0-9_-]+)/?$ $1.php [L]
 </IfModule>
 
 # -------------------------------------------------------
-# CACHE CONTROL — No browser caching for HTML/CSS/JS
+# CACHE CONTROL â€” No browser caching for HTML/CSS/JS
 # BUT: Allow Last-Modified & ETag so JS can detect updates
 # -------------------------------------------------------
 <IfModule mod_headers.c>
-  # Remove static ETag (file-inode based) — use Last-Modified instead
+  # Remove static ETag (file-inode based) â€” use Last-Modified instead
   FileETag MTime Size
   <FilesMatch "\.(html|htm|css|js)$">
     Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
@@ -64,10 +66,3 @@ AddDefaultCharset UTF-8
   AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
-
-# Parse .html files as PHP so updates.html and update.html
-# can run the news backend. Kept outside the cPanel block above so
-# automatic PHP-version updates do not remove it.
-<IfModule mime_module>
-  AddHandler application/x-httpd-ea-php82 .html
-</IfModule>

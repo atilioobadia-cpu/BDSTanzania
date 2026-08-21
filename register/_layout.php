@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * BDS Tanzania — shared themed layout for the /register/ area.
+ * BDS Tanzania â€” shared themed layout for the /register/ area.
  *
  * Every public registration page calls:
  *   bdst_reg_page_start($title, $metaDescription, $crumbLabel, $extraHead);
@@ -108,7 +108,7 @@ function bdst_reg_page_start(
                 <div class="hamburger-search-area">
                     <h5 class="hamburger-title">Search BDS Tanzania</h5>
                     <div class="hamburger_search">
-                        <form method="get" action="../updates.html">
+                        <form method="get" action="../updates.php">
                             <button type="submit" aria-label="Search"><i class="tji-search"></i></button>
                             <input type="search" autocomplete="off" name="s" placeholder="Search updates, services, membership...">
                         </form>
@@ -246,7 +246,7 @@ function bdst_reg_page_start(
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="../updates.html">Latest Updates</a></li>
+                                            <li><a href="../updates.php">Latest Updates</a></li>
                                             <li><a href="../gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -289,7 +289,7 @@ function bdst_reg_page_start(
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="../updates.html" method="get">
+                                <form action="../updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -352,7 +352,7 @@ function bdst_reg_page_start(
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="../updates.html">Latest Updates</a></li>
+                                            <li><a href="../updates.php">Latest Updates</a></li>
                                             <li><a href="../gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -402,7 +402,7 @@ function bdst_reg_page_start(
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="../updates.html" method="get">
+                                <form action="../updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -496,7 +496,7 @@ function bdst_reg_page_end(): void
                                         <li><a href="../how-to-join.html">How to Join</a></li>
                                         <li><a href="index.php">Become a Member</a></li>
                                         <li><a href="members.php">Member Directory</a></li>
-                                        <li><a href="../updates.html">Updates</a></li>
+                                        <li><a href="../updates.php">Updates</a></li>
                                     </ul>
                                 </div>
                             </div>

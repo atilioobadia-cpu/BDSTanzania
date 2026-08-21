@@ -17,7 +17,7 @@ if ($slug !== '') {
 }
 
 if (!$post) {
-    header('Location: updates.html');
+    header('Location: updates.php');
     exit;
 }
 
@@ -88,12 +88,12 @@ try {
     <!-- Post SEO -->
     <meta name="description" content="<?= bdst_e($pageDesc) ?>">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.bdst.or.tz/update.html?slug=<?= bdst_e($post['slug']) ?>">
+    <link rel="canonical" href="https://www.bdst.or.tz/update.php?slug=<?= bdst_e($post['slug']) ?>">
 
     <meta property="og:type" content="article">
     <meta property="og:title" content="<?= bdst_e($pageTitle) ?> | BDS Tanzania">
     <meta property="og:description" content="<?= bdst_e($pageDesc) ?>">
-    <meta property="og:url" content="https://www.bdst.or.tz/update.html?slug=<?= bdst_e($post['slug']) ?>">
+    <meta property="og:url" content="https://www.bdst.or.tz/update.php?slug=<?= bdst_e($post['slug']) ?>">
     <meta property="og:site_name" content="BDS Tanzania">
     <meta property="og:image" content="https://www.bdst.or.tz/<?= bdst_e($pageImage) ?>">
 
@@ -574,7 +574,7 @@ try {
                 <div class="hamburger-search-area">
                     <h5 class="hamburger-title">Search BDS Tanzania</h5>
                     <div class="hamburger_search">
-                        <form method="get" action="updates.html">
+                        <form method="get" action="updates.php">
                             <button type="submit" aria-label="Search">
                                 <i class="tji-search"></i>
                             </button>
@@ -720,7 +720,7 @@ try {
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="updates.html">Latest Updates</a></li>
+                                            <li><a href="updates.php">Latest Updates</a></li>
                                             <li><a href="gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -765,7 +765,7 @@ try {
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="updates.html" method="get">
+                                <form action="updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -832,7 +832,7 @@ try {
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="updates.html">Latest Updates</a></li>
+                                            <li><a href="updates.php">Latest Updates</a></li>
                                             <li><a href="gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -884,7 +884,7 @@ try {
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="updates.html" method="get">
+                                <form action="updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -916,7 +916,7 @@ try {
                                 <span><i class="tji-home"></i></span>
                                 <span><a href="index.html">Home</a></span>
                                 <span><i class="tji-arrow-right"></i></span>
-                                <span><a href="updates.html">Updates</a></span>
+                                <span><a href="updates.php">Updates</a></span>
                                 <span><i class="tji-arrow-right"></i></span>
                                 <span><span>Post</span></span>
                             </div>
@@ -932,7 +932,7 @@ try {
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
-                        <a class="update-back" href="updates.html">
+                        <a class="update-back" href="updates.php">
                             <i class="tji-arrow-left-long"></i> Back to Updates
                         </a>
 
@@ -965,10 +965,10 @@ try {
                                 <div class="update-share">
                                     <span>Share this update:</span>
                                     <div class="update-share__links">
-                                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-                                        <a href="https://twitter.com/intent/tweet?url=<?= rawurlencode('https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>&amp;text=<?= rawurlencode($pageTitle) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><i class="fa-brands fa-x-twitter"></i></a>
-                                        <a href="mailto:?subject=<?= rawurlencode($pageTitle) ?>&amp;body=<?= rawurlencode('Read the update: https://www.bdst.or.tz/update.html?slug=' . $post['slug']) ?>" aria-label="Share via email"><i class="fa-regular fa-envelope"></i></a>
+                                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?= rawurlencode('https://www.bdst.or.tz/update.php?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?= rawurlencode('https://www.bdst.or.tz/update.php?slug=' . $post['slug']) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                        <a href="https://twitter.com/intent/tweet?url=<?= rawurlencode('https://www.bdst.or.tz/update.php?slug=' . $post['slug']) ?>&amp;text=<?= rawurlencode($pageTitle) ?>" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><i class="fa-brands fa-x-twitter"></i></a>
+                                        <a href="mailto:?subject=<?= rawurlencode($pageTitle) ?>&amp;body=<?= rawurlencode('Read the update: https://www.bdst.or.tz/update.php?slug=' . $post['slug']) ?>" aria-label="Share via email"><i class="fa-regular fa-envelope"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -983,24 +983,24 @@ try {
                 <div class="container">
                     <div class="more-updates__heading">
                         <h3>More Updates</h3>
-                        <a href="updates.html">View All Updates <i class="tji-arrow-right-long"></i></a>
+                        <a href="updates.php">View All Updates <i class="tji-arrow-right-long"></i></a>
                     </div>
                     <div class="row g-4">
                         <?php foreach ($moreUpdates as $more): ?>
                             <div class="col-md-4">
                                 <article class="update-card">
-                                    <a class="update-thumb" href="update.html?slug=<?= bdst_e($more['slug']) ?>">
+                                    <a class="update-thumb" href="update.php?slug=<?= bdst_e($more['slug']) ?>">
                                         <img src="<?= bdst_e(bdst_cover_path($more)) ?>" alt="<?= bdst_e($more['title']) ?>" loading="lazy" decoding="async">
                                         <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($more['published_at']))) ?></span>
                                     </a>
                                     <div class="update-body">
                                         <h3 class="update-title">
-                                            <a href="update.html?slug=<?= bdst_e($more['slug']) ?>"><?= bdst_e($more['title']) ?></a>
+                                            <a href="update.php?slug=<?= bdst_e($more['slug']) ?>"><?= bdst_e($more['title']) ?></a>
                                         </h3>
                                         <?php if (!empty($more['excerpt'])): ?>
                                             <p class="update-excerpt"><?= bdst_e(mb_strimwidth($more['excerpt'], 0, 130, '...')) ?></p>
                                         <?php endif; ?>
-                                        <a class="update-more" href="update.html?slug=<?= bdst_e($more['slug']) ?>">
+                                        <a class="update-more" href="update.php?slug=<?= bdst_e($more['slug']) ?>">
                                             Read More <i class="tji-arrow-right-long"></i>
                                         </a>
                                     </div>
@@ -1062,7 +1062,7 @@ try {
                                     <li><a href="about.html">About BDS Tanzania</a></li>
                                     <li><a href="leadership.html">Leadership</a></li>
                                     <li><a href="how-to-join.html">How to Join</a></li>
-                                    <li><a href="updates.html">Updates</a></li>
+                                    <li><a href="updates.php">Updates</a></li>
                                     <li><a href="contact.html">Contact Us</a></li>
                                 </ul>
                             </div>

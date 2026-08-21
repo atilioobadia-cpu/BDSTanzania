@@ -95,12 +95,12 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
     <meta name="keywords" content="BDS Tanzania updates, BDS Tanzania news, BDS Tanzania events, announcements Tanzania business development, publications BDS Tanzania">
     <meta name="author" content="BDS Tanzania">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.bdst.or.tz/updates.html">
+    <link rel="canonical" href="https://www.bdst.or.tz/updates.php">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Updates | BDS Tanzania News, Events &amp; Announcements">
     <meta property="og:description" content="Stay updated with BDS Tanzania news, announcements, events, publications and key developments relevant to members and the wider business ecosystem.">
-    <meta property="og:url" content="https://www.bdst.or.tz/updates.html">
+    <meta property="og:url" content="https://www.bdst.or.tz/updates.php">
     <meta property="og:site_name" content="BDS Tanzania">
     <meta property="og:image" content="https://www.bdst.or.tz/assets/images/logos/logo.webp">
 
@@ -116,7 +116,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
             "@context": "https://schema.org",
             "@type": "CollectionPage",
             "name": "BDS Tanzania Updates",
-            "url": "https://www.bdst.or.tz/updates.html",
+            "url": "https://www.bdst.or.tz/updates.php",
             "description": "News, events, announcements and updates from BDS Tanzania."
         }
     </script>
@@ -723,7 +723,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                 <div class="hamburger-search-area">
                     <h5 class="hamburger-title">Search BDS Tanzania</h5>
                     <div class="hamburger_search">
-                        <form method="get" action="updates.html">
+                        <form method="get" action="updates.php">
                             <button type="submit" aria-label="Search">
                                 <i class="tji-search"></i>
                             </button>
@@ -869,7 +869,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="updates.html">Latest Updates</a></li>
+                                            <li><a href="updates.php">Latest Updates</a></li>
                                             <li><a href="gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -914,7 +914,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="updates.html" method="get">
+                                <form action="updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -981,7 +981,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <li class="has-dropdown">
                                         <a href="#">Updates</a>
                                         <ul class="sub-menu">
-                                            <li><a href="updates.html">Latest Updates</a></li>
+                                            <li><a href="updates.php">Latest Updates</a></li>
                                             <li><a href="gallery.html">Gallery</a></li>
                                         </ul>
                                     </li>
@@ -1033,7 +1033,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                     <div class="col-8">
                         <div class="tj_search_wrapper">
                             <div class="search_form">
-                                <form action="updates.html" method="get">
+                                <form action="updates.php" method="get">
                                     <div class="search_input">
                                         <div class="search-box">
                                             <input class="search-form-input" type="text" name="s" placeholder="Search BDS Tanzania website" required>
@@ -1103,14 +1103,14 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                         <div class="col-lg-8">
                             <?php if ($featured !== null): ?>
                                 <article class="update-featured">
-                                    <a class="update-featured__thumb" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
+                                    <a class="update-featured__thumb" href="update.php?slug=<?= bdst_e($featured['slug']) ?>">
                                         <img src="<?= bdst_e(bdst_cover_path($featured)) ?>" alt="<?= bdst_e($featured['title']) ?>" loading="lazy" decoding="async">
                                         <span class="update-featured__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
                                     </a>
                                     <div class="update-featured__body">
                                         <span class="update-featured__tag">Latest Update</span>
                                         <h2 class="update-featured__title">
-                                            <a href="update.html?slug=<?= bdst_e($featured['slug']) ?>"><?= bdst_e($featured['title']) ?></a>
+                                            <a href="update.php?slug=<?= bdst_e($featured['slug']) ?>"><?= bdst_e($featured['title']) ?></a>
                                         </h2>
                                         <?php if (!empty($featured['excerpt'])): ?>
                                             <p class="update-featured__excerpt"><?= bdst_e(mb_strimwidth($featured['excerpt'], 0, 220, '...')) ?></p>
@@ -1120,7 +1120,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                                 <span><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('F j, Y', strtotime($featured['published_at']))) ?></span>
                                                 <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($featured['content'] ?? '') ?> min read</span>
                                             </div>
-                                            <a class="update-more" href="update.html?slug=<?= bdst_e($featured['slug']) ?>">
+                                            <a class="update-more" href="update.php?slug=<?= bdst_e($featured['slug']) ?>">
                                                 Read Full Update <i class="tji-arrow-right-long"></i>
                                             </a>
                                         </div>
@@ -1133,7 +1133,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <?php foreach ($gridPosts as $post): ?>
                                         <div class="col-md-6">
                                             <article class="update-card">
-                                                <a class="update-thumb" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                                <a class="update-thumb" href="update.php?slug=<?= bdst_e($post['slug']) ?>">
                                                     <img src="<?= bdst_e(bdst_cover_path($post)) ?>" alt="<?= bdst_e($post['title']) ?>" loading="lazy" decoding="async">
                                                     <span class="update-thumb__date"><i class="fa-regular fa-calendar"></i> <?= bdst_e(date('M j, Y', strtotime($post['published_at']))) ?></span>
                                                 </a>
@@ -1142,12 +1142,12 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                                         <span><i class="fa-regular fa-clock"></i> <?= bdst_reading_time($post['content'] ?? '') ?> min read</span>
                                                     </div>
                                                     <h3 class="update-title">
-                                                        <a href="update.html?slug=<?= bdst_e($post['slug']) ?>"><?= bdst_e($post['title']) ?></a>
+                                                        <a href="update.php?slug=<?= bdst_e($post['slug']) ?>"><?= bdst_e($post['title']) ?></a>
                                                     </h3>
                                                     <?php if (!empty($post['excerpt'])): ?>
                                                         <p class="update-excerpt"><?= bdst_e(mb_strimwidth($post['excerpt'], 0, 150, '...')) ?></p>
                                                     <?php endif; ?>
-                                                    <a class="update-more" href="update.html?slug=<?= bdst_e($post['slug']) ?>">
+                                                    <a class="update-more" href="update.php?slug=<?= bdst_e($post['slug']) ?>">
                                                         Read More <i class="tji-arrow-right-long"></i>
                                                     </a>
                                                 </div>
@@ -1162,7 +1162,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <ul>
                                         <li>
                                             <?php if ($page > 1): ?>
-                                                <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page - 1 ?>"><i class="fa-regular fa-angle-left"></i></a>
+                                                <a href="updates.php?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page - 1 ?>"><i class="fa-regular fa-angle-left"></i></a>
                                             <?php else: ?>
                                                 <a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-left"></i></a>
                                             <?php endif; ?>
@@ -1172,13 +1172,13 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                                 <li><span class="current"><?= $i ?></span></li>
                                             <?php else: ?>
                                                 <li>
-                                                    <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $i ?>"><?= $i ?></a>
+                                                    <a href="updates.php?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $i ?>"><?= $i ?></a>
                                                 </li>
                                             <?php endif; ?>
                                         <?php endfor; ?>
                                         <li>
                                             <?php if ($page < $totalPages): ?>
-                                                <a href="updates.html?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page + 1 ?>"><i class="fa-regular fa-angle-right"></i></a>
+                                                <a href="updates.php?<?= $search !== '' ? 's=' . rawurlencode($search) . '&' : '' ?>page=<?= $page + 1 ?>"><i class="fa-regular fa-angle-right"></i></a>
                                             <?php else: ?>
                                                 <a class="disabled" href="#" aria-disabled="true"><i class="fa-regular fa-angle-right"></i></a>
                                             <?php endif; ?>
@@ -1200,7 +1200,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                             <div class="updates-sidebar">
                                 <div class="side-widget">
                                     <h4 class="side-widget__title">Search Updates</h4>
-                                    <form class="side-search" method="get" action="updates.html">
+                                    <form class="side-search" method="get" action="updates.php">
                                         <input type="search" name="s" value="<?= bdst_e($search) ?>" placeholder="Search updates..." aria-label="Search updates">
                                         <button type="submit" aria-label="Search"><i class="tji-search"></i></button>
                                     </form>
@@ -1211,7 +1211,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <ul class="side-recent">
                                         <?php foreach ($recentPosts as $rp): ?>
                                             <li>
-                                                <a href="update.html?slug=<?= bdst_e($rp['slug']) ?>">
+                                                <a href="update.php?slug=<?= bdst_e($rp['slug']) ?>">
                                                     <span class="side-recent__thumb">
                                                         <img src="<?= bdst_e(bdst_cover_path($rp)) ?>" alt="<?= bdst_e($rp['title']) ?>" loading="lazy" decoding="async">
                                                     </span>
@@ -1300,7 +1300,7 @@ $gridPosts = $featured !== null ? array_slice($posts, 1) : $posts;
                                     <li><a href="about.html">About BDS Tanzania</a></li>
                                     <li><a href="leadership.html">Leadership</a></li>
                                     <li><a href="how-to-join.html">How to Join</a></li>
-                                    <li><a href="updates.html">Updates</a></li>
+                                    <li><a href="updates.php">Updates</a></li>
                                     <li><a href="contact.html">Contact Us</a></li>
                                 </ul>
                             </div>
