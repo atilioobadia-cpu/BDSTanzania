@@ -414,6 +414,41 @@ select.reg-control {
 }
 
 /* ------------------------------------------------------------------
+   Validation states
+------------------------------------------------------------------ */
+.field-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #c0392b;
+}
+
+.reg-control.has-error,
+.reg-combo .has-error {
+    border-color: #d64541 !important;
+}
+
+.reg-control.has-error:focus {
+    box-shadow: 0 0 0 3px rgba(214, 69, 65, 0.15);
+}
+
+.reg-field.has-error > .reg-chip-grid .reg-chip span:not(:hover),
+.reg-field.has-error > .reg-chip-row .reg-chip span {
+    border-color: rgba(214, 69, 65, 0.55);
+    background: #fdf7f6;
+}
+
+.reg-field.has-error .reg-declare {
+    border-color: rgba(214, 69, 65, 0.55);
+    background: #fdf7f6;
+}
+
+.reg-file-box.has-error {
+    border-color: #d64541;
+}
+
+/* ------------------------------------------------------------------
    Chips (multi-select) & choice pills (single-select)
 ------------------------------------------------------------------ */
 .reg-chip-row {

@@ -280,10 +280,10 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
 
     // Validate raw single-selects against the allowed lists (before collapsing).
     if ($data['professional_status'] === '' || ($data['professional_status'] !== 'Other' && !$allowCustom && !in_array($data['professional_status'], bdst_professional_statuses(), true))) {
-        $errors[] = 'Please select your current professional status.';
+        $errors['professional_status'] = 'Please select your current professional status.';
     }
     if ($data['education'] === '' || ($data['education'] !== 'Other' && !$allowCustom && !in_array($data['education'], bdst_education_levels(), true))) {
-        $errors[] = 'Please select your highest education level.';
+        $errors['education'] = 'Please select your highest education level.';
     }
 
     // Single-select fields: "Other" collapses into the stored value itself.
@@ -295,7 +295,7 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
     ) {
         if ($data[$field] === 'Other') {
             if ($data[$otherField] === '') {
-                $errors[] = 'Please specify the "Other" value you selected.';
+                $errors[$otherField] = 'Please specify the "Other" value you selected.';
             } else {
                 $data[$field] = mb_substr($data[$otherField], 0, 100);
             }
@@ -316,7 +316,7 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
         $list = bdst_decode_list($data[$field]);
         if (in_array('Other', $list, true)) {
             if ($data[$otherField] === '') {
-                $errors[] = 'Please specify the "Other" value you selected.';
+                $errors[$otherField] = 'Please specify the "Other" value you selected.';
             } else {
                 $list = array_values(array_diff($list, ['Other']));
                 $list[] = mb_substr($data[$otherField], 0, 100);
@@ -326,7 +326,7 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
         } elseif (!$allowCustom) {
             foreach ($list as $item) {
                 if (!in_array($item, $allowed, true)) {
-                    $errors[] = 'Invalid selection detected.';
+                    $errors[$field] = 'Invalid selection detected.';
                     break;
                 }
             }
@@ -336,31 +336,37 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
     }
 
     if ($data['full_name'] === '' || mb_strlen($data['full_name']) > 150) {
-        $errors[] = 'Please enter your full name.';
+        $errors['full_name'] = 'Please enter your full name.';
     }
     if (!in_array($data['gender'], ['Male', 'Female'], true)) {
-        $errors[] = 'Please select your gender.';
+        $errors['gender'] = 'Please select your gender.';
     }
     if (!in_array($data['age_group'], bdst_age_groups(), true)) {
-        $errors[] = 'Please select your age group.';
+        $errors['age_group'] = 'Please select your age group.';
     }
     if ($data['phone'] === '' || !preg_match('/^[0-9+\-\s()]{7,20}$/', $data['phone'])) {
-        $errors[] = 'Please enter a valid phone number.';
+        $errors['phone'] = 'Please enter a valid phone number.';
     }
     if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL) || mb_strlen($data['email']) > 150) {
-        $errors[] = 'Please enter a valid email address.';
+        $errors['email'] = 'Please enter a valid email address.';
+    } else {
+        // Reject addresses whose domain does not exist (typos like gmail.con).
+        $domain = substr((string) strrchr($data['email'], '@'), 1);
+        if ($domain !== '' && !checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
+            $errors['email'] = 'This email domain does not exist. Please check the address for typos.';
+        }
     }
     if (!in_array($data['region'], bdst_regions(), true)) {
-        $errors[] = 'Please select your region.';
+        $errors['region'] = 'Please select your region.';
     }
     if ($data['district'] === '' || mb_strlen($data['district']) > 80) {
-        $errors[] = 'Please enter your district.';
+        $errors['district'] = 'Please enter your district.';
     }
     if (mb_strlen($data['firm_name']) > 150) {
-        $errors[] = 'Firm name is too long.';
+        $errors['firm_name'] = 'Firm name is too long.';
     }
     if (!in_array($data['experience_years'], bdst_experience_levels(), true)) {
-        $errors[] = 'Please select your years of experience.';
+        $errors['experience_years'] = 'Please select your years of experience.';
     }
     foreach (
         [
@@ -372,24 +378,24 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
         ] as [$field, $label]
     ) {
         if (count(bdst_decode_list($data[$field])) === 0) {
-            $errors[] = "Please select at least one option for: {$label}.";
+            $errors[$field] = "Please select at least one option for: {$label}.";
         }
     }
     if (!in_array($data['clients_served'], bdst_clients_served(), true)) {
-        $errors[] = 'Please select how many clients you have served.';
+        $errors['clients_served'] = 'Please select how many clients you have served.';
     }
     if (!isset($src['has_certification']) || !in_array($get('has_certification'), ['yes', 'no'], true)) {
-        $errors[] = 'Please indicate whether you hold professional certifications.';
+        $errors['has_certification'] = 'Please indicate whether you hold professional certifications.';
     }
     if ($data['has_certification'] === 1 && count(bdst_decode_list($data['certifications'])) === 0) {
-        $errors[] = 'Please select at least one certification type.';
+        $errors['certifications'] = 'Please select at least one certification type.';
     }
     if ($data['has_certification'] === 0) {
         $data['certifications'] = '[]';
         $data['certifications_other'] = '';
     }
     if ($data['declaration'] !== 1) {
-        $errors[] = 'You must accept the declaration to submit your registration.';
+        $errors['declaration'] = 'You must accept the declaration to submit your registration.';
     }
 
     return ['data' => $data, 'errors' => $errors];
