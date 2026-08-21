@@ -234,8 +234,11 @@ function bdst_store_cv(array $file, string $referenceNo): array
 /**
  * Read + validate a registration submission from any array (public form
  * or admin edit). Returns ['data' => array, 'errors' => string[]].
+ *
+ * $allowCustom lets stored "Other" values (already collapsed) pass
+ * validation — used by the admin edit form.
  */
-function bdst_collect_registration(array $src, array $files = []): array
+function bdst_collect_registration(array $src, array $files = [], bool $allowCustom = false): array
 {
     $errors = [];
     $get = static fn (string $key): string => trim((string) ($src[$key] ?? ''));
@@ -271,10 +274,10 @@ function bdst_collect_registration(array $src, array $files = []): array
     ];
 
     // Validate raw single-selects against the allowed lists (before collapsing).
-    if ($data['professional_status'] === '' || ($data['professional_status'] !== 'Other' && !in_array($data['professional_status'], bdst_professional_statuses(), true))) {
+    if ($data['professional_status'] === '' || ($data['professional_status'] !== 'Other' && !$allowCustom && !in_array($data['professional_status'], bdst_professional_statuses(), true))) {
         $errors[] = 'Please select your current professional status.';
     }
-    if ($data['education'] === '' || ($data['education'] !== 'Other' && !in_array($data['education'], bdst_education_levels(), true))) {
+    if ($data['education'] === '' || ($data['education'] !== 'Other' && !$allowCustom && !in_array($data['education'], bdst_education_levels(), true))) {
         $errors[] = 'Please select your highest education level.';
     }
 
@@ -315,7 +318,7 @@ function bdst_collect_registration(array $src, array $files = []): array
             }
         } elseif ($data[$otherField] !== '') {
             $list[] = mb_substr($data[$otherField], 0, 100);
-        } else {
+        } elseif (!$allowCustom) {
             foreach ($list as $item) {
                 if (!in_array($item, $allowed, true)) {
                     $errors[] = 'Invalid selection detected.';
@@ -385,4 +388,14 @@ function bdst_collect_registration(array $src, array $files = []): array
     }
 
     return ['data' => $data, 'errors' => $errors];
+}
+
+function bdst_reg_status_label(string $status): string
+{
+    return match ($status) {
+        'approved' => 'Approved',
+        'rejected' => 'Not Approved',
+        'reviewed' => 'Under Review',
+        default    => 'Pending Review',
+    };
 }

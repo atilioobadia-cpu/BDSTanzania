@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/../includes/forms.php';
+require __DIR__ . '/_sidebar.php';
 bdst_require_login();
 
 $pdo = bdst_db();
@@ -32,7 +33,7 @@ if (!$notFound && $_SERVER['REQUEST_METHOD'] === 'POST') {
         // declaration is implied for admin edits.
         $_POST['declaration'] = 'yes';
 
-        $result   = bdst_collect_registration($_POST, []);
+        $result   = bdst_collect_registration($_POST, [], true);
         $data     = $result['data'];
         $errors   = $result['errors'];
         $newStatus = (string) ($_POST['status'] ?? '');
@@ -142,6 +143,22 @@ function reg_admin_chips(string $name, array $options, array $checked): void
             <span><?= bdst_e($option) ?></span>
         </label>
         <?php
+    }
+}
+
+/**
+ * Render <option> list; keeps custom "Other" values selectable by
+ * appending the stored value when it is not part of the standard options.
+ */
+function reg_admin_options(array $options, string $current): void
+{
+    $extra = $current !== '' && !in_array($current, $options, true);
+    if ($extra) {
+        echo '<option value="' . bdst_e($current) . '" selected>' . bdst_e($current) . ' (custom)</option>';
+    }
+    foreach ($options as $opt) {
+        $sel = !$extra && $current === $opt ? ' selected' : '';
+        echo '<option value="' . bdst_e($opt) . '"' . $sel . '>' . bdst_e($opt) . '</option>';
     }
 }
 
@@ -257,9 +274,7 @@ $flash = bdst_flash_consume();
                         <div class="field">
                             <label>Professional Status *</label>
                             <select name="professional_status" required>
-                                <?php foreach (bdst_professional_statuses() as $opt): ?>
-                                    <option value="<?= bdst_e($opt) ?>"<?= $reg['professional_status'] === $opt ? ' selected' : '' ?>><?= bdst_e($opt) ?></option>
-                                <?php endforeach; ?>
+                                <?php reg_admin_options(bdst_professional_statuses(), (string) $reg['professional_status']); ?>
                             </select>
                         </div>
                         <div class="field">
@@ -277,9 +292,7 @@ $flash = bdst_flash_consume();
                         <div class="field">
                             <label>Highest Education Level *</label>
                             <select name="education" required>
-                                <?php foreach (bdst_education_levels() as $opt): ?>
-                                    <option value="<?= bdst_e($opt) ?>"<?= $reg['education'] === $opt ? ' selected' : '' ?>><?= bdst_e($opt) ?></option>
-                                <?php endforeach; ?>
+                                <?php reg_admin_options(bdst_education_levels(), (string) $reg['education']); ?>
                             </select>
                         </div>
                         <div class="field">

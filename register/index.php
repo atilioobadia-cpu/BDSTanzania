@@ -70,7 +70,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          :service_nature, :has_certification, :certifications, :zones,
                          :declaration, '', '', 'pending')"
                 );
-                $stmt->execute($data);
+                $stmt->execute([
+                    ':full_name'           => $data['full_name'],
+                    ':gender'              => $data['gender'],
+                    ':age_group'           => $data['age_group'],
+                    ':phone'               => $data['phone'],
+                    ':email'               => $data['email'],
+                    ':region'              => $data['region'],
+                    ':district'            => $data['district'],
+                    ':professional_status' => $data['professional_status'],
+                    ':firm_name'           => $data['firm_name'],
+                    ':experience_years'    => $data['experience_years'],
+                    ':education'           => $data['education'],
+                    ':service_areas'       => $data['service_areas'],
+                    ':industries'          => $data['industries'],
+                    ':client_segments'     => $data['client_segments'],
+                    ':clients_served'      => $data['clients_served'],
+                    ':service_nature'      => $data['service_nature'],
+                    ':has_certification'   => (int) $data['has_certification'],
+                    ':certifications'      => $data['certifications'],
+                    ':zones'               => $data['zones'],
+                    ':declaration'         => (int) $data['declaration'],
+                ]);
                 $id  = (int) $pdo->lastInsertId();
                 $ref = bdst_reg_reference($id);
 

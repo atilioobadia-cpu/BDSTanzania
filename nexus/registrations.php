@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 require __DIR__ . '/auth.php';
+require __DIR__ . '/../includes/forms.php';
+require __DIR__ . '/_sidebar.php';
 bdst_require_login();
 
 $pdo = bdst_db();

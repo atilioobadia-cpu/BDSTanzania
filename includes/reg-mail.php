@@ -40,16 +40,6 @@ function bdst_reg_mailer(): PHPMailer
     return $mail;
 }
 
-function bdst_reg_status_label(string $status): string
-{
-    return match ($status) {
-        'approved' => 'Approved',
-        'rejected' => 'Not Approved',
-        'reviewed' => 'Under Review',
-        default    => 'Pending Review',
-    };
-}
-
 function bdst_reg_fetch(PDO $pdo, int $id): ?array
 {
     $stmt = $pdo->prepare("SELECT * FROM bds_registrations WHERE id = :id");
