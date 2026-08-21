@@ -250,6 +250,9 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                     <h2>Registration Form</h2>
                     <p>Fields marked <span class="reg-req">*</span> are required.</p>
                 </div>
+                <a class="reg-btn reg-btn-outline reg-head-status" href="check.php">
+                    <i class="fa-solid fa-magnifying-glass"></i> Check Registration Status
+                </a>
             </div>
 
             <?php reg_section('01', 'Personal Information', 'Tell us who you are and how we can reach you.'); ?>

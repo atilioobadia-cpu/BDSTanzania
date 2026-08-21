@@ -134,6 +134,12 @@
     font-size: 13.5px;
 }
 
+.reg-head-status {
+    padding: 9px 18px;
+    font-size: 13px;
+    flex: 0 0 auto;
+}
+
 .reg-req {
     color: #d64541;
     font-weight: 700;
@@ -976,6 +982,10 @@ select.reg-control {
     max-width: 440px;
     width: calc(100% - 32px);
     box-shadow: 0 24px 70px rgba(12, 30, 33, 0.35);
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    height: fit-content;
 }
 
 .reg-modal::backdrop {
