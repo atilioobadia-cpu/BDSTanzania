@@ -91,6 +91,20 @@ if (!$notFound && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':admin_notes'         => trim((string) ($_POST['admin_notes'] ?? '')),
                 ':id'                  => $id,
             ]);
+
+            // Status flipped to approved? Fire the approval pack automatically.
+            // "Resend Approval Email" re-sends even if it was already approved.
+            $wasApproved  = (string) $reg['status'] === 'approved';
+            $resendRequested = (string) ($_POST['resend_mail'] ?? '') === '1';
+            if (($newStatus === 'approved' && !$wasApproved) || ($wasApproved && $resendRequested)) {
+                require_once __DIR__ . '/../includes/reg-mail.php';
+                try {
+                    $_SESSION['approval_mail'] = bdst_send_approval_email($pdo, $id);
+                } catch (Throwable $e) {
+                    $_SESSION['approval_mail'] = ['ok' => false, 'to' => (string) $data['email'], 'error' => $e->getMessage()];
+                }
+            }
+
             bdst_flash('success', 'Registration ' . $reg['reference_no'] . ' saved.');
             header('Location: registration.php?id=' . $id);
             exit;
@@ -163,6 +177,8 @@ function reg_admin_options(array $options, string $current): void
 }
 
 $flash = bdst_flash_consume();
+$approvalMail = $_SESSION['approval_mail'] ?? null;
+unset($_SESSION['approval_mail']);
 ?>
 <!doctype html>
 <html lang="en">
@@ -388,6 +404,9 @@ $flash = bdst_flash_consume();
                     </div>
                     <div class="row-actions">
                         <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <?php if ((string) $reg['status'] === 'approved'): ?>
+                            <button type="submit" class="btn btn-ghost" name="resend_mail" value="1">Resend Approval Email</button>
+                        <?php endif; ?>
                         <?php if ($reg['cv_path'] !== null && $reg['cv_path'] !== ''): ?>
                             <a href="cv.php?id=<?= $id ?>" class="btn btn-ghost">Download CV</a>
                         <?php else: ?>
@@ -410,13 +429,37 @@ $flash = bdst_flash_consume();
     </div>
 </main>
 
+<?php if (is_array($approvalMail)): ?>
+<dialog id="mailModal" class="amodal">
+    <div class="amodal-icon <?= $approvalMail['ok'] ? 'ok' : 'bad' ?>">
+        <i class="fa-solid <?= $approvalMail['ok'] ? 'fa-envelope-circle-check' : 'fa-triangle-exclamation' ?>"></i>
+    </div>
+    <h3><?= $approvalMail['ok'] ? 'Approval email sent' : 'Email could not be sent' ?></h3>
+    <?php if ($approvalMail['ok']): ?>
+        <p>The approval pack was delivered to<br><strong><?= bdst_e((string) $approvalMail['to']) ?></strong></p>
+    <?php else: ?>
+        <p>The application was approved, but the email to<br><strong><?= bdst_e((string) $approvalMail['to']) ?></strong><br>failed<?= isset($approvalMail['error']) && $approvalMail['error'] !== '' ? ': ' . bdst_e((string) $approvalMail['error']) : '' ?>.</p>
+        <p class="td-muted">Use the “Resend Approval Email” button to try again.</p>
+    <?php endif; ?>
+    <button type="button" class="btn btn-primary" id="mailModalClose">Close</button>
+</dialog>
+<?php endif; ?>
+
 <script>
 (function () {
     var sel = document.getElementById('hasCert');
     var block = document.getElementById('certBlock');
-    if (!sel || !block) return;
-    var sync = function () { block.hidden = sel.value === 'no'; };
-    sel.addEventListener('change', sync);
+    if (sel && block) {
+        var sync = function () { block.hidden = sel.value === 'no'; };
+        sync();
+        sel.addEventListener('change', sync);
+    }
+
+    var modal = document.getElementById('mailModal');
+    if (modal && typeof modal.showModal === 'function') {
+        modal.showModal();
+        document.getElementById('mailModalClose').addEventListener('click', function () { modal.close(); });
+    }
 })();
 </script>
 </body>

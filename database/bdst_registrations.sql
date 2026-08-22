@@ -37,3 +37,18 @@ CREATE TABLE IF NOT EXISTS `bds_registrations` (
   KEY `idx_bds_reg_status` (`status`,`submitted_at`),
   UNIQUE KEY `uq_bds_reg_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------------
+-- Email log (audit trail of every notification the system sends)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bds_email_log (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  registration_id INT UNSIGNED NOT NULL,
+  reference_no VARCHAR(30) NOT NULL DEFAULT '',
+  email_type VARCHAR(40) NOT NULL,
+  to_email VARCHAR(190) NOT NULL,
+  subject VARCHAR(255) NULL,
+  status VARCHAR(20) NOT NULL,
+  error_message TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -24,6 +24,11 @@ uploads/
 register/uploads/*
 !register/uploads/.htaccess
 !register/uploads/.gitkeep
+
+# Membership approval documents (managed outside version control;
+# production copies live above the web root on cPanel)
+storage/approval-docs/*
+!storage/approval-docs/.gitkeep
 tmp/
 
 # Browser-download duplicates

@@ -609,3 +609,36 @@ body.login-body {
 @media (max-width: 720px) {
     .form-grid { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------------------------------
+   Approval mail result modal
+------------------------------------------------------------------ */
+.amodal {
+    border: none;
+    border-radius: 16px;
+    padding: 34px 38px 30px;
+    text-align: center;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    box-shadow: 0 24px 70px rgba(12, 30, 33, 0.28);
+}
+.amodal::backdrop {
+    background: rgba(12, 30, 33, 0.45);
+}
+.amodal-icon {
+    font-size: 44px;
+    margin-bottom: 14px;
+}
+.amodal-icon.ok { color: #1e7e34; }
+.amodal-icon.bad { color: #c0392b; }
+.amodal h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: var(--ink);
+}
+.amodal p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #364e52;
+    word-break: break-word;
+}

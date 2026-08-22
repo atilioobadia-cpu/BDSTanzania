@@ -449,6 +449,134 @@ select.reg-control {
 }
 
 /* ------------------------------------------------------------------
+   Reference-number input (Check Status)
+------------------------------------------------------------------ */
+.ref-input-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.ref-prefix {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #ecf0f0;
+    border: 1px solid var(--reg-line);
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: #364e52;
+    white-space: nowrap;
+}
+
+.ref-input-group .ref-num {
+    border-radius: 0 10px 10px 0;
+    max-width: 140px;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* ------------------------------------------------------------------
+   Membership documents (approved members)
+------------------------------------------------------------------ */
+.doc-section {
+    margin-top: 24px;
+    background: #ffffff;
+    border: 1px solid var(--reg-line);
+    border-radius: 14px;
+    padding: 24px 26px;
+}
+
+.doc-section-title {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--reg-ink);
+}
+
+.doc-section-title i {
+    color: #1e7e34;
+    margin-right: 4px;
+}
+
+.doc-section-sub {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: var(--reg-muted);
+}
+
+.doc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-top: 1px dashed var(--reg-line);
+}
+
+.doc-item:first-child {
+    border-top: none;
+}
+
+.doc-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdf2f2;
+    color: #c0392b;
+    border-radius: 10px;
+    font-size: 19px;
+}
+
+.doc-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.doc-meta strong {
+    font-size: 14.5px;
+    color: var(--reg-ink);
+}
+
+.doc-meta small {
+    font-size: 12.5px;
+    color: var(--reg-muted);
+    margin-top: 2px;
+}
+
+.doc-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 50px;
+    background: var(--reg-primary);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s ease, transform .15s ease;
+}
+
+.doc-btn:hover {
+    background: #1283ab;
+    transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------------
    Chips (multi-select) & choice pills (single-select)
 ------------------------------------------------------------------ */
 .reg-chip-row {
