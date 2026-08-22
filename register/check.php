@@ -43,7 +43,7 @@ if ($refInput !== '') {
     } else {
         try {
             $stmt = bdst_db()->prepare(
-                "SELECT id, reference_no, full_name, status, submitted_at, region, district
+                "SELECT id, reference_no, full_name, status, submitted_at, region, district, rejection_reason
                  FROM bds_registrations
                  WHERE reference_no = :ref
                  LIMIT 1"
@@ -64,8 +64,8 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
 
 <section class="tj-blog-section section-gap">
     <div class="container">
-        <div class="reg-panel wow fadeInUp" data-wow-delay=".1s" style="text-align:left;">
-            <div style="text-align:center;margin-bottom:26px;">
+        <div class="reg-panel wow fadeInUp" data-wow-delay=".1s">
+            <div style="margin-bottom:26px;">
                 <span class="reg-panel-icon info"><i class="fa-solid fa-magnifying-glass"></i></span>
                 <h2>Check Your Registration Status</h2>
                 <p>Enter your reference number — it is on the confirmation email you received after registering.</p>
@@ -93,7 +93,7 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
             </form>
 
             <?php if ($checked && $reg !== null): ?>
-                <div style="margin-top:34px;background:#ecf0f0;border-radius:14px;padding:28px 30px;">
+                <div style="margin-top:34px;background:#ecf0f0;border-radius:14px;padding:28px 30px;text-align:left;">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
                         <div>
                             <small style="letter-spacing:.08em;color:#67787a;font-weight:700;text-transform:uppercase;font-size:11.5px;">Reference</small>
@@ -154,7 +154,17 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
                     <?php else: ?>
                         <p style="margin:18px 0 0;color:#364e52;font-size:14px;line-height:1.7;">
                             <i class="fa-solid fa-circle-xmark" style="color:#c0392b;"></i>
-                            For details regarding this decision, please contact the Secretariat at
+                            Unfortunately your application was <strong>not approved</strong> at this time.
+                        </p>
+                        <?php $reason = trim((string) ($reg['rejection_reason'] ?? '')); ?>
+                        <?php if ($reason !== ''): ?>
+                            <div style="margin-top:14px;background:#fdf7f6;border-left:4px solid #c0392b;border-radius:0 10px 10px 0;padding:14px 18px;">
+                                <small style="display:block;letter-spacing:.08em;color:#c0392b;font-weight:700;text-transform:uppercase;font-size:11px;">Reason</small>
+                                <p style="margin:6px 0 0;color:#364e52;font-size:14px;line-height:1.7;"><?= htmlspecialchars($reason, ENT_QUOTES, 'UTF-8') ?></p>
+                            </div>
+                        <?php endif; ?>
+                        <p style="margin:14px 0 0;color:#364e52;font-size:14px;line-height:1.7;">
+                            For details or to re-apply, please contact the Secretariat at
                             <a href="mailto:info@bdst.or.tz" style="color:#1997C6;">info@bdst.or.tz</a>.
                         </p>
                     <?php endif; ?>

@@ -454,6 +454,9 @@ select.reg-control {
 .ref-input-group {
     display: flex;
     align-items: stretch;
+    justify-content: center;
+    max-width: 340px;
+    margin: 0 auto;
 }
 
 .ref-prefix {
@@ -487,6 +490,7 @@ select.reg-control {
     border: 1px solid var(--reg-line);
     border-radius: 14px;
     padding: 24px 26px;
+    text-align: left;
 }
 
 .doc-section-title {

@@ -64,6 +64,7 @@ if (!$notFound && $_SERVER['REQUEST_METHOD'] === 'POST') {
                         zones = :zones,
                         status = :status,
                         admin_notes = :admin_notes,
+                        rejection_reason = :rejection_reason,
                         reviewed_at = NOW()
                     WHERE id = :id";
             $stmt = $pdo->prepare($sql);
@@ -89,6 +90,7 @@ if (!$notFound && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':zones'               => $data['zones'],
                 ':status'              => $newStatus,
                 ':admin_notes'         => trim((string) ($_POST['admin_notes'] ?? '')),
+                ':rejection_reason'    => trim((string) ($_POST['rejection_reason'] ?? '')),
                 ':id'                  => $id,
             ]);
 
@@ -401,6 +403,10 @@ unset($_SESSION['approval_mail']);
                     <div class="field">
                         <label>Admin Notes (internal)</label>
                         <textarea name="admin_notes" rows="4" placeholder="Internal notes about this application..."><?= bdst_e((string) $reg['admin_notes']) ?></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Rejection Reason <span class="td-muted">(shown to the applicant when status is Rejected)</span></label>
+                        <textarea name="rejection_reason" rows="3" placeholder="Explain why this application was not accepted..."><?= bdst_e((string) ($reg['rejection_reason'] ?? '')) ?></textarea>
                     </div>
                     <div class="row-actions">
                         <button type="submit" class="btn btn-primary">Save Changes</button>

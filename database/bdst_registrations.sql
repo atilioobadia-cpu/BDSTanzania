@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `bds_registrations` (
   `cv_original_name` varchar(255) DEFAULT NULL,
   `status` enum('pending','reviewed','approved','rejected') NOT NULL DEFAULT 'pending',
   `admin_notes` text DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL,
   `submitted_at` datetime NOT NULL DEFAULT current_timestamp(),
   `reviewed_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
