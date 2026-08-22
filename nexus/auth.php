@@ -5,6 +5,8 @@ session_start();
 
 require_once __DIR__ . '/../includes/db.php';
 
+const BdstAdminIdleTimeout = 60; // seconds of inactivity before forced sign-out
+
 function bdst_admin_username(): string
 {
     $config = bdst_config();
@@ -28,6 +30,21 @@ function bdst_require_login(): void
         header('Location: index.php');
         exit;
     }
+
+    $now = time();
+    $last = $_SESSION['admin_last_activity'] ?? null;
+
+    if ($last !== null && ($now - (int) $last) > BdstAdminIdleTimeout) {
+        session_unset();
+        session_destroy();
+        session_start();
+        session_regenerate_id(true);
+        bdst_flash('error', 'You were signed out automatically after one minute of inactivity. Please sign in again.');
+        header('Location: index.php');
+        exit;
+    }
+
+    $_SESSION['admin_last_activity'] = $now;
 }
 
 function bdst_csrf_token(): string

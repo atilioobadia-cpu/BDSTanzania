@@ -9,6 +9,7 @@ if (bdst_is_logged_in()) {
 }
 
 $error = '';
+$flash = bdst_flash_consume();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim((string) ($_POST['username'] ?? ''));
@@ -19,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($hash !== '' && hash_equals(bdst_admin_username(), $username) && password_verify($password, $hash)) {
             session_regenerate_id(true);
             $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_last_activity'] = time();
             header('Location: dashboard.php');
             exit;
         }
@@ -61,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($error !== ''): ?>
             <div class="alert alert-error"><?= bdst_e($error) ?></div>
+        <?php elseif ($flash !== null): ?>
+            <div class="alert <?= $flash['type'] === 'error' ? 'alert-error' : 'alert-success' ?>"><?= bdst_e($flash['message']) ?></div>
         <?php endif; ?>
 
         <form method="post" action="index.php" autocomplete="off" id="loginForm">
