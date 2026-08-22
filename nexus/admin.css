@@ -611,31 +611,67 @@ body.login-body {
 }
 
 /* ------------------------------------------------------------------
-   Approval mail result modal
+   Approval mail result modal (centered, smooth open/close)
 ------------------------------------------------------------------ */
 .amodal {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: fit-content;
+    min-width: min(420px, calc(100vw - 40px));
+    max-width: calc(100vw - 40px);
+    height: fit-content;
     border: none;
     border-radius: 16px;
     padding: 34px 38px 30px;
     text-align: center;
-    max-width: 420px;
-    width: calc(100% - 40px);
     box-shadow: 0 24px 70px rgba(12, 30, 33, 0.28);
+
+    opacity: 0;
+    transform: translateY(14px) scale(.96);
+    transition: opacity .28s ease, transform .28s cubic-bezier(.22, 1, .36, 1),
+                overlay .28s ease allow-discrete, display .28s ease allow-discrete;
 }
+
+.amodal[open] {
+    opacity: 1;
+    transform: none;
+}
+
+@starting-style {
+    .amodal[open] {
+        opacity: 0;
+        transform: translateY(14px) scale(.96);
+    }
+}
+
 .amodal::backdrop {
     background: rgba(12, 30, 33, 0.45);
+    transition: background .28s ease, overlay .28s ease allow-discrete,
+                display .28s ease allow-discrete;
 }
+
+@starting-style {
+    .amodal[open]::backdrop {
+        background: rgba(12, 30, 33, 0);
+    }
+}
+
 .amodal-icon {
     font-size: 44px;
     margin-bottom: 14px;
 }
+
 .amodal-icon.ok { color: #1e7e34; }
+
 .amodal-icon.bad { color: #c0392b; }
+
 .amodal h3 {
     margin: 0 0 10px;
     font-size: 20px;
     color: var(--ink);
 }
+
 .amodal p {
     margin: 8px 0;
     font-size: 14px;
