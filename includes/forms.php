@@ -405,7 +405,7 @@ function bdst_reg_status_label(string $status): string
 {
     return match ($status) {
         'approved' => 'Approved',
-        'rejected' => 'Not Approved',
+        'rejected' => 'Rejected',
         'reviewed' => 'Under Review',
         default    => 'Pending Review',
     };

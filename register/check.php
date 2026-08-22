@@ -154,7 +154,7 @@ bdst_reg_page_start('Check Registration Status | BDS Tanzania Membership', $meta
                     <?php else: ?>
                         <p style="margin:18px 0 0;color:#364e52;font-size:14px;line-height:1.7;">
                             <i class="fa-solid fa-circle-xmark" style="color:#c0392b;"></i>
-                            Unfortunately your application was <strong>not approved</strong> at this time.
+                            Unfortunately, your application has been <strong>Rejected</strong>.
                         </p>
                         <?php $reason = trim((string) ($reg['rejection_reason'] ?? '')); ?>
                         <?php if ($reason !== ''): ?>
