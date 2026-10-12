@@ -72,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          professional_status, firm_name, experience_years, education,
                          service_areas, industries, client_segments, clients_served,
                          service_nature, has_certification, certifications, zones,
-                         declaration, cv_path, cv_original_name, status)
+                         declaration, cv_path, cv_original_name, status, reviewed_at)
                      VALUES
                         (:full_name, :gender, :age_group, :phone, :email, :region, :district,
                          :professional_status, :firm_name, :experience_years, :education,
                          :service_areas, :industries, :client_segments, :clients_served,
                          :service_nature, :has_certification, :certifications, :zones,
-                         :declaration, '', '', 'pending')"
+                         :declaration, '', '', 'approved', NOW())"
                 );
                 $stmt->execute([
                     ':full_name'           => $data['full_name'],
@@ -122,6 +122,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         bdst_send_registration_emails($pdo, (int) $id);
                     } catch (Throwable $mailError) {
                         error_log('Registration mail error: ' . $mailError->getMessage());
+                    }
+
+                    // Auto-approval: send the membership documents pack immediately.
+                    try {
+                        bdst_send_approval_email($pdo, (int) $id);
+                    } catch (Throwable $approvalError) {
+                        error_log('Approval mail error: ' . $approvalError->getMessage());
                     }
 
                     session_regenerate_id(true);

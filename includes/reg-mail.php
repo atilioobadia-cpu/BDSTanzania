@@ -81,6 +81,10 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
     $config  = bdst_config();
     $site    = (string) $config['siteName'];
     $toEmail = (string) $config['toEmail'];
+    $notify  = $config['notifyEmails'] ?? [$toEmail];
+    if (!is_array($notify) || $notify === []) {
+        $notify = [$toEmail];
+    }
     $ref     = (string) $reg['reference_no'];
     $name    = (string) $reg['full_name'];
     $email   = (string) $reg['email'];
@@ -95,17 +99,17 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
         <div style="border:1px solid #c9d1d1;border-top:none;border-radius:0 0 10px 10px;padding:30px;">
             <h3 style="color:#0c1e21;margin-top:0;">Dear ' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . ',</h3>
             <p>Thank you for registering with BDS Tanzania. We confirm that your membership registration has been
-            <strong style="color:#1e7e34;">successfully received by BDS Management</strong>.</p>
+            <strong style="color:#1e7e34;">successfully received and APPROVED</strong>.</p>
             <div style="background:#ecf0f0;border:2px dashed #1997C6;border-radius:10px;padding:16px 22px;text-align:center;margin:22px 0;">
                 <small style="display:block;letter-spacing:.08em;color:#67787a;font-weight:bold;">YOUR REFERENCE NUMBER</small>
                 <strong style="font-size:24px;color:#0c1e21;letter-spacing:.04em;">' . htmlspecialchars($ref, ENT_QUOTES, 'UTF-8') . '</strong>
             </div>
             <p><strong>What happens next?</strong></p>
             <ol style="padding-left:20px;line-height:1.9;">
-                <li>The Secretariat reviews your application for eligibility and membership category.</li>
-                <li>You can check your status anytime using your reference number and email on our website.</li>
-                <li>Admission decisions are communicated formally in writing.</li>
-                <li>Approved members receive guidance on fees to activate membership.</li>
+                <li>Your membership has been activated - you are now a registered member of BDS Tanzania.</li>
+                <li>Your official membership documents are being sent to you in a separate email.</li>
+                <li>You can check your status and download your documents anytime using your reference number.</li>
+                <li>The Secretariat will contact you with guidance on fees and next steps.</li>
             </ol>
             <p>Please keep your reference number safe — you will need it for all follow-up communication.</p>
             <p style="margin-bottom:0;">Best regards,<br><strong>BDS Tanzania Secretariat</strong></p>
@@ -117,7 +121,7 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
     try {
         $member = bdst_reg_mailer();
         $member->addAddress($email, $name);
-        $member->Subject = 'Registration Received - ' . $site . ' [' . $ref . ']';
+        $member->Subject = 'Membership Approved - ' . $site . ' [' . $ref . ']';
         $member->isHTML(true);
         $member->Body    = $memberBody;
         $member->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />', '</p>', '</li>', '</ol>'], "\n", $memberBody));
@@ -126,7 +130,7 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
         $memberError = $e->getMessage();
         error_log('Applicant confirmation mail failed [' . $ref . ']: ' . $memberError);
     }
-    bdst_log_email($pdo, $id, $ref, 'registration_confirmation', $email, 'Registration Received - ' . $site . ' [' . $ref . ']', $memberError === null, $memberError);
+    bdst_log_email($pdo, $id, $ref, 'registration_confirmation', $email, 'Membership Approved - ' . $site . ' [' . $ref . ']', $memberError === null, $memberError);
 
     // ---------- 2. Notification to BDS Management ----------
     $list = static fn (?string $json): string => implode(', ', bdst_decode_list($json)) ?: '-';
@@ -167,7 +171,7 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
     $adminBody = '
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:700px;margin:0 auto;color:#364e52;">
         <h2 style="color:#0c1e21;">New Member Registration — ' . htmlspecialchars($ref, ENT_QUOTES, 'UTF-8') . '</h2>
-        <p>A new member has registered through the BDS Tanzania website and is awaiting review.</p>
+        <p>A new member has registered through the BDS Tanzania website and has been <strong>automatically approved</strong>.</p>
         <table style="border-collapse:collapse;width:100%;font-size:14px;">' . $tableRows . '</table>
         <p style="margin-top:22px;">
             <a href="' . $adminPanelUrl . '" style="background:#1997C6;color:#fff;padding:11px 26px;border-radius:50px;text-decoration:none;font-weight:bold;">
@@ -181,7 +185,12 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
     $adminError = null;
     try {
         $admin = bdst_reg_mailer();
-        $admin->addAddress($toEmail);
+        foreach ($notify as $recipient) {
+            $recipient = trim((string) $recipient);
+            if ($recipient !== '') {
+                $admin->addAddress($recipient);
+            }
+        }
         $admin->addReplyTo($email, $name);
         $admin->Subject = $adminSubject;
         $admin->isHTML(true);
@@ -192,7 +201,7 @@ function bdst_send_registration_emails(PDO $pdo, int $id): void
         $adminError = $e->getMessage();
         error_log('Management notification mail failed [' . $ref . ']: ' . $adminError);
     }
-    bdst_log_email($pdo, $id, $ref, 'management_notification', $toEmail, $adminSubject, $adminError === null, $adminError);
+    bdst_log_email($pdo, $id, $ref, 'management_notification', implode(', ', array_map('strval', $notify)), $adminSubject, $adminError === null, $adminError);
 }
 
 /**

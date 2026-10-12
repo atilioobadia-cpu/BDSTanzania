@@ -35,7 +35,7 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                 <h2>Registration Successfully Submitted!</h2>
                 <p>
                     Thank you, <strong style="color:#0c1e21;"><?= htmlspecialchars($reg['full_name'], ENT_QUOTES, 'UTF-8') ?></strong>.
-                    Your registration has been sent to BDS Management and is now
+                    Your registration has been received and you are now
                     <span class="reg-badge reg-badge-<?= htmlspecialchars($reg['status'], ENT_QUOTES, 'UTF-8') ?>">
                         <?= htmlspecialchars(bdst_reg_status_label($reg['status']), ENT_QUOTES, 'UTF-8') ?>
                     </span>
@@ -49,12 +49,12 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                 <ul class="reg-steps">
                     <li><i class="fa-solid fa-circle-check"></i> A confirmation email has been sent to
                         <strong><?= htmlspecialchars($reg['email'], ENT_QUOTES, 'UTF-8') ?></strong>.</li>
-                    <li><i class="fa-solid fa-magnifying-glass"></i> The Secretariat will review your application for
-                        eligibility and membership category.</li>
-                    <li><i class="fa-solid fa-key"></i> Keep your reference number safe ??? use it any time to check your
-                        registration status.</li>
-                    <li><i class="fa-solid fa-envelope-open-text"></i> Admission decisions are communicated formally in
-                        writing.</li>
+                    <li><i class="fa-solid fa-user-check"></i> Your membership was approved automatically and you are now a
+                        registered member of BDS Tanzania.</li>
+                    <li><i class="fa-solid fa-key"></i> Keep your reference number safe &mdash; use it any time to check your
+                        status and download your membership documents.</li>
+                    <li><i class="fa-solid fa-envelope-open-text"></i> Your membership documents were also emailed to you and are
+                        available on the Check Status page.</li>
                 </ul>
 
                 <div class="reg-actions">
@@ -74,7 +74,7 @@ bdst_reg_page_start('Registration Received | BDS Tanzania Membership', $metaDesc
                     <h3>Registration Received!</h3>
                     <p>
                         Thank you, <strong><?= htmlspecialchars($reg['full_name'], ENT_QUOTES, 'UTF-8') ?></strong>.
-                        Your application has been submitted successfully. Keep your reference number safe ???
+                        Your application has been submitted successfully. Keep your reference number safe &mdash;
                         you can use it at any time to check your registration status.
                     </p>
                     <div class="reg-ref-box">
