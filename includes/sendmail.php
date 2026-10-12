@@ -30,6 +30,12 @@ $smtpPassword   = $config['smtpPassword'];
 $smtpPort       = (int) $config['smtpPort'];
 $smtpEncryption = $config['smtpEncryption'];
 
+// Recipients: every address in notifyEmails, or the single toEmail fallback.
+$notifyEmails   = $config['notifyEmails'] ?? [];
+if (!is_array($notifyEmails) || $notifyEmails === []) {
+    $notifyEmails = [$toEmail];
+}
+
 function json_response(bool $success, string $message, int $statusCode = 200): void
 {
     if (ob_get_length()) {
@@ -64,7 +70,7 @@ function clean_email(string $value): string
 }
 
 function send_smtp_mail(
-    string $to,
+    array $to,
     string $subject,
     string $htmlBody,
     string $replyEmail,
@@ -102,7 +108,9 @@ function send_smtp_mail(
         }
 
         $mail->setFrom($fromEmail, $siteName);
-        $mail->addAddress($to);
+        foreach ($to as $recipient) {
+            $mail->addAddress((string) $recipient);
+        }
 
         if ($replyEmail !== '') {
             $mail->addReplyTo($replyEmail, $replyName);
@@ -175,7 +183,7 @@ $mailBody = '
 ';
 
 $sent = send_smtp_mail(
-    $toEmail,
+    $notifyEmails,
     $mailSubject,
     $mailBody,
     $email,
