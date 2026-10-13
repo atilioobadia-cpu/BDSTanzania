@@ -1,0 +1,389 @@
+/* ==========================================================================
+   BDS Tanzania - public member map (/dashboard)
+   Styles for the Leaflet map, statistics cards, legend and data table.
+   Band colours live here as custom properties so the map, the legend and the
+   table can never drift apart.
+   ========================================================================== */
+
+:root {
+    --bdst-band-withheld: #dde3e7;
+    --bdst-band-zero: #eef4f7;
+    --bdst-band-lt-min: #cfe8f4;
+    --bdst-band-low: #9bd0e9;
+    --bdst-band-mid: #4fa8d4;
+    --bdst-band-high: #1a6f96;
+
+    --bdst-ink: #0c1e21;
+    --bdst-muted: #5a6772;
+    --bdst-line: #e4ecec;
+    --bdst-soft: #f6f9f9;
+    --bdst-brand: #1997c6;
+}
+
+/* --------------------------------------------------------------------------
+   Statistic cards
+   -------------------------------------------------------------------------- */
+
+.bdst-dash-stats {
+    padding: 0 0 70px;
+}
+
+.bdst-stat-card {
+    height: 100%;
+    padding: 30px 28px;
+    background: #fff;
+    border: 1px solid var(--bdst-line);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(12, 30, 33, 0.04);
+    text-align: center;
+}
+
+.bdst-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 16px;
+    border-radius: 50%;
+    background: rgba(25, 151, 198, 0.1);
+    color: var(--bdst-brand);
+    font-size: 22px;
+}
+
+.bdst-stat-value {
+    display: block;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--bdst-ink);
+}
+
+.bdst-stat-value.is-suppressed {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--bdst-muted);
+}
+
+.bdst-stat-label {
+    display: block;
+    margin-top: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--bdst-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Notices
+   -------------------------------------------------------------------------- */
+
+.bdst-notice {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+    border-radius: 14px;
+    background: var(--bdst-soft);
+    border: 1px solid var(--bdst-line);
+    color: var(--bdst-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.bdst-notice i {
+    margin-top: 3px;
+    font-size: 20px;
+    color: var(--bdst-brand);
+}
+
+.bdst-notice strong {
+    color: var(--bdst-ink);
+}
+
+.bdst-notice--gate {
+    background: #fff8e8;
+    border-color: #f0dcae;
+}
+
+.bdst-notice--gate i {
+    color: #b6862b;
+}
+
+/* --------------------------------------------------------------------------
+   Map + detail panels
+   -------------------------------------------------------------------------- */
+
+.bdst-dash-main {
+    padding: 0 0 70px;
+}
+
+.bdst-map-card,
+.bdst-detail-card {
+    height: 100%;
+    padding: 22px;
+    background: #fff;
+    border: 1px solid var(--bdst-line);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(12, 30, 33, 0.04);
+}
+
+.bdst-card-title {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bdst-ink);
+}
+
+.bdst-card-sub {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--bdst-muted);
+}
+
+#bdst-map {
+    height: 460px;
+    border-radius: 12px;
+    background: #eaf1f4;
+    z-index: 1;
+}
+
+/* Collapse the map box until Leaflet has actually built it, so a browser with
+   JavaScript off does not show a large empty panel (the <noscript> note and
+   the table below carry the same figures). The class is added immediately
+   before L.map(), so Leaflet still measures a visible, correctly sized box. */
+#bdst-map:not(.is-ready) {
+    display: none;
+}
+
+/* Leaflet uses its own font stack; align it with the site. */
+.leaflet-container {
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.leaflet-container a {
+    color: var(--bdst-brand);
+}
+
+.bdst-map-status {
+    min-height: 22px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--bdst-muted);
+}
+
+.bdst-map-fallback {
+    padding: 40px 20px;
+    border: 1px dashed rgba(25, 151, 198, 0.35);
+    border-radius: 12px;
+    text-align: center;
+    color: var(--bdst-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Legend
+   -------------------------------------------------------------------------- */
+
+.bdst-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    padding: 0;
+    margin: 16px 0 0;
+    list-style: none;
+}
+
+.bdst-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--bdst-muted);
+}
+
+.bdst-legend .bdst-swatch {
+    width: 18px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(12, 30, 33, 0.12);
+}
+
+.bdst-swatch--withheld { background: var(--bdst-band-withheld); }
+.bdst-swatch--zero { background: var(--bdst-band-zero); }
+.bdst-swatch--lt_min { background: var(--bdst-band-lt-min); }
+.bdst-swatch--low { background: var(--bdst-band-low); }
+.bdst-swatch--mid { background: var(--bdst-band-mid); }
+.bdst-swatch--high { background: var(--bdst-band-high); }
+
+/* --------------------------------------------------------------------------
+   Detail list
+   -------------------------------------------------------------------------- */
+
+.bdst-detail-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.bdst-detail-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--bdst-line);
+    font-size: 15px;
+    color: var(--bdst-ink);
+}
+
+.bdst-detail-list li:last-child {
+    border-bottom: 0;
+}
+
+.bdst-detail-list .bdst-detail-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bdst-detail-list .bdst-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(12, 30, 33, 0.12);
+    flex: 0 0 auto;
+}
+
+.bdst-detail-count {
+    font-weight: 700;
+    color: var(--bdst-ink);
+    white-space: nowrap;
+}
+
+.bdst-detail-count.is-muted {
+    font-weight: 600;
+    color: var(--bdst-muted);
+}
+
+.bdst-detail-hint {
+    font-size: 14px;
+    color: var(--bdst-muted);
+}
+
+.bdst-detail-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.bdst-select {
+    max-width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--bdst-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--bdst-ink);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.bdst-select:focus {
+    border-color: var(--bdst-brand);
+    outline: 2px solid rgba(25, 151, 198, 0.35);
+    outline-offset: 1px;
+}
+
+.bdst-detail-back {
+    margin-top: 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bdst-brand);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bdst-detail-back:hover,
+.bdst-detail-back:focus {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Data table
+   -------------------------------------------------------------------------- */
+
+.bdst-dash-table {
+    padding: 0 0 110px;
+}
+
+.bdst-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--bdst-line);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.bdst-table th,
+.bdst-table td {
+    padding: 13px 18px;
+    text-align: left;
+    font-size: 15px;
+    border-bottom: 1px solid var(--bdst-line);
+}
+
+.bdst-table thead th {
+    background: var(--bdst-soft);
+    font-weight: 700;
+    color: var(--bdst-ink);
+    white-space: nowrap;
+}
+
+.bdst-table tbody tr:last-child th,
+.bdst-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.bdst-table tbody th {
+    font-weight: 600;
+    color: var(--bdst-ink);
+}
+
+.bdst-table td.bdst-table-num {
+    width: 220px;
+    font-variant-numeric: tabular-nums;
+}
+
+.bdst-table .bdst-cell-muted {
+    color: var(--bdst-muted);
+}
+
+.bdst-table .bdst-row-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(12, 30, 33, 0.12);
+    vertical-align: -2px;
+}
+
+@media (max-width: 767.98px) {
+    #bdst-map {
+        height: 340px;
+    }
+
+    .bdst-stat-value {
+        font-size: 32px;
+    }
+
+    .bdst-table td.bdst-table-num {
+        width: auto;
+    }
+}
