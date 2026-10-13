@@ -124,8 +124,42 @@ function bdst_districts_for_region(string $region): array
 }
 
 /**
+ * Fold a loose place name to a comparison key: lower case, punctuation
+ * removed, runs of whitespace collapsed. Hyphens are kept so that
+ * "Dar-es-Salaam" stays distinct from "Dar es Salaam" until the caller
+ * explicitly bridges the two.
+ */
+function bdst_geo_key(string $value): string
+{
+    $value = mb_strtolower(trim($value));
+    $value = preg_replace('/[.(),\/\\\\]+/u', ' ', (string) $value);
+    $value = preg_replace('/\s+/u', ' ', (string) $value);
+    return trim((string) $value);
+}
+
+/**
+ * Legacy / informal region spellings that are not an exact official name.
+ *
+ * @return array<string, string>
+ */
+function bdst_region_aliases(): array
+{
+    return [
+        'dar-es-salaam'    => 'Dar es Salaam',
+        'dar es salaam'    => 'Dar es Salaam',
+        'dsm'              => 'Dar es Salaam',
+        'kaskazini-pemba'  => 'Kaskazini Pemba',
+        'kusini-pemba'     => 'Kusini Pemba',
+        'kaskazini-unguja' => 'Kaskazini Unguja',
+        'kusini-unguja'    => 'Kusini Unguja',
+        'mjini-magharibi'  => 'Mjini Magharibi',
+        'zanzibar'         => 'Mjini Magharibi',
+    ];
+}
+
+/**
  * Normalise a loose region value to the official name, or null if unknown.
- * Matching ignores case and surrounding whitespace.
+ * Matching ignores case, redundant punctuation and hyphen/space differences.
  */
 function bdst_normalize_region(string $value): ?string
 {
@@ -133,27 +167,152 @@ function bdst_normalize_region(string $value): ?string
     if ($index === null) {
         $index = [];
         foreach (bdst_official_regions() as $name => $_) {
-            $index[mb_strtolower(trim($name))] = $name;
+            $index[bdst_geo_key($name)] = $name;
         }
     }
-    $key = mb_strtolower(trim($value));
-    return $index[$key] ?? null;
+
+    $key = bdst_geo_key($value);
+    if ($key === '') {
+        return null;
+    }
+    if (isset($index[$key])) {
+        return $index[$key];
+    }
+
+    $alias = bdst_region_aliases()[$key] ?? null;
+    if ($alias !== null) {
+        return $alias;
+    }
+
+    // Bridge the hyphen/space difference in both directions.
+    $spaced = str_replace('-', ' ', $key);
+    if (isset($index[$spaced])) {
+        return $index[$spaced];
+    }
+    $hyphenated = str_replace(' ', '-', $key);
+    if (isset($index[$hyphenated])) {
+        return $index[$hyphenated];
+    }
+
+    return null;
+}
+
+/**
+ * Legacy district spellings and the council-name forms members commonly used.
+ * Keys are bdst_geo_key() values.
+ *
+ * @return array<string, string>
+ */
+function bdst_district_aliases(): array
+{
+    return [
+        'arusha city'             => 'Arusha Urban',
+        'arusha city council'     => 'Arusha Urban',
+        'arusha district'         => 'Arusha',
+        'arusha district council' => 'Arusha',
+        'moshi town'              => 'Moshi Urban',
+        'moshi town council'      => 'Moshi Urban',
+        'dodoma city'             => 'Dodoma Urban',
+        'dodoma city council'     => 'Dodoma Urban',
+        'dodoma municipal'        => 'Dodoma Urban',
+        'mbeya city'              => 'Mbeya Urban',
+        'mbeya city council'      => 'Mbeya Urban',
+        'tabora city'             => 'Tabora Urban',
+        'tabora town'             => 'Tabora Urban',
+        'morogoro municipal'      => 'Morogoro Urban',
+        'morogoro municipality'   => 'Morogoro Urban',
+        'kigoma town'             => 'Kigoma Urban',
+        'kigoma town council'     => 'Kigoma Urban',
+        'songea town'             => 'Songea Urban',
+        'shinyanga town'          => 'Shinyanga Urban',
+        'singida town'            => 'Singida Urban',
+        'musoma town'             => 'Musoma Urban',
+        'bukoba town'             => 'Bukoba Urban',
+        'babati town'             => 'Babati Urban',
+        'mpanda town'             => 'Mpanda Urban',
+        'kasulu town'             => 'Kasulu Township Authority',
+        'makambako town'          => 'Makambako Township Authority',
+    ];
 }
 
 /**
  * Normalise a loose district value to the official name, or null if unknown.
  * When $region is given, the district must belong to that region.
+ *
+ * Handles the realistic ways a member or an administrator may have typed a
+ * district: an exact official name (any case), a known alias, or a
+ * council-style form such as "Arusha City Council" or "Dodoma District".
  */
 function bdst_normalize_district(string $value, ?string $region = null): ?string
 {
-    $key = mb_strtolower(trim($value));
-    $pools = $region !== null ? [bdst_districts_for_region($region)] : bdst_official_districts();
+    $key = bdst_geo_key($value);
+    if ($key === '') {
+        return null;
+    }
+
+    $pools  = $region !== null ? [bdst_districts_for_region($region)] : bdst_official_districts();
+    $index  = [];
     foreach ($pools as $pool) {
         foreach ($pool as $district) {
-            if (mb_strtolower(trim($district)) === $key) {
-                return $district;
+            $index[bdst_geo_key($district)] = $district;
+        }
+    }
+
+    // 1. Exact official name.
+    if (isset($index[$key])) {
+        return $index[$key];
+    }
+
+    // 2. Known alias.
+    $alias = bdst_district_aliases()[$key] ?? null;
+    if ($alias !== null && isset($index[bdst_geo_key($alias)])) {
+        return $index[bdst_geo_key($alias)];
+    }
+
+    // 3. Council-style suffix: "X City Council" is the urban district "X
+    //    Urban"; "X District Council" is the rural district "X".
+    $rules = [
+        [' city council', 'urban'],
+        [' city', 'urban'],
+        [' town council', 'urban'],
+        [' town', 'urban'],
+        [' municipal council', 'urban'],
+        [' municipality', 'urban'],
+        [' municipal', 'urban'],
+        [' district council', 'rural'],
+        [' district', 'rural'],
+        [' council', 'keep'],
+    ];
+    foreach ($rules as $rule) {
+        [$suffix, $prefer] = $rule;
+        $slen = mb_strlen($suffix);
+        if (mb_substr($key, -$slen) !== $suffix) {
+            continue;
+        }
+        $base = trim(mb_substr($key, 0, mb_strlen($key) - $slen));
+        if ($base === '') {
+            continue;
+        }
+        $candidates = $prefer === 'urban'
+            ? [$base . ' urban', $base]
+            : [$base, $base . ' urban'];
+        foreach ($candidates as $candidate) {
+            if (isset($index[$candidate])) {
+                return $index[$candidate];
             }
         }
     }
+
+    // 4. Add or drop a trailing "Urban".
+    if (isset($index[$key . ' urban'])) {
+        return $index[$key . ' urban'];
+    }
+    if (mb_substr($key, -6) === ' urban') {
+        $base = trim(mb_substr($key, 0, mb_strlen($key) - 6));
+        if (isset($index[$base])) {
+            return $index[$base];
+        }
+    }
+
     return null;
 }

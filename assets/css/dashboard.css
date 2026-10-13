@@ -1,7 +1,8 @@
 /* ==========================================================================
    BDS Tanzania - public member map (/dashboard)
-   Styles for the Leaflet map, the KPI strip, the ranked region/district list
-   and the data table.
+   Styles for the Leaflet map (street + satellite, green location pins), the
+   KPI strip, the ranked region/district list, the insight card (donut +
+   coverage), the registration trend chart and the data table.
 
    All colours live here as custom properties so the map, the legend, the bars
    and the table can never drift apart.
@@ -9,7 +10,7 @@
 
 :root {
     /* Choropleth intensity - a soft blue background scale. Deliberately light
-       so the green member bubbles stay the strongest signal on the map. */
+       so the green member pins stay the strongest signal on the map. */
     --bdst-band-withheld: #dfe6ea;
     --bdst-band-zero: #f3f8fa;
     --bdst-band-lt-min: #d7ebf5;
@@ -17,7 +18,7 @@
     --bdst-band-mid: #8ec6de;
     --bdst-band-high: #4a9fc4;
 
-    /* Member bubbles (green = membership) */
+    /* Member pins (green = membership) */
     --bdst-bubble: #16a34a;
     --bdst-bubble-soft: rgba(22, 163, 74, 0.18);
     --bdst-bubble-ink: #0b5c2e;
@@ -29,8 +30,8 @@
     --bdst-soft: #f6f9f9;
     --bdst-brand: #1997c6;
 
-    --bdst-radius: 16px;
-    --bdst-shadow: 0 10px 30px rgba(12, 30, 33, 0.05);
+    --bdst-radius: 18px;
+    --bdst-shadow: 0 10px 30px rgba(12, 30, 33, 0.06);
 }
 
 /* --------------------------------------------------------------------------
@@ -214,10 +215,72 @@
     color: var(--bdst-brand);
 }
 
-/* Green proportional-symbol bubbles. */
-.bdst-bubble {
-    stroke: #ffffff;
-    stroke-width: 2;
+/* Location pins: proportional SVG teardrops. The pin tip is the anchor, so the
+   whole shape sits above the reference point and the drop shadow gives it
+   depth over both the street map and the satellite imagery. */
+.bdst-pin {
+    background: transparent;
+    border: 0;
+    filter: drop-shadow(0 3px 4px rgba(12, 30, 33, 0.28));
+    cursor: pointer;
+}
+
+.bdst-pin svg {
+    display: block;
+    transform-origin: 50% 100%;
+    transition: transform 0.18s ease;
+}
+
+.bdst-pin:hover svg,
+.bdst-pin.is-hover svg {
+    transform: scale(1.12);
+}
+
+.bdst-pin.is-active svg {
+    transform: scale(1.15);
+    filter: brightness(1.08);
+}
+
+/* A highlighted pin sits a touch higher so it reads as "chosen". */
+.bdst-pin.is-active {
+    transition: transform 0.18s ease;
+}
+
+/* Layer switcher (Street / Satellite) inherits the site's look. */
+.leaflet-control-layers {
+    border: 1px solid var(--bdst-line);
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(12, 30, 33, 0.12);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 13px;
+    color: var(--bdst-ink);
+    background: #ffffff;
+}
+
+.leaflet-control-layers-expanded {
+    padding: 10px 12px;
+}
+
+.leaflet-control-layers label {
+    font-weight: 600;
+}
+
+.leaflet-control-layers-separator {
+    border-top-color: var(--bdst-line);
+}
+
+.leaflet-control-layers input[type="checkbox"] + span,
+.leaflet-control-layers input[type="radio"] + span {
+    font-weight: 600;
+}
+
+.leaflet-control-layers input {
+    accent-color: var(--bdst-bubble);
+}
+
+/* Attribution stays readable on both base layers. */
+.leaflet-bottom.leaflet-right {
+    font-size: 11px;
 }
 
 .bdst-map-status {
@@ -270,17 +333,17 @@
 .bdst-swatch--mid { background: var(--bdst-band-mid); }
 .bdst-swatch--high { background: var(--bdst-band-high); }
 
-/* Green bubble key: three sample sizes read straight off the live scale. */
-.bdst-bubble-key {
+/* Green pin key: three sample sizes read straight off the live scale. */
+.bdst-pin-key {
     display: flex;
     align-items: flex-end;
-    gap: 18px;
+    gap: 20px;
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px dashed var(--bdst-line);
 }
 
-.bdst-bubble-key[hidden] {
+.bdst-pin-key[hidden] {
     display: none;
 }
 
@@ -300,15 +363,19 @@
     align-items: center;
     justify-content: flex-end;
     gap: 7px;
-    height: 58px;
-    min-width: 34px;
+    height: 74px;
+    min-width: 40px;
 }
 
-.bdst-key-dot {
+.bdst-key-pin {
+    display: flex;
+    align-items: flex-end;
+    line-height: 0;
+    filter: drop-shadow(0 2px 3px rgba(12, 30, 33, 0.25));
+}
+
+.bdst-key-pin svg {
     display: block;
-    border-radius: 50%;
-    background: var(--bdst-bubble-soft);
-    border: 2px solid var(--bdst-bubble);
 }
 
 .bdst-key-label {
@@ -637,6 +704,396 @@
 }
 
 /* --------------------------------------------------------------------------
+   Registration trend card
+   -------------------------------------------------------------------------- */
+
+.bdst-dash-trends {
+    padding: 0 0 70px;
+}
+
+.bdst-trend-card {
+    padding: 26px;
+    background: #fff;
+    border: 1px solid var(--bdst-line);
+    border-radius: var(--bdst-radius);
+    box-shadow: var(--bdst-shadow);
+}
+
+.bdst-trend-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.bdst-trend-headtext {
+    min-width: 0;
+}
+
+.bdst-trend-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+/* Pill segmented control (Monthly / Yearly). */
+.bdst-segmented {
+    display: inline-flex;
+    padding: 4px;
+    border: 1px solid var(--bdst-line);
+    border-radius: 999px;
+    background: var(--bdst-soft);
+}
+
+.bdst-seg {
+    padding: 7px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--bdst-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+
+.bdst-seg:hover {
+    color: var(--bdst-ink);
+}
+
+.bdst-seg.is-active {
+    background: #fff;
+    color: var(--bdst-ink);
+    box-shadow: 0 2px 8px rgba(12, 30, 33, 0.12);
+}
+
+.bdst-seg:focus-visible {
+    outline: 2px solid var(--bdst-brand);
+    outline-offset: 1px;
+}
+
+/* Icon button (refresh). */
+.bdst-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--bdst-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--bdst-muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.bdst-icon-btn:hover {
+    color: var(--bdst-bubble);
+    border-color: rgba(22, 163, 74, 0.45);
+    box-shadow: 0 4px 12px rgba(12, 30, 33, 0.08);
+}
+
+.bdst-icon-btn:focus-visible {
+    outline: 2px solid var(--bdst-brand);
+    outline-offset: 1px;
+}
+
+.bdst-icon-btn .fa-rotate.is-spinning {
+    animation: bdst-spin 0.8s linear infinite;
+}
+
+@keyframes bdst-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* The chart shelf: mostly empty when the figures are withheld, filled with
+   CSS-drawn bars once data is published. */
+.bdst-chart {
+    margin-top: 18px;
+    min-height: 260px;
+}
+
+.bdst-chart-empty {
+    margin: 0;
+    padding: 48px 20px;
+    border: 1px dashed var(--bdst-line);
+    border-radius: 14px;
+    text-align: center;
+    color: var(--bdst-muted);
+    font-size: 14px;
+}
+
+.bdst-bars {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 3px;
+    height: 250px;
+    padding: 18px 4px 0;
+}
+
+.bdst-bar-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.bdst-bar {
+    display: block;
+    width: 100%;
+    max-width: 34px;
+    min-height: 2px;
+    border-radius: 6px 6px 3px 3px;
+    background: linear-gradient(180deg, #41c07a, var(--bdst-bubble));
+}
+
+.bdst-bar-col--zero .bdst-bar {
+    background: #e3ebee;
+}
+
+.bdst-bar-col:hover .bdst-bar {
+    background: linear-gradient(180deg, #2eae6a, #0e8c43);
+}
+
+.bdst-bar-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--bdst-ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.bdst-bar-tick {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--bdst-muted);
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.bdst-bars--dense .bdst-bar-val {
+    display: none;
+}
+
+.bdst-trend-status {
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: var(--bdst-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Data table header + export
+   -------------------------------------------------------------------------- */
+
+.bdst-table-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.bdst-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 18px;
+    border: 1px solid var(--bdst-line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--bdst-ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.bdst-btn-ghost i {
+    color: #2e9e5b;
+    font-size: 16px;
+}
+
+.bdst-btn-ghost:hover {
+    color: var(--bdst-bubble-ink);
+    border-color: rgba(22, 163, 74, 0.45);
+    box-shadow: 0 4px 14px rgba(12, 30, 33, 0.08);
+}
+
+.bdst-btn-ghost:focus-visible {
+    outline: 2px solid var(--bdst-brand);
+    outline-offset: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Quick insights: member-share donut + geographic coverage
+   -------------------------------------------------------------------------- */
+
+.bdst-dash-insights {
+    padding: 0 0 70px;
+}
+
+.bdst-insight-card {
+    padding: 26px;
+    background: #fff;
+    border: 1px solid var(--bdst-line);
+    border-radius: var(--bdst-radius);
+    box-shadow: var(--bdst-shadow);
+}
+
+.bdst-insight-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+@media (max-width: 991.98px) {
+    .bdst-insight-grid {
+        grid-template-columns: 1fr;
+        gap: 34px;
+    }
+}
+
+.bdst-donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.bdst-donut svg {
+    display: block;
+}
+
+.bdst-donut-legend {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.bdst-donut-legend li {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--bdst-line);
+    font-size: 14px;
+}
+
+.bdst-donut-legend li:last-child {
+    border-bottom: 0;
+}
+
+.bdst-donut-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+
+.bdst-donut-name {
+    font-weight: 600;
+    color: var(--bdst-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bdst-donut-stat {
+    color: var(--bdst-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.bdst-donut-pct {
+    min-width: 44px;
+    text-align: right;
+    font-weight: 800;
+    color: var(--bdst-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.bdst-donut-note {
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: var(--bdst-muted);
+}
+
+.bdst-coverage {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 6px;
+}
+
+.bdst-coverage-row {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    align-items: center;
+    gap: 14px;
+}
+
+.bdst-coverage-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bdst-ink);
+}
+
+.bdst-coverage-track {
+    display: block;
+    height: 12px;
+    border-radius: 999px;
+    background: #edf2f4;
+    overflow: hidden;
+}
+
+.bdst-coverage-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #4ec27f, var(--bdst-bubble));
+    transition: width 0.5s ease;
+}
+
+.bdst-coverage-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--bdst-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+/* KPI values flash softly when auto-refresh changes them. */
+.bdst-kpi-value.is-updated {
+    animation: bdst-flash 0.9s ease;
+}
+
+@keyframes bdst-flash {
+    0% {
+        color: var(--bdst-bubble);
+        opacity: 0.4;
+    }
+    100% {
+        color: var(--bdst-ink);
+        opacity: 1;
+    }
+}
+
+/* --------------------------------------------------------------------------
    Responsive
    -------------------------------------------------------------------------- */
 
@@ -670,5 +1127,35 @@
 
     .bdst-table td.bdst-table-num {
         width: auto;
+    }
+
+    .bdst-trend-head {
+        flex-direction: column;
+    }
+
+    .bdst-trend-tools {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .bdst-bars {
+        height: 210px;
+    }
+
+    .bdst-bar-val {
+        font-size: 10px;
+    }
+
+    .bdst-donut-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bdst-donut {
+        align-self: center;
+    }
+
+    .bdst-table-head {
+        flex-direction: column;
     }
 }

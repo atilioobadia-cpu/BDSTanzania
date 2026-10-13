@@ -272,7 +272,7 @@ unset($_SESSION['approval_mail']);
                         </div>
                         <div class="field">
                             <label>Region *</label>
-                            <select name="region" required>
+                            <select name="region" id="regionSel" required>
                                 <?php
                                 $regionOptions = bdst_regions();
                                 if ($reg['region'] !== '' && !in_array($reg['region'], $regionOptions, true)) {
@@ -287,7 +287,21 @@ unset($_SESSION['approval_mail']);
                         </div>
                         <div class="field">
                             <label>District *</label>
-                            <input type="text" name="district" maxlength="100" required value="<?= bdst_e($reg['district']) ?>">
+                            <select name="district" id="districtSel" required>
+                                <?php
+                                $officialRegion = bdst_normalize_region((string) $reg['region']);
+                                $districtOptions = $officialRegion !== null
+                                    ? bdst_districts_for_region($officialRegion)
+                                    : [];
+                                if ($reg['district'] !== '' && !in_array($reg['district'], $districtOptions, true)) {
+                                    // Keep a stored legacy value selectable so saving cannot silently change it.
+                                    $districtOptions[] = $reg['district'];
+                                }
+                                ?>
+                                <?php foreach ($districtOptions as $opt): ?>
+                                    <option value="<?= bdst_e($opt) ?>"<?= $reg['district'] === $opt ? ' selected' : '' ?>><?= bdst_e($opt) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                             <?php if (isset($errors['district'])): ?><small class="field-error"><?= bdst_e($errors['district']) ?></small><?php endif; ?>
                         </div>
                     </div>
@@ -466,6 +480,28 @@ unset($_SESSION['approval_mail']);
         var sync = function () { block.hidden = sel.value === 'no'; };
         sync();
         sel.addEventListener('change', sync);
+    }
+
+    // Keep the District dropdown in step with the chosen Region.
+    var DISTRICTS = <?= json_encode(bdst_official_districts(), JSON_UNESCAPED_UNICODE) ?>;
+    var regionSel = document.getElementById('regionSel');
+    var districtSel = document.getElementById('districtSel');
+    if (regionSel && districtSel) {
+        var currentDistrict = districtSel.value;
+        var syncDistricts = function () {
+            var list = DISTRICTS[regionSel.value] || [];
+            var keep = list.indexOf(currentDistrict) !== -1;
+            districtSel.innerHTML = '';
+            for (var i = 0; i < list.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = list[i];
+                opt.textContent = list[i];
+                districtSel.appendChild(opt);
+            }
+            if (keep) { districtSel.value = currentDistrict; }
+        };
+        syncDistricts();
+        regionSel.addEventListener('change', syncDistricts);
     }
 
     var modal = document.getElementById('mailModal');

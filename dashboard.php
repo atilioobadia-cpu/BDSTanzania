@@ -55,6 +55,38 @@ if ($summary !== null) {
     }
 }
 
+/**
+ * Registration trend (Phase 4). Server-rendered so the numbers are present
+ * without JavaScript; dashboard.js swaps the period and redraws the chart.
+ */
+$trends = [
+    'period'    => 'monthly',
+    'published' => false,
+    'total'     => null,
+    'peak'      => 0,
+    'buckets'   => [],
+];
+
+if ($summary !== null) {
+    try {
+        $trends = bdst_dashboard_trends(
+            bdst_db(),
+            (int) $summary['thresholds']['min_total'],
+            'monthly'
+        );
+    } catch (Throwable $e) {
+        error_log('Dashboard trends error: ' . $e->getMessage());
+    }
+}
+
+$trendBuckets  = $trends['published'] ? $trends['buckets'] : [];
+$trendSummary  = '';
+if ($trendBuckets !== []) {
+    $trendFirst   = $trendBuckets[0];
+    $trendLast    = $trendBuckets[count($trendBuckets) - 1];
+    $trendSummary = $trendFirst['label'] . ' to ' . $trendLast['label'];
+}
+
 /** "12 members" / "1 member". */
 function bdst_dash_members(int $count): string
 {
@@ -566,7 +598,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                             <p class="wow fadeInUp" data-wow-delay=".3s">
                                 Where our approved members are based, region by region. Only aggregate
                                 counts are published &mdash; individual members are never identified, and
-                                the map's bubbles are administrative reference points rather than
+                                the map's pins are administrative reference points rather than
                                 anybody's address.
                             </p>
                         </div>
@@ -597,7 +629,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="bdst-kpi bdst-kpi--members wow fadeInUp" data-wow-delay=".1s">
                             <span class="bdst-kpi-icon"><i class="fa-solid fa-users"></i></span>
                             <span class="bdst-kpi-body">
-                                <span class="bdst-kpi-value"><?= number_format((int) $summary['totals']['members']) ?></span>
+                                <span class="bdst-kpi-value" id="bdst-kpi-members"><?= number_format((int) $summary['totals']['members']) ?></span>
                                 <span class="bdst-kpi-label">Approved members</span>
                             </span>
                         </div>
@@ -606,7 +638,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="bdst-kpi wow fadeInUp" data-wow-delay=".2s">
                             <span class="bdst-kpi-icon"><i class="fa-solid fa-map-location-dot"></i></span>
                             <span class="bdst-kpi-body">
-                                <span class="bdst-kpi-value"><?= number_format((int) ($summary['totals']['regions_covered'] ?? 0)) ?></span>
+                                <span class="bdst-kpi-value" id="bdst-kpi-regions"><?= number_format((int) ($summary['totals']['regions_covered'] ?? 0)) ?></span>
                                 <span class="bdst-kpi-label">Regions represented</span>
                                 <span class="bdst-kpi-sub">of <?= (int) $regionTotal ?> regions</span>
                             </span>
@@ -616,7 +648,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="bdst-kpi wow fadeInUp" data-wow-delay=".3s">
                             <span class="bdst-kpi-icon"><i class="fa-solid fa-location-dot"></i></span>
                             <span class="bdst-kpi-body">
-                                <span class="bdst-kpi-value"><?= number_format((int) ($summary['totals']['districts_covered'] ?? 0)) ?></span>
+                                <span class="bdst-kpi-value" id="bdst-kpi-districts"><?= number_format((int) ($summary['totals']['districts_covered'] ?? 0)) ?></span>
                                 <span class="bdst-kpi-label">Districts represented</span>
                                 <span class="bdst-kpi-sub">of <?= (int) $districtTotal ?> districts</span>
                             </span>
@@ -626,9 +658,9 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="bdst-kpi wow fadeInUp" data-wow-delay=".4s">
                             <span class="bdst-kpi-icon"><i class="fa-solid fa-trophy"></i></span>
                             <span class="bdst-kpi-body">
-                                <span class="bdst-kpi-value is-text"><?= $topRegion ? bdst_e($topRegion['name']) : '&ndash;' ?></span>
+                                <span class="bdst-kpi-value is-text" id="bdst-kpi-top"><?= $topRegion ? bdst_e($topRegion['name']) : '&ndash;' ?></span>
                                 <span class="bdst-kpi-label">Largest region</span>
-                                <span class="bdst-kpi-sub"><?= $topRegion ? bdst_e(bdst_dash_members((int) $topRegion['count'])) : 'No members yet' ?></span>
+                                <span class="bdst-kpi-sub" id="bdst-kpi-top-sub"><?= $topRegion ? bdst_e(bdst_dash_members((int) $topRegion['count'])) : 'No members yet' ?></span>
                             </span>
                         </div>
                     </div>
@@ -655,7 +687,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                     <div>
                         <strong>Aggregate figures only.</strong>
                         This page shows how many members are recorded in each area &mdash; never
-                        names, contact details or addresses. The map's bubbles sit at administrative
+                        names, contact details or addresses. The map's pins sit at administrative
                         reference points, so they are not anybody's location. See our
                         <a href="privacy-policy.html">privacy policy</a>.
                     </div>
@@ -665,8 +697,8 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                     <div class="col-xl-7">
                         <div class="bdst-map-card">
                             <h3 class="bdst-card-title">Member distribution</h3>
-                            <p class="bdst-card-sub">Every green bubble is a region, sized by how many approved members are based there. Choose one to see its districts.</p>
-                            <div id="bdst-map" role="region" aria-label="Map of Tanzania with a green bubble for each region, sized by its number of approved members"></div>
+                            <p class="bdst-card-sub">Every green pin is a region, sized by how many approved members are based there. Choose one to see its districts &mdash; or switch to the satellite view with the map controls.</p>
+                            <div id="bdst-map" role="region" aria-label="Map of Tanzania with a green pin for each region, sized by its number of approved members"></div>
                             <noscript>
                                 <p class="bdst-map-fallback">The interactive map needs JavaScript. The ranked list beside it and the table further down carry the same figures.</p>
                             </noscript>
@@ -687,13 +719,13 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
-                            <div class="bdst-bubble-key" id="bdst-bubble-key" hidden></div>
+                            <div class="bdst-pin-key" id="bdst-pin-key" hidden></div>
                         </div>
                     </div>
                     <div class="col-xl-5">
                         <div class="bdst-panel">
                             <h3 class="bdst-card-title" id="bdst-detail-title">Regions by membership</h3>
-                            <p class="bdst-card-sub" id="bdst-detail-note">Click a row or a bubble to see a region's districts.</p>
+                            <p class="bdst-card-sub" id="bdst-detail-note">Click a row or a pin to see a region's districts.</p>
                             <div class="bdst-tools">
                                 <label class="visually-hidden" for="bdst-region-select">Choose a region</label>
                                 <select id="bdst-region-select" class="bdst-select reg-native">
@@ -746,25 +778,153 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             </div>
         </section>
 
+        <!-- Quick insights -->
+        <section class="bdst-dash-insights">
+            <div class="container">
+                <div class="bdst-insight-card">
+                    <div class="bdst-insight-grid">
+                        <div class="bdst-insight-block">
+                            <h3 class="bdst-card-title">Member share by region</h3>
+                            <p class="bdst-card-sub">How the membership is spread across the areas it reaches.</p>
+                            <div class="bdst-donut-wrap">
+                                <div class="bdst-donut" id="bdst-donut" role="img"
+                                     aria-label="Donut chart of member share by region"></div>
+                                <ul class="bdst-donut-legend" id="bdst-donut-legend"></ul>
+                            </div>
+                            <p class="bdst-donut-note" id="bdst-donut-note">&nbsp;</p>
+                        </div>
+                        <div class="bdst-insight-block">
+                            <h3 class="bdst-card-title">Geographic coverage</h3>
+                            <p class="bdst-card-sub">
+                                How many of Tanzania's official regions and districts are represented.
+                            </p>
+                            <div class="bdst-coverage" data-total-regions="<?= (int) $regionTotal ?>"
+                                 data-total-districts="<?= (int) $districtTotal ?>">
+                                <div class="bdst-coverage-row">
+                                    <span class="bdst-coverage-label">Regions</span>
+                                    <span class="bdst-coverage-track"><span class="bdst-coverage-fill" id="bdst-coverage-regions"></span></span>
+                                    <span class="bdst-coverage-value" id="bdst-coverage-regions-text">0 / <?= (int) $regionTotal ?></span>
+                                </div>
+                                <div class="bdst-coverage-row">
+                                    <span class="bdst-coverage-label">Districts</span>
+                                    <span class="bdst-coverage-track"><span class="bdst-coverage-fill" id="bdst-coverage-districts"></span></span>
+                                    <span class="bdst-coverage-value" id="bdst-coverage-districts-text">0 / <?= (int) $districtTotal ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration trend -->
+        <section class="bdst-dash-trends">
+            <div class="container">
+                <div class="bdst-trend-card">
+                    <div class="bdst-trend-head">
+                        <div class="bdst-trend-headtext">
+                            <h3 class="bdst-card-title">Registration trend</h3>
+                            <p class="bdst-card-sub">
+                                Approved members added over time &mdash; new members per period and the
+                                running total. Aggregate counts only.
+                            </p>
+                        </div>
+                        <div class="bdst-trend-tools">
+                            <div class="bdst-segmented" role="group" aria-label="Trend period">
+                                <button type="button" class="bdst-seg is-active" data-period="monthly" aria-pressed="true">Monthly</button>
+                                <button type="button" class="bdst-seg" data-period="yearly" aria-pressed="false">Yearly</button>
+                            </div>
+                            <button type="button" class="bdst-icon-btn" id="bdst-refresh">
+                                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                                <span class="visually-hidden">Refresh figures</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bdst-chart" id="bdst-trend-chart" role="img"
+                         aria-label="Bar chart of approved members added per period">
+                        <p class="bdst-chart-empty" id="bdst-trend-empty"<?= $trendBuckets ? ' hidden' : '' ?>>
+                            No approved members recorded yet, so there is no trend to show.
+                        </p>
+                        <div class="bdst-bars-wrap" id="bdst-trend-bars"></div>
+                    </div>
+
+                    <details class="bdst-table-disclosure" id="bdst-trend-data"<?= $trendBuckets ? '' : ' hidden' ?>>
+                        <summary>Show the numbers<span id="bdst-trend-range"><?= $trendSummary !== '' ? ' (' . bdst_e($trendSummary) . ')' : '' ?></span></summary>
+                        <div class="table-responsive">
+                            <table class="bdst-table">
+                                <caption class="visually-hidden">Approved members added per period</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Period</th>
+                                        <th scope="col">New members</th>
+                                        <th scope="col">Total to date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bdst-trend-rows">
+                                    <?php foreach ($trendBuckets as $bucket): ?>
+                                        <tr>
+                                            <th scope="row"><?= bdst_e($bucket['label']) ?></th>
+                                            <td class="bdst-table-num"><?= number_format((int) $bucket['count']) ?></td>
+                                            <td class="bdst-table-num"><?= number_format((int) $bucket['cumulative']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+
+                    <p class="bdst-trend-status" id="bdst-updated" role="status" aria-live="polite">
+                        Figures generated <?= gmdate('j F Y, H:i', strtotime((string) $summary['generated_at'])) ?> UTC.
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <script type="application/json" id="bdst-dashboard-config">
             <?= json_encode([
                 'regionsUrl'   => 'api/dashboard/regions.php',
                 'districtsUrl' => 'api/dashboard/districts.php',
+                'trendsUrl'    => 'api/dashboard/trends.php',
+                'summaryUrl'   => 'api/dashboard/summary.php',
                 'regionsGeo'   => 'assets/geo/tz-regions.geojson',
                 'districtsGeo' => 'assets/geo/tz-districts.geojson',
-                'tileUrl'      => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'attribution'  => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                'tiles'        => [
+                    'street' => [
+                        'url'         => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'attribution' => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    ],
+                    'satellite' => [
+                        'url'         => 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        'attribution' => 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+                    ],
+                ],
                 'minCohort'    => (int) $summary['thresholds']['min_cohort'],
                 'minTotal'     => (int) $summary['thresholds']['min_total'],
                 'published'    => (bool) $summary['published'],
+                'refreshSeconds' => 45,
+                'exportName'   => 'bds-tanzania-members-by-region',
+                'trend'        => [
+                    'period'    => $trends['period'],
+                    'published' => (bool) ($trends['published'] ?? false),
+                    'peak'      => (int) $trends['peak'],
+                    'buckets'   => $trendBuckets,
+                ],
             ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
         </script>
 
         <!-- Data table -->
         <section class="bdst-dash-table">
             <div class="container">
-                <h3 class="bdst-card-title">Member totals by region</h3>
-                <p class="bdst-card-sub">The same figures as the map, as a table &mdash; including regions with no members.</p>
+                <div class="bdst-table-head">
+                    <div>
+                        <h3 class="bdst-card-title">Member totals by region</h3>
+                        <p class="bdst-card-sub">The same figures as the map, as a table &mdash; including regions with no members.</p>
+                    </div>
+                    <button type="button" class="bdst-btn-ghost" id="bdst-export-csv">
+                        <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Download CSV
+                    </button>
+                </div>
                 <details class="bdst-table-disclosure">
                     <summary>Show the full table (<?= count($tableRows) ?> regions)</summary>
                     <div class="table-responsive">
@@ -792,7 +952,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         </table>
                     </div>
                 </details>
-                <p class="bdst-map-status">
+                <p class="bdst-map-status" id="bdst-table-updated">
                     Figures generated <?= gmdate('j F Y, H:i', strtotime((string) $summary['generated_at'])) ?> UTC.
                     Updated automatically as registrations are approved.
                 </p>

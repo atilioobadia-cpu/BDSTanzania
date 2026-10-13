@@ -426,3 +426,270 @@ function bdst_dashboard_bar_percent(int $count, int $max): int
     }
     return max(5, (int) round($count * 100 / $max));
 }
+
+/* -------------------------------------------------------------------------
+   Registration trends (Phase 4)
+
+   Aggregate counts over time, derived from submitted_at. A bucket is a
+   number of members, never a member: no region, district or identity is
+   attached. Bucketing is done in SQL with a per-driver expression so the
+   same code serves MySQL in production and SQLite in the local preview.
+   ------------------------------------------------------------------------- */
+
+/** Period keys the trends endpoint understands. */
+const BDST_DASHBOARD_PERIODS = ['daily', 'weekly', 'monthly', 'yearly'];
+
+/** Hard cap on buckets in one response, so a wild range cannot flood a client. */
+const BDST_DASHBOARD_MAX_BUCKETS = 240;
+
+/**
+ * @return list<string>
+ */
+function bdst_dashboard_periods(): array
+{
+    return BDST_DASHBOARD_PERIODS;
+}
+
+function bdst_dashboard_valid_period(string $period): bool
+{
+    return in_array($period, BDST_DASHBOARD_PERIODS, true);
+}
+
+/**
+ * Validate a from/to bucket token for a period. Returns the trimmed token, or
+ * null when it is empty or malformed - callers turn a malformed value into a
+ * 400 rather than letting anything near SQL.
+ */
+function bdst_dashboard_period_token(string $period, ?string $value): ?string
+{
+    if ($value === null) {
+        return null;
+    }
+    $value = trim($value);
+    if ($value === '') {
+        return null;
+    }
+
+    switch ($period) {
+        case 'yearly':
+            $pattern = '/^\d{4}$/';
+            break;
+        case 'daily':
+            $pattern = '/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/';
+            break;
+        case 'weekly':
+            $pattern = '/^\d{4}-\d{2}$/';
+            break;
+        default: // monthly
+            $pattern = '/^\d{4}-(0[1-9]|1[0-2])$/';
+    }
+
+    return preg_match($pattern, $value) === 1 ? $value : null;
+}
+
+/** True when a value was supplied but is not a valid token for the period. */
+function bdst_dashboard_period_token_invalid(string $period, ?string $value): bool
+{
+    if ($value === null || trim($value) === '') {
+        return false;
+    }
+    return bdst_dashboard_period_token($period, $value) === null;
+}
+
+/**
+ * SQL expression reducing submitted_at to a bucket key for the driver in use.
+ *
+ * The period is whitelisted by the caller, so the expression is chosen from a
+ * fixed map and is never built from raw input.
+ */
+function bdst_dashboard_period_expr(PDO $pdo, string $period): ?string
+{
+    $driver = strtolower((string) $pdo->getAttribute(PDO::ATTR_DRIVER_NAME));
+    $sqlite = strpos($driver, 'sqlite') !== false;
+
+    $map = $sqlite ? [
+        'daily'   => "strftime('%Y-%m-%d', submitted_at)",
+        'weekly'  => "strftime('%Y-%W', submitted_at)",
+        'monthly' => "strftime('%Y-%m', submitted_at)",
+        'yearly'  => "strftime('%Y', submitted_at)",
+    ] : [
+        'daily'   => "DATE_FORMAT(submitted_at, '%Y-%m-%d')",
+        'weekly'  => "DATE_FORMAT(submitted_at, '%x-%v')",
+        'monthly' => "DATE_FORMAT(submitted_at, '%Y-%m')",
+        'yearly'  => "DATE_FORMAT(submitted_at, '%Y')",
+    ];
+
+    return $map[$period] ?? null;
+}
+
+/** Human label for a bucket key, e.g. "2026-03" becomes "Mar 2026". */
+function bdst_dashboard_bucket_label(string $period, string $key): string
+{
+    static $months = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    if ($period === 'monthly' && preg_match('/^(\d{4})-(\d{2})$/', $key, $m) === 1) {
+        return ($months[(int) $m[2]] ?? $m[2]) . ' ' . $m[1];
+    }
+    if ($period === 'daily' && preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $key, $m) === 1) {
+        return (int) $m[3] . ' ' . ($months[(int) $m[2]] ?? $m[2]) . ' ' . $m[1];
+    }
+    if ($period === 'weekly' && preg_match('/^(\d{4})-(\d{2})$/', $key, $m) === 1) {
+        return $m[1] . ' W' . $m[2];
+    }
+    return $key;
+}
+
+/**
+ * Expand sparse bucket counts into an ordered series with a running
+ * cumulative total. Gaps are filled with zeros when a bounded range is known,
+ * so the chart does not show a misleading jump.
+ *
+ * @param array<string, int> $counts
+ * @return list<array{key: string, label: string, count: int, cumulative: int}>
+ */
+function bdst_dashboard_fill_buckets(array $counts, string $period, ?string $from, ?string $to): array
+{
+    ksort($counts);
+    $keys = array_keys($counts);
+
+    $bounded = $from !== null && $to !== null && $from <= $to && $period !== 'weekly';
+    if (!$bounded) {
+        $series = $keys;
+    } else {
+        $series = [];
+        try {
+            if ($period === 'yearly') {
+                $a = (int) $from;
+                $b = (int) $to;
+                if ($b - $a > BDST_DASHBOARD_MAX_BUCKETS) {
+                    $b = $a + BDST_DASHBOARD_MAX_BUCKETS;
+                }
+                for ($y = $a; $y <= $b; $y++) {
+                    $series[] = (string) $y;
+                }
+            } elseif ($period === 'monthly') {
+                $cursor = new DateTimeImmutable($from . '-01');
+                $end    = new DateTimeImmutable($to . '-01');
+                while ($cursor <= $end && count($series) < BDST_DASHBOARD_MAX_BUCKETS) {
+                    $series[] = $cursor->format('Y-m');
+                    $cursor = $cursor->modify('+1 month');
+                }
+            } else { // daily
+                $cursor = new DateTimeImmutable($from);
+                $end    = new DateTimeImmutable($to);
+                while ($cursor <= $end && count($series) < BDST_DASHBOARD_MAX_BUCKETS) {
+                    $series[] = $cursor->format('Y-m-d');
+                    $cursor = $cursor->modify('+1 day');
+                }
+            }
+        } catch (Throwable $e) {
+            // Never let a bad range blank the series: fall back to the data.
+            $series = $keys;
+        }
+    }
+
+    $out        = [];
+    $cumulative = 0;
+    foreach ($series as $key) {
+        $count       = (int) ($counts[(string) $key] ?? 0);
+        $cumulative += $count;
+        $out[] = [
+            'key'        => (string) $key,
+            'label'      => bdst_dashboard_bucket_label($period, (string) $key),
+            'count'      => $count,
+            'cumulative' => $cumulative,
+        ];
+    }
+
+    return $out;
+}
+
+/**
+ * Approved-member registrations over time.
+ *
+ * @return array{period: string, periods: list<string>, from: ?string, to: ?string, published: bool, total: ?int, peak: int, buckets: list<array{key: string, label: string, count: int, cumulative: int}>}
+ */
+function bdst_dashboard_trends(PDO $pdo, ?int $minTotal = null, string $period = 'monthly', ?string $from = null, ?string $to = null): array
+{
+    $minTotal ??= bdst_dashboard_min_total();
+    if (!bdst_dashboard_valid_period($period)) {
+        $period = 'monthly';
+    }
+
+    $from = bdst_dashboard_period_token($period, $from);
+    $to   = bdst_dashboard_period_token($period, $to);
+    if ($from !== null && $to !== null && $from > $to) {
+        $swap = $from;
+        $from = $to;
+        $to   = $swap;
+    }
+
+    $total = (int) $pdo->query("SELECT COUNT(*) FROM bds_registrations WHERE status = 'approved'")->fetchColumn();
+
+    // The series carries no location, but it still reflects register size, so
+    // it obeys the same global publish gate as the map.
+    $published = $minTotal <= 1 || $total >= $minTotal;
+
+    $out = [
+        'period'    => $period,
+        'periods'   => bdst_dashboard_periods(),
+        'from'      => $from,
+        'to'        => $to,
+        'published' => $published,
+        'total'     => $published ? $total : null,
+        'peak'      => 0,
+        'buckets'   => [],
+    ];
+    if (!$published) {
+        return $out;
+    }
+
+    $expr = bdst_dashboard_period_expr($pdo, $period);
+    if ($expr === null) {
+        return $out;
+    }
+
+    $counts = [];
+    $rows   = $pdo->query(
+        "SELECT $expr AS bucket, COUNT(*) AS c
+           FROM bds_registrations
+          WHERE status = 'approved'
+       GROUP BY bucket
+       ORDER BY bucket"
+    )->fetchAll();
+    foreach ($rows as $row) {
+        $key = (string) $row['bucket'];
+        if ($key === '' || $key === '0') {
+            continue;
+        }
+        $counts[$key] = (int) $row['c'];
+    }
+
+    // With no explicit window, span the data so internal gaps still get filled.
+    if ($counts !== []) {
+        $keys = array_keys($counts);
+        sort($keys);
+        if ($from === null) {
+            $from = (string) $keys[0];
+        }
+        if ($to === null) {
+            $to = (string) $keys[count($keys) - 1];
+        }
+    }
+
+    $buckets = bdst_dashboard_fill_buckets($counts, $period, $from, $to);
+
+    $peak = 0;
+    foreach ($buckets as $bucket) {
+        if ($bucket['count'] > $peak) {
+            $peak = $bucket['count'];
+        }
+    }
+
+    $out['from']    = $from;
+    $out['to']      = $to;
+    $out['peak']    = $peak;
+    $out['buckets'] = $buckets;
+
+    return $out;
+}
