@@ -241,7 +241,7 @@ function bdst_reg_page_start(
                                             <li><a href="../how-to-join.html">How to Join</a></li>
                                             <li><a href="index.php">Become a Member</a></li>
                                             <li><a href="members.php">Member Directory</a></li>
-                                            <li><a href="../dashboard.php">Member Map</a></li>
+                                            <li><a href="/dashboard">Member Map</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown">
@@ -348,7 +348,7 @@ function bdst_reg_page_start(
                                             <li><a href="../how-to-join.html">How to Join</a></li>
                                             <li><a href="index.php">Become a Member</a></li>
                                             <li><a href="members.php">Member Directory</a></li>
-                                            <li><a href="../dashboard.php">Member Map</a></li>
+                                            <li><a href="/dashboard">Member Map</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown">

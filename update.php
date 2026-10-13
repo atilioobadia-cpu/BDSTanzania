@@ -714,7 +714,7 @@ try {
                                             <li><a href="how-to-join.html">How to Join</a></li>
                                             <li><a href="register/">Become a Member</a></li>
                                             <li><a href="register/members.php">Member Directory</a></li>
-                                            <li><a href="dashboard.php">Member Map</a></li>
+                                            <li><a href="/dashboard">Member Map</a></li>
                                         </ul>
                                     </li>
 
@@ -827,7 +827,7 @@ try {
                                             <li><a href="how-to-join.html">How to Join</a></li>
                                             <li><a href="register/">Become a Member</a></li>
                                             <li><a href="register/members.php">Member Directory</a></li>
-                                            <li><a href="dashboard.php">Member Map</a></li>
+                                            <li><a href="/dashboard">Member Map</a></li>
                                         </ul>
                                     </li>
 
