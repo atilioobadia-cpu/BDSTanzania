@@ -282,6 +282,17 @@ select.reg-control {
     border-color: var(--reg-primary);
 }
 
+.reg-combo.has-error .reg-combo-toggle {
+    border-color: #d64541;
+}
+
+.reg-combo.is-disabled .reg-combo-toggle {
+    background: #f4f7f8;
+    border-color: var(--reg-line);
+    color: #9fb0b2;
+    cursor: not-allowed;
+}
+
 .reg-combo-toggle:focus-visible,
 .reg-combo.is-open .reg-combo-toggle {
     border-color: var(--reg-primary);

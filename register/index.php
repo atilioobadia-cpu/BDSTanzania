@@ -363,9 +363,13 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
                 <div class="col-lg-6">
                     <div class="reg-field">
                         <label class="reg-label" for="district">District <span class="reg-req">*</span></label>
-                        <input class="reg-control<?= reg_err_class($errors, 'district') ?>" type="text" id="district" name="district" maxlength="80"
-                               placeholder="e.g. Ilala" required
-                               value="<?= reg_old($old, 'district') ?>">
+                        <?php $oldRegion = bdst_normalize_region((string) $old['region']) ?? (string) $old['region']; $districtOptions = bdst_districts_by_region($oldRegion); ?>
+                        <select class="reg-control<?= reg_err_class($errors, 'district') ?>" id="district" name="district" required<?= $districtOptions === [] ? ' disabled' : '' ?>>
+                            <option value=""><?= $districtOptions === [] ? 'Select region first...' : 'Select district...' ?></option>
+                            <?php foreach ($districtOptions as $opt): ?>
+                                <option value="<?= reg_e($opt) ?>"<?= reg_selected($old, 'district', $opt) ?>><?= reg_e($opt) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                         <?= reg_field_error($errors, 'district') ?>
                     </div>
                 </div>
@@ -622,8 +626,8 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
             </div>
         </form>
     </div>
-</section>
-
+<?php /* Official districts per region, for the region-filtered District dropdown. */ ?>
+<script type="application/json" id="bdst-districts-data"><?= json_encode(bdst_official_districts(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <script>
 (function () {
     // Dropdown "Other" reveals
@@ -748,6 +752,9 @@ bdst_reg_page_start('BDS Tanzania Member Registration | Apply Online', $metaDesc
 
         // required text inputs & selects
         regForm.querySelectorAll('input[required]:not([type="file"]):not([type="checkbox"]):not([type="radio"]), select[required]').forEach(function (el) {
+            if (el.disabled) {
+                return;
+            }
             if (el.value.trim() === '') {
                 fail(el, el.tagName === 'SELECT' ? 'This selection is required.' : 'This field is required.');
             } else if (el === emailField && !emailRe.test(el.value.trim())) {
@@ -821,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.querySelectorAll('select.reg-control').forEach(function (sel) {
+    function buildCombo(sel) {
         if (sel.dataset.comboBuilt) {
             return;
         }
@@ -870,6 +877,12 @@ document.addEventListener('DOMContentLoaded', function () {
             Array.prototype.forEach.call(list.children, function (li) {
                 li.classList.toggle('is-selected', li.dataset.value === sel.value);
             });
+            wrap.classList.toggle('is-disabled', !!sel.disabled);
+            wrap.classList.toggle('has-error', sel.classList.contains('has-error'));
+            wrap.querySelector('.reg-combo-toggle').disabled = !!sel.disabled;
+            if (sel.disabled) {
+                wrap.classList.remove('is-open');
+            }
         }
 
         function applyFilter() {
@@ -894,6 +907,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         wrap.querySelector('.reg-combo-toggle').addEventListener('click', function () {
+            if (sel.disabled) {
+                return;
+            }
             var opening = !wrap.classList.contains('is-open');
             closeAll(wrap);
             wrap.classList.toggle('is-open', opening);
@@ -929,11 +945,93 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // keep native select authoritative for "other" reveals etc.
+        sel._comboSync = sync;
         sel.addEventListener('change', sync);
 
         combos.push(wrap);
         sync();
-    });
+        return wrap;
+    }
+
+    function destroyCombo(sel) {
+        if (!sel.dataset.comboBuilt) {
+            return;
+        }
+        var wrap = sel.previousElementSibling;
+        if (wrap && wrap.classList.contains('reg-combo')) {
+            var idx = combos.indexOf(wrap);
+            if (idx !== -1) {
+                combos.splice(idx, 1);
+            }
+            wrap.remove();
+        }
+        if (sel._comboSync) {
+            sel.removeEventListener('change', sel._comboSync);
+            delete sel._comboSync;
+        }
+        sel.style.display = '';
+        delete sel.dataset.comboBuilt;
+    }
+
+    function refreshCombo(sel) {
+        destroyCombo(sel);
+        buildCombo(sel);
+    }
+
+    document.querySelectorAll('select.reg-control').forEach(buildCombo);
+
+    // District is a searchable dropdown whose options depend on the chosen Region.
+    var regionSel = document.getElementById('region');
+    var districtSel = document.getElementById('district');
+    if (regionSel && districtSel) {
+        var districtData = {};
+        try {
+            var dataEl = document.getElementById('bdst-districts-data');
+            if (dataEl) {
+                districtData = JSON.parse(dataEl.textContent) || {};
+            }
+        } catch (e) {
+            districtData = {};
+        }
+
+        var clearDistrictError = function () {
+            districtSel.classList.remove('has-error');
+            var field = districtSel.closest('.reg-field');
+            if (field) {
+                field.querySelectorAll(':scope > .field-error').forEach(function (n) { n.remove(); });
+            }
+        };
+
+        var fillDistricts = function (preserve) {
+            var list = districtData[regionSel.value] || [];
+            var current = preserve ? districtSel.value : '';
+
+            districtSel.innerHTML = '';
+            var placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = list.length ? 'Select district...' : 'Select region first...';
+            districtSel.appendChild(placeholder);
+
+            list.forEach(function (name) {
+                var opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                districtSel.appendChild(opt);
+            });
+
+            if (current !== '' && list.indexOf(current) !== -1) {
+                districtSel.value = current;
+            }
+            districtSel.disabled = list.length === 0;
+            refreshCombo(districtSel);
+        };
+
+        fillDistricts(true);
+        regionSel.addEventListener('change', function () {
+            clearDistrictError();
+            fillDistricts(false);
+        });
+    }
 
     document.addEventListener('click', function (e) {
         if (!e.target.closest('.reg-combo')) {

@@ -8,17 +8,31 @@ declare(strict_types=1);
  * registration form, the admin editor and the public member directory.
  */
 
+require_once __DIR__ . '/geo.php';
+
 const BDST_CV_MAX_BYTES = 10485760; // 10 MB
 
+/**
+ * Official region names (31), single source of truth from includes/geo.php.
+ * These names match the map boundaries and the geo_regions reference table.
+ *
+ * @return list<string>
+ */
 function bdst_regions(): array
 {
-    return [
-        'Arusha', 'Dar es Salaam', 'Dodoma', 'Geita', 'Iringa', 'Kagera',
-        'Katavi', 'Kigoma', 'Kilimanjaro', 'Lindi', 'Manyara', 'Mara',
-        'Mbeya', 'Mjini Magharibi', 'Morogoro', 'Mtwara', 'Mwanza',
-        'Njombe', 'Pemba', 'Pwani', 'Rukwa', 'Ruvuma', 'Shinyanga',
-        'Simiyu', 'Singida', 'Songwe', 'Tabora', 'Tanga', 'Unguja',
-    ];
+    return bdst_region_names();
+}
+
+/**
+ * Official districts that belong to a region (empty when the region is
+ * unknown). Powers the searchable District dropdown and its server-side
+ * validation, so every registration maps to a real area.
+ *
+ * @return list<string>
+ */
+function bdst_districts_by_region(string $region): array
+{
+    return bdst_districts_for_region($region);
 }
 
 function bdst_age_groups(): array
@@ -356,11 +370,31 @@ function bdst_collect_registration(array $src, array $files = [], bool $allowCus
             $errors['email'] = 'This email domain does not exist. Please check the address for typos.';
         }
     }
-    if (!in_array($data['region'], bdst_regions(), true)) {
-        $errors['region'] = 'Please select your region.';
+    // Region + district must be official names, and the district must belong to
+    // the selected region, so every registration maps to a real area. Admin
+    // edits pass $allowCustom and keep whatever value was already stored.
+    $regionName   = bdst_normalize_region($data['region']);
+    $districtName = $regionName !== null
+        ? bdst_normalize_district($data['district'], $regionName)
+        : null;
+
+    if ($regionName !== null) {
+        $data['region'] = $regionName;
     }
-    if ($data['district'] === '' || mb_strlen($data['district']) > 80) {
-        $errors['district'] = 'Please enter your district.';
+    if ($districtName !== null) {
+        $data['district'] = $districtName;
+    }
+
+    if ($data['region'] === '') {
+        $errors['region'] = 'Please select your region.';
+    } elseif ($regionName === null && !$allowCustom) {
+        $errors['region'] = 'Please select one of the listed regions.';
+    }
+
+    if ($data['district'] === '') {
+        $errors['district'] = 'Please select your district.';
+    } elseif ($districtName === null && !$allowCustom) {
+        $errors['district'] = 'Please choose a district within the selected region.';
     }
     if (mb_strlen($data['firm_name']) > 150) {
         $errors['firm_name'] = 'Firm name is too long.';

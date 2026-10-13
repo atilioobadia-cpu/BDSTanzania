@@ -273,7 +273,14 @@ unset($_SESSION['approval_mail']);
                         <div class="field">
                             <label>Region *</label>
                             <select name="region" required>
-                                <?php foreach (bdst_regions() as $opt): ?>
+                                <?php
+                                $regionOptions = bdst_regions();
+                                if ($reg['region'] !== '' && !in_array($reg['region'], $regionOptions, true)) {
+                                    // Keep a stored legacy name selectable so saving cannot silently change it.
+                                    $regionOptions[] = $reg['region'];
+                                }
+                                ?>
+                                <?php foreach ($regionOptions as $opt): ?>
                                     <option value="<?= bdst_e($opt) ?>"<?= $reg['region'] === $opt ? ' selected' : '' ?>><?= bdst_e($opt) ?></option>
                                 <?php endforeach; ?>
                             </select>
