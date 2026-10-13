@@ -1,0 +1,21 @@
+# ------------------------------------------------------------------
+# BDS Tanzania — protect uploaded CVs
+#
+# CV files contain personal data and must NEVER be reachable over HTTP.
+# They are served only through the authenticated admin endpoint
+# (nexus/cv.php), which reads them from disk server-side and is
+# unaffected by this rule.
+#
+# This blocks every direct request to /register/uploads/*
+# ------------------------------------------------------------------
+
+# Apache 2.4+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+# Apache 2.2 fallback
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

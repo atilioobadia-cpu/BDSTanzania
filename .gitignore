@@ -20,7 +20,7 @@ error_log
 # Uploaded media & temporary uploads
 # ------------------------------------------------------------------
 assets/images/uploads/
-uploads/
+/uploads/
 register/uploads/*
 !register/uploads/.htaccess
 !register/uploads/.gitkeep
