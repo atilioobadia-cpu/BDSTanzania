@@ -1,7 +1,8 @@
 /* ==========================================================================
    BDS Tanzania - public member map (/dashboard)
-   Builds the Leaflet choropleth from the JSON endpoints + GeoJSON boundaries.
-   Data and geometry are fetched at runtime; this file contains no figures.
+   Builds the Leaflet choropleth + green proportional-symbol bubbles from the
+   JSON endpoints and GeoJSON boundaries, and drives the ranked region list
+   and the district drill-down. This file contains no figures.
    ========================================================================== */
 
 (function () {
@@ -20,14 +21,27 @@
         return;
     }
 
-    var statusEl = document.getElementById('bdst-map-status');
-    var fallbackEl = document.getElementById('bdst-map-fallback');
-    var legendEl = document.getElementById('bdst-legend');
-    var detailTitleEl = document.getElementById('bdst-detail-title');
-    var detailNoteEl = document.getElementById('bdst-detail-note');
-    var detailListEl = document.getElementById('bdst-detail-list');
-    var regionSelect = document.getElementById('bdst-region-select');
-    var resetBtn = document.getElementById('bdst-detail-reset');
+    var statusEl       = document.getElementById('bdst-map-status');
+    var fallbackEl     = document.getElementById('bdst-map-fallback');
+    var legendEl       = document.getElementById('bdst-legend');
+    var bubbleKeyEl    = document.getElementById('bdst-bubble-key');
+    var titleEl        = document.getElementById('bdst-detail-title');
+    var noteEl         = document.getElementById('bdst-detail-note');
+    var regionViewEl   = document.getElementById('bdst-region-view');
+    var districtViewEl = document.getElementById('bdst-district-view');
+    var districtListEl = document.getElementById('bdst-detail-list');
+    var regionSelect   = document.getElementById('bdst-region-select');
+    var filterEl       = document.getElementById('bdst-region-filter');
+    var resetBtn       = document.getElementById('bdst-detail-reset');
+    var zeroToggle     = document.getElementById('bdst-zero-toggle');
+    var zeroBox        = document.getElementById('bdst-rank-zero');
+
+    // Default copy is read from the server-rendered markup so the two never
+    // drift apart.
+    var TITLE_REGIONS = titleEl ? titleEl.textContent : 'Regions by membership';
+    var NOTE_REGIONS  = noteEl ? noteEl.textContent : '';
+
+    var zeroCount = zeroBox ? zeroBox.querySelectorAll('.bdst-row').length : 0;
 
     function setStatus(message) {
         if (statusEl) {
@@ -42,13 +56,15 @@
     }
 
     var BAND_COLOURS = {
-        withheld: cssVar('--bdst-band-withheld', '#dde3e7'),
-        zero: cssVar('--bdst-band-zero', '#eef4f7'),
-        lt_min: cssVar('--bdst-band-lt-min', '#cfe8f4'),
-        low: cssVar('--bdst-band-low', '#9bd0e9'),
-        mid: cssVar('--bdst-band-mid', '#4fa8d4'),
-        high: cssVar('--bdst-band-high', '#1a6f96')
+        withheld: cssVar('--bdst-band-withheld', '#dfe6ea'),
+        zero: cssVar('--bdst-band-zero', '#f3f8fa'),
+        lt_min: cssVar('--bdst-band-lt-min', '#d7ebf5'),
+        low: cssVar('--bdst-band-low', '#cfe7f2'),
+        mid: cssVar('--bdst-band-mid', '#8ec6de'),
+        high: cssVar('--bdst-band-high', '#4a9fc4')
     };
+
+    var BUBBLE = cssVar('--bdst-bubble', '#16a34a');
 
     function colourFor(band) {
         return BAND_COLOURS[band] || BAND_COLOURS.withheld;
@@ -85,11 +101,14 @@
         if (legendEl) {
             legendEl.hidden = true;
         }
+        if (bubbleKeyEl) {
+            bubbleKeyEl.hidden = true;
+        }
         setStatus(message);
     }
 
     if (typeof window.L === 'undefined') {
-        showFallback('The interactive map could not start. The table below lists the same figures.');
+        showFallback('The interactive map could not start. The ranked list and the table below carry the same figures.');
         return;
     }
 
@@ -100,9 +119,7 @@
     // Reveal the map box (see the .is-ready rule in dashboard.css) before
     // Leaflet measures it, so the collapsed no-JS state does not leave
     // Leaflet with a zero-sized container.
-    if (mapEl) {
-        mapEl.classList.add('is-ready');
-    }
+    mapEl.classList.add('is-ready');
 
     var map = window.L.map(mapEl, {
         center: [-6.4, 34.9],
@@ -112,6 +129,11 @@
         scrollWheelZoom: false,
         attributionControl: true
     });
+
+    // Bubbles live in their own pane above the choropleth so a highlighted
+    // region can never hide them.
+    map.createPane('bdstBubbles');
+    map.getPane('bdstBubbles').style.zIndex = 650;
 
     if (config.tileUrl) {
         window.L.tileLayer(config.tileUrl, {
@@ -124,7 +146,10 @@
 
     var regionLayer = null;
     var districtLayer = null;
+    var bubbleGroup = null;
     var lookup = {};
+    var regionRefs = {};
+    var selectedCode = '';
     var districtsGeoPromise = null;
 
     function districtsGeo() {
@@ -137,6 +162,92 @@
             });
         }
         return districtsGeoPromise;
+    }
+
+    /* ----------------------------------------------------------------------
+       Green proportional bubbles
+       ---------------------------------------------------------------------- */
+
+    // Area-proportional: radius grows with the square root of the count, so a
+    // region with four times the members reads as a bubble with twice the
+    // radius. A single member still gets a small but clearly visible dot.
+    function radiusFor(count, max) {
+        if (!count || count <= 0) {
+            return 0;
+        }
+        return 4.5 + 15.5 * Math.sqrt(count / Math.max(1, max));
+    }
+
+    function memberLabel(count) {
+        return count === 1 ? '1 member' : count + ' members';
+    }
+
+    function renderBubbles(regions, max) {
+        if (bubbleGroup) {
+            map.removeLayer(bubbleGroup);
+        }
+        bubbleGroup = window.L.layerGroup().addTo(map);
+
+        regions.forEach(function (region) {
+            var count = region.count;
+            if (!count || count <= 0) {
+                return;
+            }
+            var radius = radiusFor(count, max);
+            var marker = window.L.circleMarker([region.lat, region.lon], {
+                pane: 'bdstBubbles',
+                radius: radius,
+                color: '#ffffff',
+                weight: 2,
+                fillColor: BUBBLE,
+                fillOpacity: 0.55
+            });
+
+            marker.bindTooltip(
+                '<strong>' + escapeHtml(region.name) + '</strong><br>' + escapeHtml(memberLabel(count)),
+                { sticky: true }
+            );
+            marker.on('mouseover', function () {
+                marker.setStyle({ fillOpacity: 0.78 });
+                marker.setRadius(radius * 1.18);
+            });
+            marker.on('mouseout', function () {
+                marker.setStyle({ fillOpacity: selectedCode === region.code ? 0.85 : 0.55 });
+                marker.setRadius(radius);
+            });
+            marker.on('click', function () {
+                loadRegion(region.code);
+            });
+
+            var ref = regionRefs[region.code] || (regionRefs[region.code] = {});
+            ref.marker = marker;
+            ref.radius = radius;
+
+            marker.addTo(bubbleGroup);
+        });
+    }
+
+    function renderBubbleKey(max) {
+        if (!bubbleKeyEl || !max || max <= 0) {
+            return;
+        }
+        var values = [];
+        [1, Math.max(2, Math.round(max / 2)), max].forEach(function (value) {
+            if (values.indexOf(value) === -1) {
+                values.push(value);
+            }
+        });
+
+        var html = '<span class="bdst-key-title">Members per region</span>';
+        values.forEach(function (value) {
+            var size = radiusFor(value, max) * 2;
+            html += '<span class="bdst-key-item">' +
+                '<span class="bdst-key-dot" style="width:' + size.toFixed(1) + 'px;height:' + size.toFixed(1) + 'px"></span>' +
+                '<span class="bdst-key-label">' + escapeHtml(value) + '</span>' +
+                '</span>';
+        });
+        bubbleKeyEl.innerHTML = html;
+        bubbleKeyEl.hidden = false;
     }
 
     /* ----------------------------------------------------------------------
@@ -161,7 +272,7 @@
     }
 
     /* ----------------------------------------------------------------------
-       Detail panel
+       Selection + district panel
        ---------------------------------------------------------------------- */
 
     function clearDistrictLayer() {
@@ -171,49 +282,112 @@
         }
     }
 
-    function resetHighlight() {
-        if (!regionLayer) {
-            return;
-        }
-        regionLayer.eachLayer(function (layer) {
-            layer.setStyle({ weight: 1, color: '#ffffff' });
+    function highlight(code) {
+        selectedCode = code || '';
+        Object.keys(regionRefs).forEach(function (key) {
+            var ref = regionRefs[key];
+            var on = key === selectedCode;
+            if (ref.polygon) {
+                ref.polygon.setStyle({ weight: on ? 3 : 1, color: on ? '#0c1e21' : '#ffffff' });
+            }
+            if (ref.marker) {
+                ref.marker.setStyle({ fillOpacity: on ? 0.85 : 0.55 });
+            }
         });
     }
 
-    function renderDetailItems(items) {
-        detailListEl.innerHTML = '';
+    function setDistrictMode() {
+        if (regionViewEl) {
+            regionViewEl.hidden = true;
+        }
+        if (districtViewEl) {
+            districtViewEl.hidden = false;
+        }
+        if (filterEl) {
+            filterEl.hidden = true;
+        }
+    }
+
+    function setRegionMode() {
+        if (regionViewEl) {
+            regionViewEl.hidden = false;
+        }
+        if (districtViewEl) {
+            districtViewEl.hidden = true;
+        }
+        if (filterEl) {
+            filterEl.hidden = false;
+        }
+    }
+
+    function markActiveRow(code) {
+        var rows = document.querySelectorAll('.bdst-row[data-code]');
+        Array.prototype.forEach.call(rows, function (row) {
+            if (row.getAttribute('data-code') === code) {
+                row.classList.add('is-active');
+            } else {
+                row.classList.remove('is-active');
+            }
+        });
+    }
+
+    function renderDistrictRows(region) {
+        if (!districtListEl) {
+            return;
+        }
+        districtListEl.innerHTML = '';
+        var items = region.items || [];
+
+        if (!items.length) {
+            var empty = document.createElement('li');
+            empty.className = 'bdst-empty';
+            empty.textContent = region.total
+                ? 'District breakdown is not available for this region.'
+                : 'No approved members recorded in this region yet.';
+            districtListEl.appendChild(empty);
+            return;
+        }
+
+        var max = 0;
         items.forEach(function (item) {
+            if (item.count && item.count > max) {
+                max = item.count;
+            }
+        });
+
+        items.forEach(function (item) {
+            var count = item.count === null ? 0 : item.count;
+            var pct = max > 0 ? Math.max(5, Math.round(count * 100 / max)) : 0;
             var li = document.createElement('li');
-            var muted = item.count === null;
+            li.className = 'bdst-row';
             li.innerHTML =
-                '<span class="bdst-detail-name">' +
-                '<span class="bdst-swatch bdst-swatch--' + escapeHtml(item.band) + '"></span>' +
-                '<span>' + escapeHtml(item.name) + '</span>' +
+                '<span class="bdst-row-inner">' +
+                '<span class="bdst-row-body">' +
+                '<span class="bdst-row-name">' + escapeHtml(item.name) + '</span>' +
+                '<span class="bdst-row-track"><span class="bdst-row-fill" style="width:' + pct + '%"></span></span>' +
                 '</span>' +
-                '<span class="bdst-detail-count' + (muted ? ' is-muted' : '') + '">' +
-                escapeHtml(item.count === null ? item.label : String(item.count)) +
+                '<span class="bdst-row-count">' + escapeHtml(item.count === null ? item.label : String(item.count)) + '</span>' +
                 '</span>';
-            detailListEl.appendChild(li);
+            districtListEl.appendChild(li);
         });
     }
 
     function resetDetail() {
         clearDistrictLayer();
-        resetHighlight();
+        highlight('');
+        markActiveRow('');
         if (regionSelect) {
             regionSelect.value = '';
         }
-        if (detailTitleEl) {
-            detailTitleEl.textContent = 'District breakdown';
+        setRegionMode();
+        if (titleEl) {
+            titleEl.textContent = TITLE_REGIONS;
         }
-        if (detailNoteEl) {
-            detailNoteEl.textContent = 'Select a region on the map, or use the list above, to see its districts.';
+        if (noteEl) {
+            noteEl.textContent = NOTE_REGIONS;
         }
-        if (detailListEl) {
-            detailListEl.innerHTML = '';
-        }
-        if (resetBtn) {
-            resetBtn.hidden = true;
+        if (districtListEl) {
+            districtListEl.innerHTML = '';
         }
         if (regionLayer) {
             map.fitBounds(regionLayer.getBounds(), { padding: [16, 16] });
@@ -254,29 +428,19 @@
         if (regionSelect) {
             regionSelect.value = code;
         }
-        if (detailTitleEl) {
-            detailTitleEl.textContent = info.name;
+        setDistrictMode();
+        markActiveRow(code);
+        highlight(code);
+        if (titleEl) {
+            titleEl.textContent = info.name;
         }
-        if (detailListEl) {
-            detailListEl.innerHTML = '';
+        if (noteEl) {
+            noteEl.textContent = 'Loading district breakdown\u2026';
         }
-        if (resetBtn) {
-            resetBtn.hidden = false;
-        }
-        if (detailNoteEl) {
-            detailNoteEl.textContent = 'Loading district breakdown...';
+        if (districtListEl) {
+            districtListEl.innerHTML = '';
         }
         setStatus('Loading districts for ' + info.name + '.');
-
-        if (regionLayer) {
-            regionLayer.eachLayer(function (layer) {
-                var selected = layer.feature.properties.code === code;
-                layer.setStyle({ weight: selected ? 3 : 1, color: selected ? '#0c1e21' : '#ffffff' });
-                if (selected && layer.bringToFront) {
-                    layer.bringToFront();
-                }
-            });
-        }
 
         getJson(config.districtsUrl + '?region=' + encodeURIComponent(code))
             .then(function (payload) {
@@ -285,29 +449,90 @@
                     throw new Error('empty payload');
                 }
 
-                renderDetailItems(region.items || []);
+                renderDistrictRows(region);
                 showDistrictOutlines(code);
 
-                if (detailNoteEl) {
+                if (noteEl) {
                     if (region.published) {
-                        detailNoteEl.textContent = region.total === null
-                            ? 'Districts with members in this region.'
-                            : region.total + ' approved member(s) across this region.';
+                        var total = region.total === null ? 0 : region.total;
+                        noteEl.textContent = total > 0
+                            ? (total === 1 ? '1 approved member in this region.' : total + ' approved members in this region.')
+                            : 'No approved members recorded in this region yet.';
                     } else if (region.reason === 'below_cohort') {
-                        detailNoteEl.textContent = 'Too few members in this region to publish a breakdown ' +
-                            'without identifying individuals.';
+                        noteEl.textContent = 'Too few members in this region to publish a breakdown.';
                     } else {
-                        detailNoteEl.textContent = 'Geographic detail is not published yet.';
+                        noteEl.textContent = 'Geographic detail is not published.';
                     }
                 }
                 setStatus('Showing districts for ' + region.region + '.');
             })
             .catch(function () {
-                if (detailNoteEl) {
-                    detailNoteEl.textContent = 'District details could not be loaded. Please try again.';
+                if (noteEl) {
+                    noteEl.textContent = 'District details could not be loaded. Please try again.';
                 }
                 setStatus('District details could not be loaded.');
             });
+    }
+
+    /* ----------------------------------------------------------------------
+       Ranked region list
+       ---------------------------------------------------------------------- */
+
+    function setZeroOpen(open) {
+        if (zeroBox) {
+            zeroBox.hidden = !open;
+        }
+        if (zeroToggle) {
+            zeroToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            zeroToggle.textContent =
+                (open ? 'Hide' : 'Show') + ' regions with no members (' + zeroCount + ')';
+        }
+    }
+
+    function applyFilter() {
+        var query = filterEl ? (filterEl.value || '').trim().toLowerCase() : '';
+        var rows = document.querySelectorAll('.bdst-row[data-name]');
+        Array.prototype.forEach.call(rows, function (row) {
+            var name = (row.getAttribute('data-name') || '').toLowerCase();
+            row.hidden = query !== '' && name.indexOf(query) === -1;
+        });
+        setZeroOpen(query !== '');
+    }
+
+    function wireRows() {
+        var rows = document.querySelectorAll('.bdst-row[data-code]');
+        Array.prototype.forEach.call(rows, function (row) {
+            var code = row.getAttribute('data-code');
+            var button = row.querySelector('.bdst-row-btn');
+            if (!button) {
+                return;
+            }
+            button.addEventListener('click', function () {
+                loadRegion(code);
+            });
+            row.addEventListener('mouseenter', function () {
+                if (!selectedCode) {
+                    highlight(code);
+                }
+            });
+            row.addEventListener('mouseleave', function () {
+                if (!selectedCode) {
+                    highlight('');
+                }
+            });
+        });
+
+        if (zeroToggle) {
+            zeroToggle.setAttribute('aria-expanded', 'false');
+            zeroToggle.addEventListener('click', function () {
+                setZeroOpen(zeroBox ? zeroBox.hidden : false);
+            });
+        }
+
+        if (filterEl) {
+            filterEl.addEventListener('input', applyFilter);
+            filterEl.addEventListener('search', applyFilter);
+        }
     }
 
     if (regionSelect) {
@@ -330,9 +555,13 @@
 
     function renderMap(payload, geo) {
         lookup = {};
+        regionRefs = {};
+        selectedCode = '';
         payload.regions.forEach(function (region) {
             lookup[region.code] = region;
         });
+
+        var max = payload.max_count || 0;
 
         regionLayer = window.L.geoJSON(geo, {
             style: function (feature) {
@@ -341,32 +570,43 @@
                     color: '#ffffff',
                     weight: 1,
                     fillColor: colourFor(info ? info.band : 'withheld'),
-                    fillOpacity: 0.88
+                    fillOpacity: 0.9
                 };
             },
             onEachFeature: function (feature, layer) {
-                var info = lookup[feature.properties.code] || {
+                var code = feature.properties.code;
+                var info = lookup[code] || {
                     name: feature.properties.name,
                     band: 'withheld',
-                    label: 'Not published yet'
+                    label: 'Not published'
                 };
+
+                var ref = regionRefs[code] || (regionRefs[code] = {});
+                ref.polygon = layer;
 
                 layer.bindTooltip(
                     '<strong>' + escapeHtml(info.name) + '</strong><br>' + escapeHtml(info.label),
                     { sticky: true }
                 );
                 layer.on('click', function () {
-                    loadRegion(feature.properties.code);
+                    loadRegion(code);
                 });
                 layer.on('mouseover', function () {
-                    layer.setStyle({ weight: 2 });
+                    if (selectedCode !== code) {
+                        layer.setStyle({ weight: 2 });
+                    }
                 });
                 layer.on('mouseout', function () {
-                    var selected = regionSelect && regionSelect.value === feature.properties.code;
-                    layer.setStyle({ weight: selected ? 3 : 1 });
+                    layer.setStyle({
+                        weight: selectedCode === code ? 3 : 1,
+                        color: selectedCode === code ? '#0c1e21' : '#ffffff'
+                    });
                 });
             }
         }).addTo(map);
+
+        renderBubbles(payload.regions, max);
+        renderBubbleKey(max);
 
         var bounds = regionLayer.getBounds();
         map.fitBounds(bounds, { padding: [16, 16] });
@@ -374,16 +614,18 @@
 
         renderLegend(payload.published
             ? payload.legend
-            : [{ key: 'withheld', label: 'Not published yet' }]);
+            : [{ key: 'withheld', label: 'Not published' }]);
 
         setStatus(payload.published
             ? 'Map ready. Select a region to see its districts.'
-            : 'Map ready. Geographic detail is currently withheld.');
+            : 'Map ready.');
     }
 
     /* ----------------------------------------------------------------------
        Boot
        ---------------------------------------------------------------------- */
+
+    wireRows();
 
     Promise.all([
         getJson(config.regionsUrl),
@@ -395,7 +637,7 @@
         })
     ]).then(function (results) {
         renderMap(results[0], results[1]);
-    }).catch(function (err) {
-        showFallback('The map could not be loaded. The table below lists the same figures.');
+    }).catch(function () {
+        showFallback('The map could not be loaded. The ranked list and the table below carry the same figures.');
     });
 }());

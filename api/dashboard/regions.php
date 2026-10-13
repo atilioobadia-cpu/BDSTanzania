@@ -16,6 +16,7 @@ bdst_api_guard(static function (): array {
         'generated_at' => $public['generated_at'],
         'published'    => $public['published'],
         'thresholds'   => $public['thresholds'],
+        'max_count'    => $public['max_count'],
         'legend'       => $public['legend'],
         'regions'      => $public['regions'],
     ];

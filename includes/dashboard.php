@@ -8,15 +8,17 @@ declare(strict_types=1);
  * the page (dashboard.php) and the JSON endpoints (api/dashboard/*) call the
  * functions here, so a figure can never differ between the two.
  *
- * PRIVACY RULES (enforced in code, not just documented):
+ * PUBLISHING RULES (enforced in code, not just documented):
  *   1. Only aggregate counts are produced. No names, contacts, addresses or
  *      coordinates ever leave this layer.
- *   2. A single approved member must not be identifiable from the map, so a
- *      region/district figure is only published when it reaches the minimum
- *      cohort size (default 3).
- *   3. While the whole membership is smaller than the minimum total, the
- *      geographic breakdown is withheld entirely. Otherwise a lone member
- *      would still be visible as the only shaded region.
+ *   2. By the owner's decision the register is published in full: every region
+ *      and district holding at least one approved member is shown with its
+ *      real number, and the map bubbles are sized from those real numbers.
+ *   3. The small-cohort protection is still implemented and can be switched
+ *      back on without a code change - set 'dashboardMinCohort' and/or
+ *      'dashboardMinTotal' in mail-config.php. A cell below the cohort floor
+ *      is then folded into "Other / not specified" (district view) or hidden
+ *      behind the withheld band (map view), exactly as before.
  *
  * Reference points used by the map are administrative centroids from
  * includes/geo.php - never a member's own location.
@@ -25,17 +27,19 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/geo.php';
 
-/** Minimum members in a cell before its exact number may be published. */
-const BDST_DASHBOARD_MIN_COHORT = 3;
+/** Members in a cell required before its exact number may be published. */
+const BDST_DASHBOARD_MIN_COHORT = 1;
 
-/** Minimum approved members overall before any geographic detail is shown. */
-const BDST_DASHBOARD_MIN_TOTAL = 3;
+/** Approved members overall required before any geographic detail is shown. */
+const BDST_DASHBOARD_MIN_TOTAL = 1;
 
 /**
  * Optional overrides from mail-config.php:
  *   'dashboardMinCohort' => 3,
  *   'dashboardMinTotal'  => 3,
- * Values below 1 are treated as 1 (i.e. no suppression).
+ * At the shipped defaults of 1 nothing is suppressed: a single approved
+ * member is published (and drawn as the smallest bubble). Raise either value
+ * to restore the small-cohort protection. Values below 1 are treated as 1.
  */
 function bdst_dashboard_min_cohort(): int
 {
@@ -159,19 +163,22 @@ function bdst_dashboard_band(int $count, int $minCohort): string
 }
 
 /**
- * Human label for a band. Never states a number below the cohort floor.
+ * Human label for a band. Reads as plain prose so the map tooltip, the legend
+ * and the table all say the same thing.
  */
 function bdst_dashboard_band_label(string $band, int $minCohort): string
 {
+    $low = $minCohort <= 1 ? '1' : (string) $minCohort;
+
     switch ($band) {
         case 'withheld':
-            return 'Not published yet';
+            return 'Not published';
         case 'zero':
             return 'No members';
         case 'lt_min':
             return 'Fewer than ' . $minCohort;
         case 'low':
-            return $minCohort . ' to 9 members';
+            return $low . ' to 9 members';
         case 'mid':
             return '10 to 24 members';
         case 'high':
@@ -183,19 +190,26 @@ function bdst_dashboard_band_label(string $band, int $minCohort): string
 /**
  * Legend definition for the map / table.
  *
+ * The "below the floor" entry only makes sense while a cohort floor exists,
+ * so it disappears at the shipped default of 1.
+ *
  * @return list<array{key: string, label: string}>
  */
 function bdst_dashboard_legend(?int $minCohort = null): array
 {
     $minCohort ??= bdst_dashboard_min_cohort();
+    $low = $minCohort <= 1 ? '1' : (string) $minCohort;
 
-    return [
-        ['key' => 'zero',   'label' => 'No members'],
-        ['key' => 'lt_min', 'label' => 'Fewer than ' . $minCohort],
-        ['key' => 'low',    'label' => $minCohort . ' to 9 members'],
-        ['key' => 'mid',    'label' => '10 to 24 members'],
-        ['key' => 'high',   'label' => '25 or more members'],
-    ];
+    $legend = [];
+    if ($minCohort > 1) {
+        $legend[] = ['key' => 'lt_min', 'label' => 'Fewer than ' . $minCohort];
+    }
+    $legend[] = ['key' => 'zero', 'label' => 'No members'];
+    $legend[] = ['key' => 'low',  'label' => $low . ' to 9 members'];
+    $legend[] = ['key' => 'mid',  'label' => '10 to 24 members'];
+    $legend[] = ['key' => 'high', 'label' => '25 or more members'];
+
+    return $legend;
 }
 
 /**
@@ -209,13 +223,21 @@ function bdst_dashboard_public(array $data, ?int $minCohort = null, ?int $minTot
     $minCohort ??= bdst_dashboard_min_cohort();
     $minTotal  ??= bdst_dashboard_min_total();
 
-    $total     = (int) $data['total'];
-    $published = $total >= $minTotal;
+    $total = (int) $data['total'];
 
-    $regions = [];
+    // A floor of 1 means "publish everything": the geographic breakdown is
+    // shown even when a single member is on the register (or none at all).
+    // A higher floor restores the whole-register gate.
+    $published = $minTotal <= 1 || $total >= $minTotal;
+
+    $regions  = [];
+    $maxCount = 0;
     foreach (bdst_official_regions() as $name => $meta) {
         $count = (int) ($data['regions'][$name] ?? 0);
         $band  = $published ? bdst_dashboard_band($count, $minCohort) : 'withheld';
+        if ($published && $count > $maxCount) {
+            $maxCount = $count;
+        }
 
         $regions[] = [
             'name'  => $name,
@@ -237,6 +259,7 @@ function bdst_dashboard_public(array $data, ?int $minCohort = null, ?int $minTot
             'min_cohort' => $minCohort,
             'min_total'  => $minTotal,
         ],
+        'max_count' => $maxCount,
         'totals' => [
             'members'            => $total,
             'regions_covered'    => $published ? (int) $data['regions_covered'] : null,
@@ -250,12 +273,13 @@ function bdst_dashboard_public(array $data, ?int $minCohort = null, ?int $minTot
 }
 
 /**
- * District breakdown for one region, already privacy-filtered.
+ * District breakdown for one region.
  *
- * Returns null when the region code is unknown. When the region is not
- * published (either the whole register is below the minimum total, or the
- * region itself is below the minimum cohort) 'items' is empty and 'reason'
- * explains why - no district names are disclosed either.
+ * Returns null when the region code is unknown. When a cohort floor is in
+ * force and this region has fewer members than the floor, 'items' is empty
+ * and 'reason' explains why - no district names are disclosed either. At the
+ * shipped floor of 1 the region is always published, including a region with
+ * zero members (which simply has no rows).
  *
  * @param array<string, mixed> $data Result of bdst_dashboard_data().
  * @return array<string, mixed>|null
@@ -280,8 +304,10 @@ function bdst_dashboard_region_detail(array $data, string $regionCode, ?int $min
     }
 
     $total           = (int) ($data['regions'][$name] ?? 0);
-    $globalPublished = (int) $data['total'] >= $minTotal;
-    $published       = $globalPublished && $total >= $minCohort;
+    $globalPublished = $minTotal <= 1 || (int) $data['total'] >= $minTotal;
+    // A region with no members still gets published: there is nothing to
+    // protect in an empty list, and saying "0 members" is not a disclosure.
+    $published       = $globalPublished && ($minCohort <= 1 || $total >= $minCohort || $total === 0);
 
     $out = [
         'region'     => $name,
@@ -364,4 +390,39 @@ function bdst_dashboard_sort_items(array $items): array
         return strcmp($a['name'], $b['name']);
     });
     return $items;
+}
+
+/**
+ * Sort public region rows for display: most members first, then name.
+ *
+ * Shared by the ranked list and the full table so their order can never differ.
+ *
+ * @param list<array<string, mixed>> $regions
+ * @return list<array<string, mixed>>
+ */
+function bdst_dashboard_sort_regions(array $regions): array
+{
+    usort($regions, static function (array $a, array $b): int {
+        $ac = $a['count'] === null ? 0 : (int) $a['count'];
+        $bc = $b['count'] === null ? 0 : (int) $b['count'];
+        if ($ac !== $bc) {
+            return $bc <=> $ac;
+        }
+        return strcmp((string) $a['name'], (string) $b['name']);
+    });
+    return $regions;
+}
+
+/**
+ * Width (as a percentage of the tallest bar) for a count bar.
+ *
+ * A non-zero count is never drawn thinner than 5% so a lone member still has
+ * a visible bar, and a zero count is drawn as an empty track.
+ */
+function bdst_dashboard_bar_percent(int $count, int $max): int
+{
+    if ($max <= 0 || $count <= 0) {
+        return 0;
+    }
+    return max(5, (int) round($count * 100 / $max));
 }
