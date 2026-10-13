@@ -26,6 +26,10 @@ AddDefaultCharset UTF-8
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
+  # The canonical dashboard URL is /dashboard (no trailing slash), which keeps
+  # relative asset/css/js paths resolving against the webroot. /dashboard/
+  # (directory-like) would break those relative paths, so canonicalize it away.
+  RewriteRule ^dashboard/$ /dashboard [R=301,L]
   # Internally map clean URLs to root .html files, then .php files
   RewriteCond %{DOCUMENT_ROOT}/$1.html -f
   RewriteRule ^([A-Za-z0-9_-]+)/?$ $1.html [L]
@@ -47,9 +51,33 @@ AddDefaultCharset UTF-8
     # Keep Last-Modified header intact for change detection
     Header always unset ETag
   </FilesMatch>
+  # Security headers (Phase 5 hardening)
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
   # Hide server directory info (security)
   Header always unset X-Powered-By
   Header always unset Server
+</IfModule>
+
+# -------------------------------------------------------
+# PHASE 5 HARDENING - never serve dev/backup/sensitive files
+# -------------------------------------------------------
+<IfModule mod_authz_core.c>
+  # SQL dumps, notes, logs, env-style files and other non-website artifacts
+  <FilesMatch "\.(sql|md|log|bak|ini|sh|ps1|env|csv|json)$">
+    Require all denied
+  </FilesMatch>
+  # The live DB/email config lives ABOVE the web root; if a copy ever ends up
+  # below it, it must not be downloadable.
+  <FilesMatch "^mail-config.*\.php$">
+    Require all denied
+  </FilesMatch>
+  # Renamed / leftover deploy helpers (defence in depth)
+  <FilesMatch "^_(bk|up|chk|deploy|fetch|dl|diag|maint|verify|probe|uptest)[A-Za-z0-9_]*\.php$">
+    Require all denied
+  </FilesMatch>
 </IfModule>
 
 <IfModule mod_expires.c>

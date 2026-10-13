@@ -69,6 +69,10 @@ membership registration and an admin panel (PHP + MySQL). It is hosted on cPanel
 - **Member directory** - public listing of approved members (name, firm,
   region, district, professional status).
 - **Status lookup** - applicants can check their status by reference number.
+- **Members geographic dashboard** ([`/dashboard`](https://www.bdst.or.tz/dashboard)) - interactive Leaflet map
+  (choropleth + location pins, street/satellite), region/district breakdowns,
+  trend & donut charts, CSV export and auto-refresh. Aggregate counts only -
+  no member is ever identified. See [docs/API.md](docs/API.md).
 - **News / updates** - PHP + MySQL listing and detail pages with search,
   pagination and dynamic SEO/Open Graph meta.
 - **Admin panel** (`/nexus/`) - password-protected management of news updates
@@ -120,7 +124,11 @@ BDSTanzania/
 |-- 404.html
 |-- updates.php                # News listing (PHP-driven, paginated + search)
 |-- update.php                 # Single post detail (?slug=...)
-|-- .htaccess                  # Clean URLs, HTTPS, caching, PHP-for-.html
+|-- dashboard.php              # Public members geographic dashboard
+|-- robots.txt                 # Crawling policy (APIs kept out of results)
+|-- .htaccess                  # Clean URLs, HTTPS, caching, headers, PHP-for-.html
+|-- api/                       # Public JSON endpoints (read-only, aggregate)
+|   `-- dashboard/             #   summary / regions / districts / trends
 |-- register/                  # Public membership registration
 |   |-- index.php              # Application form
 |   |-- members.php            # Public member directory
@@ -147,12 +155,18 @@ BDSTanzania/
 |   `-- PHPMailer/src/         #   Bundled PHPMailer library
 |-- assets/
 |   |-- css/  js/  fonts/  images/
-|   `-- geo/                   # Region/district GeoJSON for the map
+|   |-- vendor/
+|   |   `-- leaflet/           # Pinned Leaflet 1.9.4 (immutable, long-cached)
+|   |-- geo/                   # Region/district GeoJSON for the map
+|   |   `.htaccess             #   Long cache + geo+json Content-Type
 |-- database/
 |   |-- bdst_news.sql          # News schema
 |   |-- bdst_registrations.sql # Member registration schema
 |   |-- update_2026_08_approval_features.sql
 |   `-- update_2026_10_geo_dashboard.sql   # Geo reference tables + index
+|-- docs/
+|   |-- API.md                 # Public JSON endpoints reference
+|   `-- DEPLOY.md              # Backup / deploy / verify runbook
 |-- tools/geo/                 # Generators for geo.php / SQL / GeoJSON
 `-- mail-config.sample.php     # Template for mail-config.php (gitignored)
 ```
@@ -181,6 +195,9 @@ BDSTanzania/
 
 ### Deployment (cPanel)
 
+> The full, battle-tested runbook - backups, byte-exact uploads, verification,
+> cleanup and rollback - is in [docs/DEPLOY.md](docs/DEPLOY.md). Summary:
+
 1. Back up the live site and database first.
 2. Upload the project contents into `public_html/`.
 3. Create a MySQL database + user in **MySQL Databases**.
@@ -192,7 +209,8 @@ BDSTanzania/
    php -r "echo password_hash('CHANGE_ME', PASSWORD_DEFAULT);"
    ```
 7. Confirm `.htaccess` handles clean URLs, HTTPS, caching and parsing `.html`
-   files as PHP.
+   files as PHP. Verify the security headers (`nosniff`,
+   `X-Frame-Options`, `Referrer-Policy`) are present on a response.
 
 ---
 
@@ -253,10 +271,14 @@ description, date) without touching code:
 - [x] PHP + MySQL news backend (admin dashboard, `updates.php`, `update.php`)
 - [x] Membership registration + public member directory (+ auto-approval)
 - [x] Official 31-region / 170-district geographic reference data + boundaries
-- [ ] Searchable region/district dropdowns on the registration form
-- [ ] Public interactive members geographic dashboard (map + statistics)
+- [x] Searchable region/district dropdowns on the registration form
+- [x] Public interactive members geographic dashboard (map + statistics)
+- [x] Dashboard hardening - accessibility, performance, security headers
 - [ ] Friendly post URLs (`/updates/{slug}`)
 - [ ] Category filtering & search across updates
+
+Deployment and operations details (backup, byte-exact upload, verification,
+cache-busting and rollback) live in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ---
 
@@ -269,6 +291,14 @@ description, date) without touching code:
   (`.htaccess`); they are served only by the authenticated `nexus/cv.php`.
 - `includes/` denies direct access and PHP execution is blocked inside
   `assets/images/uploads/`.
+- **Phase 5 hardening** - the root `.htaccess` sends `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy` and
+  `Permissions-Policy` headers on every response, and denies web access to
+  `*.sql`, `*.md`, `*.log`, `*.bak`, `*.ini`, `mail-config*.php` and any
+  leftover `_up_/_chk_/_bk_` deploy helpers (defence in depth).
+- **Dashboard accessibility** - skip link, logical heading order, keyboard-
+  operable map pins and region polygons, visible focus indicators with >= 3:1
+  contrast, `prefers-reduced-motion` support and labelled map controls.
 - All user input is sanitized and output is HTML-escaped; every query uses
   prepared statements.
 - The admin panel (`/nexus/`) uses PHP sessions with `password_hash` /

@@ -29,9 +29,75 @@
     --bdst-line: #e4ecec;
     --bdst-soft: #f6f9f9;
     --bdst-brand: #1997c6;
+    /* Focus indicator colour - dark enough for >= 3:1 contrast on white
+       (WCAG 1.4.11) even over the light blue tints and brand colour. */
+    --bdst-focus: #0d6f8c;
 
     --bdst-radius: 18px;
     --bdst-shadow: 0 10px 30px rgba(12, 30, 33, 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility helpers
+   -------------------------------------------------------------------------- */
+
+/* Fallback for Bootstrap's .visually-hidden, so the dashboard markup keeps
+   its hidden labels even if Bootstrap loads late or partially. */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Skip link: invisible until keyboard-focussed, then pinned top-left so it is
+   the very first thing a keyboard user can reach (WCAG 2.4.1). */
+.bdst-skiplink {
+    position: absolute;
+    left: 12px;
+    top: -60px;
+    z-index: 2000;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--bdst-focus);
+    font: 600 14px/1 "Plus Jakarta Sans", system-ui, sans-serif;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(12, 30, 33, 0.2);
+    transition: top 0.15s ease;
+}
+
+.bdst-skiplink:focus,
+.bdst-skiplink:focus-visible {
+    top: 12px;
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: 2px;
+}
+
+/* Map pins and region polygons are interactive (they drill into districts);
+   give them a visible focus ring in the focus colour. */
+.bdst-pin:focus-visible,
+.bdst-pin:focus {
+    outline: 3px solid var(--bdst-focus);
+    outline-offset: 3px;
+    border-radius: 999px;
+}
+
+path.leaflet-interactive:focus-visible,
+path.leaflet-interactive:focus {
+    stroke: var(--bdst-focus);
+    stroke-width: 3;
+}
+
+.leaflet-control-zoom a:focus-visible,
+.leaflet-control-layers input:focus-visible {
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: -2px;
 }
 
 /* --------------------------------------------------------------------------
@@ -421,7 +487,7 @@
 .bdst-select:focus,
 .bdst-input:focus {
     border-color: var(--bdst-brand);
-    outline: 2px solid rgba(25, 151, 198, 0.35);
+    outline: 2px solid var(--bdst-focus);
     outline-offset: 1px;
 }
 
@@ -511,7 +577,7 @@
 }
 
 .bdst-row-btn:focus-visible {
-    outline: 2px solid var(--bdst-brand);
+    outline: 2px solid var(--bdst-focus);
     outline-offset: -2px;
 }
 
@@ -601,6 +667,11 @@
     outline: none;
 }
 
+.bdst-zero-toggle:focus-visible {
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: 1px;
+}
+
 .bdst-back {
     align-self: flex-start;
     margin-top: 14px;
@@ -617,6 +688,12 @@
 .bdst-back:hover,
 .bdst-back:focus {
     text-decoration: underline;
+}
+
+.bdst-back:focus-visible {
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 .bdst-empty {
@@ -771,7 +848,7 @@
 }
 
 .bdst-seg:focus-visible {
-    outline: 2px solid var(--bdst-brand);
+    outline: 2px solid var(--bdst-focus);
     outline-offset: 1px;
 }
 
@@ -798,7 +875,7 @@
 }
 
 .bdst-icon-btn:focus-visible {
-    outline: 2px solid var(--bdst-brand);
+    outline: 2px solid var(--bdst-focus);
     outline-offset: 1px;
 }
 
@@ -932,7 +1009,7 @@
 }
 
 .bdst-btn-ghost:focus-visible {
-    outline: 2px solid var(--bdst-brand);
+    outline: 2px solid var(--bdst-focus);
     outline-offset: 1px;
 }
 
@@ -1090,6 +1167,40 @@
     100% {
         color: var(--bdst-ink);
         opacity: 1;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion (WCAG 2.3.3): keep the data, drop the motion.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .bdst-pin svg,
+    .bdst-pin.is-active,
+    .bdst-seg,
+    .bdst-icon-btn,
+    .bdst-btn-ghost,
+    .bdst-coverage-fill,
+    .bdst-bar,
+    .bdst-row-fill,
+    .bdst-kpi-value.is-updated,
+    .bdst-icon-btn .fa-rotate.is-spinning,
+    .bdst-skiplink {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .bdst-pin:hover svg,
+    .bdst-pin.is-hover svg,
+    .bdst-pin.is-active svg {
+        transform: none;
+    }
+
+    /* The template hides .wow elements until they animate; without motion
+       they must simply be visible. */
+    .wow {
+        visibility: visible !important;
+        animation: none !important;
     }
 }
 

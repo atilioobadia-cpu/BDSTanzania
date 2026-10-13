@@ -1,0 +1,11 @@
+# BDS Tanzania - crawling policy
+# The public pages (including /dashboard.php) are indexable. The machine
+# JSON endpoints behind /api/ mirror the indexable page and are kept out of
+# search results (they also send X-Robots-Tag: noindex at the HTTP layer).
+
+User-agent: *
+Disallow: /api/
+Disallow: /nexus/
+Disallow: /assets/images/uploads/
+
+Allow: /

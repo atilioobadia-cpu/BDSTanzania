@@ -1,0 +1,17 @@
+# GeoJSON boundary files are content-addressed by a version query string in
+# dashboard.php (?v=2). Bump that version when the geometry changes; until
+# then browsers may hold these files for a year (Phase 5 performance).
+
+<IfModule mod_expires.c>
+  # Keep this subtree free of mod_expires' Cache-Control lines; the header
+  # block below is the single, authoritative cache directive here.
+  ExpiresActive Off
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.geojson$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+    Header always set Content-Type "application/geo+json; charset=utf-8"
+    Header always set X-Content-Type-Options "nosniff"
+  </FilesMatch>
+</IfModule>

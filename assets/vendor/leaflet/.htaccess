@@ -1,0 +1,15 @@
+# Leaflet 1.9.4 is a pinned, immutable dependency: the files in this folder
+# never change between deploys, so browsers may cache them for a year.
+# This overrides the site-wide no-store for css/js (Phase 5 performance).
+
+<IfModule mod_expires.c>
+  # The parent .htaccess enables ExpiresActive for js/css; switch it off here
+  # so mod_expires does not emit a competing Cache-Control alongside ours.
+  ExpiresActive Off
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|png|svg)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

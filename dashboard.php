@@ -147,12 +147,12 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <meta name="keywords" content="BDS Tanzania members map, business development professionals Tanzania, member distribution by region, BDS Tanzania statistics">
     <meta name="author" content="BDS Tanzania">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.bdst.or.tz/dashboard.php">
+    <link rel="canonical" href="https://www.bdst.or.tz/dashboard">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Member Map | BDS Tanzania Members by Region">
     <meta property="og:description" content="Where BDS Tanzania members are based, region by region. Aggregate member counts only.">
-    <meta property="og:url" content="https://www.bdst.or.tz/dashboard.php">
+    <meta property="og:url" content="https://www.bdst.or.tz/dashboard">
     <meta property="og:site_name" content="BDS Tanzania">
     <meta property="og:image" content="https://www.bdst.or.tz/assets/images/logos/logo.webp">
 
@@ -169,7 +169,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             "@type": "Dataset",
             "name": "BDS Tanzania members by region",
             "description": "Aggregate counts of approved BDS Tanzania members by region and district. Individual members are not identified.",
-            "url": "https://www.bdst.or.tz/dashboard.php",
+            "url": "https://www.bdst.or.tz/dashboard",
             "spatialCoverage": { "@type": "Place", "name": "Tanzania" },
             "creator": { "@type": "Organization", "name": "Business Development Society of Tanzania" },
             "isAccessibleForFree": true
@@ -182,6 +182,13 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Map tiles (Street + Satellite) - open the connections early so the
+         first map tiles arrive faster. -->
+    <link rel="preconnect" href="https://tile.openstreetmap.org">
+    <link rel="preconnect" href="https://server.arcgisonline.com">
+    <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+    <link rel="dns-prefetch" href="https://server.arcgisonline.com">
 
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -196,6 +203,10 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
 
 <body>
     <div class="body-overlay"></div>
+
+    <!-- Skip link: first focusable element so keyboard/Screen-reader users can
+         jump past the shared header straight to the dashboard content. -->
+    <a class="bdst-skiplink" href="#primary">Skip to main content</a>
 
     <!-- Back to top -->
     <div class="back-to-top-wrapper">
@@ -232,7 +243,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 </div>
 
                 <div class="hamburger-search-area">
-                    <h5 class="hamburger-title">Search BDS Tanzania</h5>
+                    <h3 class="hamburger-title">Search BDS Tanzania</h3>
                     <div class="hamburger_search">
                         <form method="get" action="updates.php">
                             <button type="submit" aria-label="Search">
@@ -244,7 +255,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 </div>
 
                 <div class="hamburger-infos">
-                    <h5 class="hamburger-title">Contact Information</h5>
+                    <h3 class="hamburger-title">Contact Information</h3>
                     <div class="contact-info">
                         <div class="contact-item">
                             <span class="subtitle">Phone</span>
@@ -263,7 +274,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             </div>
 
             <div class="hamburger-socials">
-                <h5 class="hamburger-title">Follow BDS Tanzania</h5>
+                <h3 class="hamburger-title">Follow BDS Tanzania</h3>
                 <div class="social-links style-3">
                     <ul>
                         <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
@@ -299,7 +310,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 </div>
 
                 <div class="hamburger-infos">
-                    <h5 class="hamburger-title">Contact Information</h5>
+                    <h3 class="hamburger-title">Contact Information</h3>
                     <div class="contact-info">
                         <div class="contact-item">
                             <span class="subtitle">Phone</span>
@@ -318,7 +329,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             </div>
 
             <div class="hamburger-socials">
-                <h5 class="hamburger-title">Follow BDS Tanzania</h5>
+                <h3 class="hamburger-title">Follow BDS Tanzania</h3>
                 <div class="social-links style-3">
                     <ul>
                         <li><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></li>
@@ -564,7 +575,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
         </div>
     </header>
 
-    <main id="primary" class="site-main">
+    <main id="primary" class="site-main" tabindex="-1">
         <!-- Breadcrumb -->
         <section class="tj-page-header section-gap-x" data-bg-image="assets/images/bg/1.jpg">
             <div class="container">
@@ -696,7 +707,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 <div class="row g-4">
                     <div class="col-xl-7">
                         <div class="bdst-map-card">
-                            <h3 class="bdst-card-title">Member distribution</h3>
+                            <h2 class="bdst-card-title">Member distribution</h2>
                             <p class="bdst-card-sub">Every green pin is a region, sized by how many approved members are based there. Choose one to see its districts &mdash; or switch to the satellite view with the map controls.</p>
                             <div id="bdst-map" role="region" aria-label="Map of Tanzania with a green pin for each region, sized by its number of approved members"></div>
                             <noscript>
@@ -724,7 +735,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                     </div>
                     <div class="col-xl-5">
                         <div class="bdst-panel">
-                            <h3 class="bdst-card-title" id="bdst-detail-title">Regions by membership</h3>
+                            <h2 class="bdst-card-title" id="bdst-detail-title">Regions by membership</h2>
                             <p class="bdst-card-sub" id="bdst-detail-note">Click a row or a pin to see a region's districts.</p>
                             <div class="bdst-tools">
                                 <label class="visually-hidden" for="bdst-region-select">Choose a region</label>
@@ -784,7 +795,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 <div class="bdst-insight-card">
                     <div class="bdst-insight-grid">
                         <div class="bdst-insight-block">
-                            <h3 class="bdst-card-title">Member share by region</h3>
+                            <h2 class="bdst-card-title">Member share by region</h2>
                             <p class="bdst-card-sub">How the membership is spread across the areas it reaches.</p>
                             <div class="bdst-donut-wrap">
                                 <div class="bdst-donut" id="bdst-donut" role="img"
@@ -794,7 +805,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                             <p class="bdst-donut-note" id="bdst-donut-note">&nbsp;</p>
                         </div>
                         <div class="bdst-insight-block">
-                            <h3 class="bdst-card-title">Geographic coverage</h3>
+                            <h2 class="bdst-card-title">Geographic coverage</h2>
                             <p class="bdst-card-sub">
                                 How many of Tanzania's official regions and districts are represented.
                             </p>
@@ -823,7 +834,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 <div class="bdst-trend-card">
                     <div class="bdst-trend-head">
                         <div class="bdst-trend-headtext">
-                            <h3 class="bdst-card-title">Registration trend</h3>
+                            <h2 class="bdst-card-title">Registration trend</h2>
                             <p class="bdst-card-sub">
                                 Approved members added over time &mdash; new members per period and the
                                 running total. Aggregate counts only.
@@ -887,8 +898,8 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                 'districtsUrl' => 'api/dashboard/districts.php',
                 'trendsUrl'    => 'api/dashboard/trends.php',
                 'summaryUrl'   => 'api/dashboard/summary.php',
-                'regionsGeo'   => 'assets/geo/tz-regions.geojson',
-                'districtsGeo' => 'assets/geo/tz-districts.geojson',
+                'regionsGeo'   => 'assets/geo/tz-regions.geojson?v=2',
+                'districtsGeo' => 'assets/geo/tz-districts.geojson?v=2',
                 'tiles'        => [
                     'street' => [
                         'url'         => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -918,7 +929,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             <div class="container">
                 <div class="bdst-table-head">
                     <div>
-                        <h3 class="bdst-card-title">Member totals by region</h3>
+                        <h2 class="bdst-card-title">Member totals by region</h2>
                         <p class="bdst-card-sub">The same figures as the map, as a table &mdash; including regions with no members.</p>
                     </div>
                     <button type="button" class="bdst-btn-ghost" id="bdst-export-csv">
@@ -979,7 +990,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
 
                         <div class="col-xl-3 col-md-6">
                             <div class="footer-widget wow fadeInUp" data-wow-delay=".1s">
-                                <h5 class="title">About BDS Tanzania</h5>
+                                <h3 class="title">About BDS Tanzania</h3>
                                 <div class="footer-text">
                                     <p>
                                         BDS Tanzania (the Business Development Society of Tanzania) is the national professional association uniting business development service providers, enterprise advisors and institutional partners to promote standards, capacity building, advocacy and practical
@@ -991,7 +1002,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
 
                         <div class="col-xl-3 col-md-6">
                             <div class="footer-widget footer-col-2 widget-nav-menu wow fadeInUp" data-wow-delay=".3s">
-                                <h5 class="title">Our Programme Areas</h5>
+                                <h3 class="title">Our Programme Areas</h3>
                                 <ul>
                                     <li><a href="business-advisory-support.html">Business Advisory Support</a></li>
                                     <li><a href="capacity-building.html">Capacity Building</a></li>
@@ -1005,7 +1016,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
 
                         <div class="col-xl-3 col-md-6">
                             <div class="footer-widget footer-col-3 widget-nav-menu wow fadeInUp" data-wow-delay=".5s">
-                                <h5 class="title">Quick Links</h5>
+                                <h3 class="title">Quick Links</h3>
                                 <ul>
                                     <li><a href="about.html">About BDS Tanzania</a></li>
                                     <li><a href="leadership.html">Leadership</a></li>
@@ -1018,7 +1029,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
 
                         <div class="col-xl-3 col-md-6">
                             <div class="footer-widget widget-contact style-2 wow fadeInUp" data-wow-delay=".7s">
-                                <h5 class="title">Contact Us</h5>
+                                <h3 class="title">Contact Us</h3>
                                 <div class="footer-contact-info">
                                     <div class="contact-item">
                                         <span><i class="tji-location"></i> Dodoma, Tanzania</span>

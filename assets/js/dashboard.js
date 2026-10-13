@@ -74,6 +74,19 @@
     var trendPeriod        = 'monthly';
     var satelliteOn        = false;
 
+    // Request sequencing: a slow response must never overwrite a newer view.
+    // Each async UI-mutating fetch captures an increasing token and discards
+    // its result once a newer request (or a reset) has superseded it.
+    var detailReqSeq = 0;
+    var trendReqSeq  = 0;
+
+    // Respect "reduce motion" for every fitBounds animation and any CSS that
+    // asks about it via the helper class below.
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+        document.documentElement.classList.add('bdst-reduce-motion');
+    }
+
     function setStatus(message) {
         if (statusEl) {
             statusEl.textContent = message || '';
@@ -249,6 +262,24 @@
                     color: selectedCode === code ? '#0c1e21' : '#ffffff'
                 });
             });
+            // Keyboard access for the clickable regions (mirrors the pins and
+            // the native <select>). Each SVG path becomes a focusable button.
+            layer.on('add', function () {
+                var el = layer.getElement();
+                if (!el) {
+                    return;
+                }
+                el.setAttribute('role', 'button');
+                el.setAttribute('tabindex', '0');
+                el.setAttribute('aria-label',
+                    info.name + ' region: ' + info.label + '. Show its districts.');
+                el.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        loadRegion(code);
+                    }
+                });
+            });
         }
     });
 
@@ -272,6 +303,14 @@
     });
 
     map.zoomControl.setPosition('topright');
+    // Leaflet's zoom links are plain <a> tags; give them real names so a
+    // screen reader does not announce a bare "+"/"-".
+    ['leaflet-control-zoom-in', 'leaflet-control-zoom-out'].forEach(function (cls) {
+        var el = document.querySelector('.' + cls);
+        if (el) {
+            el.setAttribute('aria-label', cls.indexOf('in') > -1 ? 'Zoom in' : 'Zoom out');
+        }
+    });
 
     var districtLayer = null;
     var bubbleGroup = null;
@@ -280,6 +319,10 @@
     var selectedCode = '';
     var districtsGeoPromise = null;
     var fitted = false;
+    // Remember which pin / list row has keyboard focus across re-renders, so
+    // auto-refresh never silently drops a focused control.
+    var focusedPinCode = '';
+    var focusedRowCode = '';
 
     function districtsGeo() {
         if (!districtsGeoPromise) {
@@ -373,6 +416,34 @@
             marker.on('click', function () {
                 loadRegion(region.code);
             });
+            // Keyboard access: Leaflet 1.9 gives divIcon markers no tabindex of
+            // their own, so make each pin a real interactive control. Enter and
+            // Space activate it exactly like a click. The markers are rebuilt on
+            // every refresh, so the attributes are re-applied here each time.
+            marker.on('add', function () {
+                var el = marker.getElement();
+                if (!el) {
+                    return;
+                }
+                el.setAttribute('role', 'button');
+                el.setAttribute('tabindex', '0');
+                el.setAttribute('aria-label',
+                    region.name + ' region: ' + memberLabel(count) + '. Show its districts.');
+                el.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        loadRegion(region.code);
+                    }
+                });
+                el.addEventListener('focus', function () {
+                    focusedPinCode = region.code;
+                });
+                el.addEventListener('blur', function () {
+                    if (focusedPinCode === region.code) {
+                        focusedPinCode = '';
+                    }
+                });
+            });
 
             var ref = regionRefs[region.code] || (regionRefs[region.code] = {});
             ref.marker = marker;
@@ -380,6 +451,15 @@
 
             marker.addTo(bubbleGroup);
         });
+
+        // If the visitor had keyboard-focussed a pin when the map re-rendered,
+        // put focus back on it instead of drifting to <body>.
+        if (focusedPinCode && regionRefs[focusedPinCode] && regionRefs[focusedPinCode].marker) {
+            var pinEl = regionRefs[focusedPinCode].marker.getElement();
+            if (pinEl) {
+                pinEl.focus();
+            }
+        }
     }
 
     function renderPinKey(max) {
@@ -524,6 +604,7 @@
     }
 
     function resetDetail() {
+        detailReqSeq++; // Drop any in-flight district fetch from an earlier drill.
         clearDistrictLayer();
         highlight('');
         markActiveRow('');
@@ -541,13 +622,16 @@
             districtListEl.innerHTML = '';
         }
         if (regionLayer && Object.keys(regionRefs).length) {
-            map.fitBounds(regionLayer.getBounds(), { padding: [16, 16] });
+            map.fitBounds(regionLayer.getBounds(), { padding: [16, 16], animate: !reduceMotion });
         }
         setStatus('Showing the whole country.');
     }
 
-    function showDistrictOutlines(code) {
+    function showDistrictOutlines(code, req) {
         districtsGeo().then(function (geo) {
+            if (req !== detailReqSeq) {
+                return;
+            }
             clearDistrictLayer();
             var features = geo.features.filter(function (feature) {
                 return feature.properties.region_code === code;
@@ -564,13 +648,14 @@
                     }
                 }
             ).addTo(map);
-            map.fitBounds(districtLayer.getBounds(), { padding: [24, 24] });
+            map.fitBounds(districtLayer.getBounds(), { padding: [24, 24], animate: !reduceMotion });
         }).catch(function () {
             // Outlines are a nicety; the panel already lists the districts.
         });
     }
 
     function loadRegion(code) {
+        var req = ++detailReqSeq;
         var info = lookup[code];
         if (!info) {
             return;
@@ -595,13 +680,16 @@
 
         getJson(config.districtsUrl + '?region=' + encodeURIComponent(code))
             .then(function (payload) {
+                if (req !== detailReqSeq) {
+                    return;
+                }
                 var region = payload.region;
                 if (!region) {
                     throw new Error('empty payload');
                 }
 
                 renderDistrictRows(region);
-                showDistrictOutlines(code);
+                showDistrictOutlines(code, req);
 
                 if (noteEl) {
                     if (region.published) {
@@ -618,6 +706,9 @@
                 setStatus('Showing districts for ' + region.region + '.');
             })
             .catch(function () {
+                if (req !== detailReqSeq) {
+                    return;
+                }
                 if (noteEl) {
                     noteEl.textContent = 'District details could not be loaded. Please try again.';
                 }
@@ -693,6 +784,18 @@
         });
         if (rankListEl) {
             rankListEl.innerHTML = html || '<li class="bdst-empty">No approved members are recorded yet.</li>';
+        }
+
+        // Keep keyboard focus on the row the visitor was on (auto-refresh
+        // rebuilds the list; a focused control must not silently disappear).
+        if (focusedRowCode) {
+            var focusedRow = rankListEl ? rankListEl.querySelector('.bdst-row[data-code="' + focusedRowCode + '"] .bdst-row-btn') : null;
+            if (!focusedRow && zeroBox) {
+                focusedRow = zeroBox.querySelector('.bdst-row[data-code="' + focusedRowCode + '"] .bdst-row-btn');
+            }
+            if (focusedRow) {
+                focusedRow.focus();
+            }
         }
 
         var zeroHtml = '';
@@ -1099,8 +1202,12 @@
 
     function loadTrend(period) {
         period = period || trendPeriod;
+        var req = ++trendReqSeq;
         var url = config.trendsUrl + '?period=' + encodeURIComponent(period);
         return getJson(url).then(function (trend) {
+            if (req !== trendReqSeq) {
+                return;
+            }
             trendPeriod = trend.period || period;
             renderTrend(trend);
         }).catch(function () {
@@ -1182,7 +1289,7 @@
         // Fits the country on the first render only - auto-refresh and the
         // manual refresh must never yank the visitor's current view.
         if (!fitted && regionLayer.getBounds().isValid()) {
-            map.fitBounds(regionLayer.getBounds(), { padding: [16, 16] });
+            map.fitBounds(regionLayer.getBounds(), { padding: [16, 16], animate: !reduceMotion });
             map.setMaxBounds(regionLayer.getBounds().pad(0.5));
             fitted = true;
         }
@@ -1336,6 +1443,24 @@
     if (exportBtn) {
         exportBtn.addEventListener('click', exportCsv);
     }
+
+    // Remember which ranked row had keyboard focus so re-renders can restore it.
+    [rankListEl, zeroBox].forEach(function (list) {
+        if (!list) {
+            return;
+        }
+        list.addEventListener('focusin', function (event) {
+            var row = event.target && event.target.closest
+                ? event.target.closest('.bdst-row[data-code]')
+                : null;
+            if (row) {
+                focusedRowCode = row.getAttribute('data-code');
+            }
+        });
+        list.addEventListener('focusout', function () {
+            focusedRowCode = '';
+        });
+    });
 
     /* ----------------------------------------------------------------------
        Boot
