@@ -30,6 +30,7 @@ register/uploads/*
 storage/approval-docs/*
 !storage/approval-docs/.gitkeep
 tmp/
+tools/geo/.cache/
 
 # Browser-download duplicates
 htaccess (1)
