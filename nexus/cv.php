@@ -45,15 +45,35 @@ if ($downloadName === '') {
     $downloadName = $reg['reference_no'] . '_CV' . ($ext !== '' ? '.' . $ext : '');
 }
 $downloadName = str_replace('"', '', $downloadName);
+$ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+// `inline=1` lets the admin preview drawer embed a PDF in an <iframe>.
+// Anything that is not a PDF is always forced to download.
+$inline = ((string) ($_GET['inline'] ?? '')) === '1' && $ext === 'pdf';
 
 header('Content-Description: File Transfer');
-header('Content-Type: application/octet-stream');
-header('Content-Disposition: attachment; filename="' . $downloadName . '"');
-header('Content-Transfer-Encoding: binary');
+header('X-Content-Type-Options: nosniff');
 header('Content-Length: ' . (string) filesize($filePath));
 header('Cache-Control: must-revalidate');
 header('Pragma: private');
 header('Expires: 0');
+
+if ($inline) {
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="' . $downloadName . '"');
+    // Deliberately NO "Content-Security-Policy: sandbox" and no sandbox
+    // attribute on the embedding <iframe>: browsers render PDFs through an
+    // internal plugin, and a sandboxed frame disables plugins outright, which
+    // blanks the preview in Chrome and Safari (crbug.com/413851,
+    // whatwg/html#3958). The file is still safe to inline because the type is
+    // pinned to application/pdf, the value above plus nosniff stops it being
+    // sniffed into HTML, only .pdf reaches this branch, and PDF-embedded
+    // script runs inside the viewer's own engine with no DOM access.
+} else {
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+    header('Content-Transfer-Encoding: binary');
+}
 
 readfile($filePath);
 exit;

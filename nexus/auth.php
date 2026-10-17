@@ -76,3 +76,24 @@ function bdst_admin_title(string $page): string
 {
     return $page . ' · BDS Tanzania Admin';
 }
+
+/**
+ * Versioned URL for the shared admin stylesheet.
+ *
+ * Browsers cache admin.css aggressively, so after a CSS change a returning
+ * administrator would keep seeing the old styling until a hard refresh. Keying
+ * the URL on the file's modification time makes the browser re-fetch it as
+ * soon as the file actually changes, and keep using the cache when it has not.
+ */
+function bdst_admin_css(): string
+{
+    static $href = null;
+    if ($href !== null) {
+        return $href;
+    }
+
+    $file = __DIR__ . DIRECTORY_SEPARATOR . 'admin.css';
+    $version = is_file($file) ? (string) filemtime($file) : '0';
+
+    return $href = 'admin.css?v=' . $version;
+}
