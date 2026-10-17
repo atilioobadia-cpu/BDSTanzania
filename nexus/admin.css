@@ -567,8 +567,18 @@ body.login-body {
     .login-main { width: 100%; }
 }
 
-@media (max-width: 820px) {
-    /* The sidebar leaves the flow entirely and becomes an off-canvas drawer,
+@media (max-width: 960px) {
+    /* 960px rather than the ~820px a phone-only breakpoint would suggest.
+       Between 821px and 960px the fixed 256px sidebar left 448-587px of
+       content, which is not enough for the blog table (574px) — it scrolled
+       sideways inside its own wrapper — nor for the compose form's
+       `1fr 340px` grid, whose main column collapsed to 147px. Both are fine
+       once the content has the full width. The value is deliberately the same
+       one at which the page description is dropped below, so the sidebar
+       becomes a drawer and the description leaves at the same width instead of
+       two nearly-identical breakpoints 140px apart.
+
+       The sidebar leaves the flow entirely and becomes an off-canvas drawer,
        so a phone gets the full viewport width for the content instead of
        losing 74px to an icon rail. visibility keeps the closed drawer out of
        the tab order; the transition is delayed so it does not blink. */
@@ -619,7 +629,9 @@ body.login-body {
    than it is on a phone at 123px. Dropping the description keeps the topbar a
    single compact row the whole way down. It never carried data of its own:
    registration.php repeats the submitted date in the Applicant panel, where
-   it is visible at every width. */
+   it is visible at every width. The breakpoint is deliberately the same 960px
+   at which the sidebar leaves the flow, so the permanent column and the
+   description arrive together rather than at two unrelated widths. */
 @media (max-width: 960px) {
     .page-title-block p { display: none; }
 }
@@ -1299,9 +1311,12 @@ body.drawer-open { overflow: hidden; }
     .select-field--per { display: none; }
 }
 
-@media (max-width: 820px) {
-    /* Override the base 1fr rule so the five stat cards do not stack into a
-       very tall column on small screens. */
+@media (max-width: 960px) {
+    /* Override the 1fr rule the layout block above sets, which would otherwise
+       stack the five stat cards into a very tall single column on small
+       screens. This has to track that block's breakpoint: if it stayed at
+       820px while the layout block moved to 960px, the 821-960 band would be
+       left with the stacked column and nothing to undo it. */
     .stats { grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
 }
 

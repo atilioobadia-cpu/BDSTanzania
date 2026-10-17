@@ -104,7 +104,8 @@ function bdst_admin_sidebar(string $active): void
                 return;
             }
 
-            var wide = window.matchMedia('(min-width: 821px)');
+            /* Pairs with the 960px breakpoint in admin.css. */
+            var wide = window.matchMedia('(min-width: 961px)');
 
             function isOpen() {
                 return document.body.classList.contains('nav-open');
