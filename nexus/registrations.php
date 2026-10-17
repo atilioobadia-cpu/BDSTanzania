@@ -369,6 +369,7 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
 <main class="main">
     <header class="topbar">
         <div class="topbar-inner">
+            <?php bdst_admin_nav_toggle(); ?>
             <div class="page-title-block">
                 <h1>Member Registrations</h1>
                 <p>Review applicants, manage statuses and download CVs.</p>
@@ -409,7 +410,7 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
             <?php endforeach; ?>
         </div>
 
-        <div class="panel">
+        <div class="panel panel--registrations">
             <div class="toolbar">
                 <form class="toolbar-form" id="filterForm" method="get" action="registrations.php">
                     <input type="hidden" name="sort" value="<?= bdst_e($state['sort']) ?>">
@@ -539,9 +540,9 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
                                         </div>
                                     </td>
                                     <td class="td-muted col-location"><?= bdst_e($reg['district']) ?>, <?= bdst_e($reg['region']) ?></td>
-                                    <td><?= reg_status_badge((string) $reg['status']) ?></td>
+                                    <td class="td-status"><?= reg_status_badge((string) $reg['status']) ?></td>
                                     <td class="td-muted col-date"><?= bdst_e(date('M j, Y', (int) strtotime((string) $reg['submitted_at']))) ?></td>
-                                    <td class="th-actions">
+                                    <td class="th-actions td-actions">
                                         <div class="row-actions">
                                             <a class="btn btn-ghost btn-icon" href="registration.php?id=<?= (int) $reg['id'] ?>"
                                                data-preview="<?= (int) $reg['id'] ?>"

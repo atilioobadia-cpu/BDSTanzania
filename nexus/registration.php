@@ -200,6 +200,7 @@ unset($_SESSION['approval_mail']);
 <main class="main">
     <header class="topbar">
         <div class="topbar-inner">
+            <?php bdst_admin_nav_toggle(); ?>
             <div class="page-title-block">
                 <?php if ($notFound): ?>
                     <h1>Registration Not Found</h1>
@@ -239,6 +240,7 @@ unset($_SESSION['approval_mail']);
 
                 <div class="panel">
                     <h2 class="panel-title">Applicant</h2>
+                    <p class="panel-meta">Submitted <?= bdst_e(date('F j, Y \a\t g:i A', strtotime((string) $reg['submitted_at']))) ?></p>
                     <div class="form-grid">
                         <div class="field">
                             <label>Full Name *</label>

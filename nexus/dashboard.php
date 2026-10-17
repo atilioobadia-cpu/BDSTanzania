@@ -51,6 +51,7 @@ foreach ($posts as $p) {
     <main class="main">
         <header class="topbar">
             <div class="topbar-inner">
+                <?php bdst_admin_nav_toggle(); ?>
                 <div class="page-title-block">
                     <h1>News Updates</h1>
                     <p>Publish, edit and manage the news shown on the Updates page.</p>

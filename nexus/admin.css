@@ -102,6 +102,63 @@ a:hover { color: var(--primary-dark); }
 .nav-icon { width: 18px; height: 18px; flex: none; }
 .nav-icon svg { display: block; }
 
+/* Small uppercase group headings inside the sidebar. */
+.nav-section-label {
+    padding: 10px 12px 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(205, 220, 220, 0.62);
+}
+
+.sidebar-nav > .nav-section-label:first-child { padding-top: 0; padding-bottom: 2px; }
+
+/* Mobile drawer chrome. Hidden above the mobile breakpoint, where the sidebar
+   is a permanent column and needs neither a toggle nor a close button. */
+.nav-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+.sidebar-close {
+    display: none;
+    position: absolute;
+    top: 18px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sidebar-border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    color: #cddcdc;
+    cursor: pointer;
+}
+
+.sidebar-close:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(12, 30, 33, 0.5);
+}
+
 /* ---- Main ---- */
 /* min-width: 0 stops a wide table from stretching this flex item past the
    viewport; the table's own .table-wrap then scrolls instead. */
@@ -121,10 +178,16 @@ a:hover { color: var(--primary-dark); }
     padding: 20px 28px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 16px;
     flex-wrap: wrap;
 }
+
+/* The page action is pushed to the far right, so the hamburger and the page
+   title can share the left edge. */
+.topbar-inner > :last-child { margin-left: auto; }
+
+.page-title-block { min-width: 0; }
 
 .page-title-block h1 { font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -0.3px; }
 .page-title-block p { color: var(--muted); margin-top: 3px; font-size: 14px; }
@@ -199,6 +262,13 @@ a:hover { color: var(--primary-dark); }
     letter-spacing: 0.05em;
     color: var(--muted);
     margin-bottom: 16px;
+}
+
+/* Read-only fact about the record, sitting under a panel title. */
+.panel-meta {
+    margin: -8px 0 16px;
+    font-size: 13.5px;
+    color: var(--muted);
 }
 
 .grid { display: grid; grid-template-columns: 1fr 340px; gap: 22px; align-items: start; }
@@ -495,18 +565,65 @@ body.login-body {
 }
 
 @media (max-width: 820px) {
-    .sidebar { width: 74px; padding: 18px 10px; }
-    .sidebar-brand { justify-content: center; padding: 0 0 18px; }
-    .sidebar-brand img { max-width: 40px; height: auto; }
-    .sidebar-foot, .sidebar-nav { align-items: center; }
-    .nav-link { justify-content: center; padding: 10px; }
-    .nav-link span { display: none; }
-    .main { margin-left: 74px; }
+    /* The sidebar leaves the flow entirely and becomes an off-canvas drawer,
+       so a phone gets the full viewport width for the content instead of
+       losing 74px to an icon rail. visibility keeps the closed drawer out of
+       the tab order; the transition is delayed so it does not blink. */
+    .sidebar {
+        width: 280px;
+        max-width: 84vw;
+        padding: 22px 16px;
+        z-index: 40;
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease, visibility 0s linear 0.22s;
+    }
+
+    body.nav-open .sidebar {
+        visibility: visible;
+        transform: translateX(0);
+        transition: transform 0.22s ease, visibility 0s;
+    }
+
+    body.nav-open .sidebar-backdrop { display: block; }
+
+    .sidebar-close { display: inline-flex; }
+    .nav-toggle { display: inline-flex; }
+
+    .main { margin-left: 0; }
+
+    /* Reading order is hamburger, title, action. The title takes the rest of
+       the first row, so an action group only wraps to a second row when it
+       genuinely does not fit — and when it does it keeps its own width rather
+       than stretching. Ordering the action before the title instead left the
+       hamburger alone on its own row whenever the action was wide, which cost
+       192px of sticky header on registration.php. */
+    .topbar-inner { padding: 14px 18px; gap: 10px; }
+    .nav-toggle { order: 1; }
+    .page-title-block { order: 2; flex: 1 1 auto; min-width: 0; }
+    .topbar-inner > :last-child { order: 3; }
+
     .grid { grid-template-columns: 1fr; }
     .stats { grid-template-columns: 1fr; }
-    .topbar-inner { padding: 16px 18px; }
     .page { padding: 20px 18px 50px; }
     .row-actions { flex-wrap: wrap; }
+}
+
+/* The one-line page description is desktop polish. It is also the widest part
+   of the title block, and with the fixed sidebar there is not room for it and
+   the page action on the same row until the viewport reaches roughly 961px.
+   Below that the action wrapped and the sticky topbar grew to 161px — taller
+   than it is on a phone at 123px. Dropping the description keeps the topbar a
+   single compact row the whole way down. It never carried data of its own:
+   registration.php repeats the submitted date in the Applicant panel, where
+   it is visible at every width. */
+@media (max-width: 960px) {
+    .page-title-block p { display: none; }
+}
+
+/* Keep the drawer animation from fighting users who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar { transition: none; }
 }
 
 /* ------------------------------------------------------------------
@@ -916,46 +1033,16 @@ body.login-body {
 
 .th-actions { text-align: right; white-space: nowrap; }
 
-/* Shared layout for a cluster of actions. Deliberately always visible: this
-   class is also used for the page header and the save bar on registration.php,
-   and for the blog list on dashboard.php, none of which should hide anything. */
+/* Shared layout for a cluster of actions. Always visible, everywhere: the
+   registrations list, the page header and the save bar on registration.php,
+   and the blog list on dashboard.php. Nothing here hides behind a hover,
+   because a touch device has no hover to give and a hidden control is a
+   control most people never find. */
 .row-actions {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     justify-content: flex-end;
-}
-
-/* Only the registrations list tucks its actions away until the row is hovered,
-   so the table reads as data rather than as a grid of buttons. Scoped to
-   .table-registrations on purpose, so the header and save bar above keep their
-   buttons. The reveal uses opacity rather than display or visibility so the
-   controls stay in the accessibility tree and the tab order, and :focus-within
-   brings them back the moment a keyboard user tabs onto one. pointer-events is
-   off while hidden so a click where an invisible Delete sits falls through to
-   the row instead of firing. */
-.table-registrations .row-actions {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.12s ease;
-}
-
-.table-registrations tbody tr:hover .row-actions,
-.table-registrations tbody tr:focus-within .row-actions {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* Touch devices never hover, so the actions must always be visible there. */
-@media (hover: none) {
-    .table-registrations .row-actions {
-        opacity: 1;
-        pointer-events: auto;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .table-registrations .row-actions { transition: none; }
 }
 
 .row-actions .inline-form { display: inline; margin: 0; }
@@ -1219,4 +1306,97 @@ body.drawer-open { overflow: hidden; }
     .toolbar-actions { width: 100%; justify-content: space-between; }
     .drawer { width: 100vw; }
     .drawer-frame { height: 320px; }
+}
+
+/* Card layout for phones -------------------------------------------- */
+/* Below this width the columns stop being readable side by side and start
+   pushing the row past the right edge of the screen. Each registration becomes
+   a card instead: identity, location, status and actions stacked, with no
+   sideways scrolling at any width. The checkbox moves into the corner so it
+   reads as a selection control rather than as the card's first field. */
+@media (max-width: 700px) {
+    /* The panel wrapping the list gives up its own surface on mobile, otherwise
+       every card would sit inside a second bordered card and eat 44px of a
+       390px screen for nothing. The toolbar, the selection bar and the footer
+       each take the card surface instead, so the page reads as one stack. */
+    .panel--registrations {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        margin-bottom: 0;
+    }
+
+    .panel--registrations .toolbar,
+    .panel--registrations .table-foot,
+    .panel--registrations .empty-state {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow);
+        margin-bottom: 12px;
+    }
+
+    .panel--registrations .bulkbar {
+        border: 1px solid #cfe6f2;
+        border-radius: var(--radius);
+        margin-bottom: 12px;
+    }
+
+    /* Scoped to the registrations panel on purpose: the blog list on
+       dashboard.php keeps .table-wrap as a scroll container, because its table
+       is not converted to cards. */
+    .panel--registrations .table-wrap { overflow-x: visible; }
+
+    .table-registrations,
+    .table-registrations tbody { display: block; width: 100%; }
+
+    .table-registrations thead { display: none; }
+
+    .table-registrations tbody tr.row-clickable {
+        display: block;
+        position: relative;
+        margin-bottom: 10px;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--white);
+    }
+
+    .table-registrations tbody tr.row-clickable:hover { background: #f8fbfc; }
+
+    .table-registrations td { display: block; padding: 0; border: 0; }
+    .table-registrations tbody tr:last-child td { border-bottom: 0; }
+
+    /* The blanket td rule above outranks the .col-date { display: none } that
+       hides the date at 1150px, so repeat the hide here at higher specificity.
+       The date stays available in the drawer, as on the desktop table. */
+    .table-registrations .col-date { display: none; }
+
+    .table-registrations .td-check {
+        position: absolute;
+        top: 15px;
+        right: 14px;
+        width: auto;
+    }
+
+    .table-registrations .cell-title { padding-right: 26px; }
+
+    /* This column is dropped at 1024px, but a card has room and location is the
+       field an admin is most likely to be working through. */
+    .table-registrations .col-location {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+    }
+
+    .table-registrations .td-status { margin-top: 10px; }
+
+    .table-registrations .td-actions {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+
+    .table-registrations .td-actions .row-actions { justify-content: flex-start; }
 }

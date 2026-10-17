@@ -251,6 +251,7 @@ $flash = bdst_flash_consume();
     <main class="main">
         <header class="topbar">
             <div class="topbar-inner">
+                <?php bdst_admin_nav_toggle(); ?>
                 <div class="page-title-block">
                     <h1><?= $isEdit ? 'Edit Update' : 'New Update' ?></h1>
                     <p><?= $isEdit ? 'Update the details below and save your changes.' : 'Fill in the details below to publish a news update.' ?></p>
