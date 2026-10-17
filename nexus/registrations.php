@@ -495,14 +495,13 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
                 </form>
 
                 <div class="table-wrap">
-                    <table class="table">
+                    <table class="table table-registrations">
                         <caption class="sr-only">Member registrations, sorted by <?= bdst_e($state['sort']) ?></caption>
                         <thead>
                             <tr>
                                 <th scope="col" class="th-check">
                                     <input type="checkbox" id="selectAll" aria-label="Select all registrations on this page">
                                 </th>
-                                <?php $sortHeading('ref', 'Reference'); ?>
                                 <?php $sortHeading('name', 'Applicant'); ?>
                                 <?php $sortHeading('location', 'Location', 'col-location'); ?>
                                 <?php $sortHeading('status', 'Status'); ?>
@@ -518,20 +517,20 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
                                         <input type="checkbox" name="ids[]" value="<?= (int) $reg['id'] ?>" form="bulkForm"
                                                aria-label="Select <?= bdst_e($reg['reference_no']) ?>">
                                     </td>
-                                    <td class="td-ref">
-                                        <?= bdst_e($reg['reference_no']) ?>
-                                        <?php if ((string) ($reg['cv_path'] ?? '') !== ''): ?>
-                                            <span class="cv-flag" title="CV attached" aria-label="CV attached">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                            </span>
-                                        <?php endif; ?>
-                                    </td>
                                     <td>
                                         <div class="cell-title">
                                             <span class="<?= bdst_e(reg_avatar_class((string) $reg['full_name'])) ?>"><?= bdst_e($initial) ?></span>
                                             <span class="cell-name">
-                                                <?= bdst_e($reg['full_name']) ?>
-                                                <small class="td-muted"><?= bdst_e($reg['email']) ?></small>
+                                                <span class="cell-name__text"><?= bdst_e($reg['full_name']) ?></span>
+                                                <span class="td-ref">
+                                                    <?= bdst_e($reg['reference_no']) ?>
+                                                    <?php if ((string) ($reg['cv_path'] ?? '') !== ''): ?>
+                                                        <span class="cv-flag" title="CV attached" aria-label="CV attached">
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </span>
+                                                <small><?= bdst_e($reg['email']) ?></small>
                                             </span>
                                         </div>
                                     </td>
@@ -540,15 +539,21 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
                                     <td class="td-muted col-date"><?= bdst_e(date('M j, Y', (int) strtotime((string) $reg['submitted_at']))) ?></td>
                                     <td class="th-actions">
                                         <div class="row-actions">
-                                            <a class="btn btn-ghost btn-sm" href="registration.php?id=<?= (int) $reg['id'] ?>"
-                                               data-preview="<?= (int) $reg['id'] ?>">Preview</a>
+                                            <a class="btn btn-ghost btn-icon" href="registration.php?id=<?= (int) $reg['id'] ?>"
+                                               data-preview="<?= (int) $reg['id'] ?>"
+                                               title="Preview" aria-label="Preview <?= bdst_e($reg['reference_no']) ?>">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            </a>
                                             <form method="post" action="registration_delete.php"
                                                   data-confirm="Delete <?= bdst_e($reg['reference_no']) ?> permanently? The uploaded CV is removed too."
                                                   data-confirm-ok="Delete"
                                                   onsubmit="return bdstAskConfirm(event, this)">
                                                 <input type="hidden" name="csrf" value="<?= bdst_e(bdst_csrf_token()) ?>">
                                                 <input type="hidden" name="id" value="<?= (int) $reg['id'] ?>">
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                <button type="submit" class="btn btn-danger btn-icon"
+                                                        title="Delete" aria-label="Delete <?= bdst_e($reg['reference_no']) ?>">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                </button>
                                             </form>
                                         </div>
                                     </td>

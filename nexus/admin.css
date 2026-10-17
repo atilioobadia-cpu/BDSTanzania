@@ -249,6 +249,7 @@ a:hover { color: var(--primary-dark); }
 
 .btn-block { display: flex; width: 100%; }
 .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 8px; }
+.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 8px; }
 
 /* ---- Forms ---- */
 .field { margin-bottom: 18px; }
@@ -311,6 +312,11 @@ a:hover { color: var(--primary-dark); }
 .table tbody tr { transition: background 0.12s ease; }
 .table tbody tr:hover { background: #f8fbfc; }
 .table tbody tr:last-child td { border-bottom: none; }
+
+/* The registrations list carries more columns than the blog list, so it gets
+   tighter gutters to stay inside a desktop viewport without sideways scroll. */
+.table-registrations th,
+.table-registrations td { padding: 12px 10px; }
 
 .cell-title { display: flex; align-items: center; gap: 12px; font-weight: 600; color: var(--ink); }
 .cell-thumb {
@@ -526,6 +532,29 @@ body.login-body {
 .badge-reg-reviewed { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
 .badge-reg-approved { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
 .badge-reg-rejected { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+
+/* A status dot in the badge's own text colour, so it needs no extra token and
+   cannot drift from the label it sits beside. */
+.badge-reg-pending,
+.badge-reg-reviewed,
+.badge-reg-approved,
+.badge-reg-rejected {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-reg-pending::before,
+.badge-reg-reviewed::before,
+.badge-reg-approved::before,
+.badge-reg-rejected::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+}
 
 .filter-bar {
     display: flex;
@@ -877,45 +906,53 @@ body.login-body {
 
 .th-actions { text-align: right; white-space: nowrap; }
 
+/* Shared layout for a cluster of actions. Deliberately always visible: this
+   class is also used for the page header and the save bar on registration.php,
+   and for the blog list on dashboard.php, none of which should hide anything. */
 .row-actions {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     justify-content: flex-end;
-    /* Actions stay out of the way until the row is hovered, so the table reads
-       as data rather than as a grid of buttons. This uses opacity rather than
-       display/visibility on purpose: the controls stay in the accessibility
-       tree and in the tab order, and :focus-within reveals them the moment a
-       keyboard user tabs onto one. pointer-events is off while hidden so an
-       invisible Delete can never be clicked by accident. */
+}
+
+/* Only the registrations list tucks its actions away until the row is hovered,
+   so the table reads as data rather than as a grid of buttons. Scoped to
+   .table-registrations on purpose, so the header and save bar above keep their
+   buttons. The reveal uses opacity rather than display or visibility so the
+   controls stay in the accessibility tree and the tab order, and :focus-within
+   brings them back the moment a keyboard user tabs onto one. pointer-events is
+   off while hidden so a click where an invisible Delete sits falls through to
+   the row instead of firing. */
+.table-registrations .row-actions {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.12s ease;
 }
 
-.table tbody tr:hover .row-actions,
-.table tbody tr:focus-within .row-actions {
+.table-registrations tbody tr:hover .row-actions,
+.table-registrations tbody tr:focus-within .row-actions {
     opacity: 1;
     pointer-events: auto;
 }
 
 /* Touch devices never hover, so the actions must always be visible there. */
 @media (hover: none) {
-    .row-actions,
-    .table tbody tr .row-actions {
+    .table-registrations .row-actions {
         opacity: 1;
         pointer-events: auto;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .row-actions { transition: none; }
+    .table-registrations .row-actions { transition: none; }
 }
 
 .row-actions .inline-form { display: inline; margin: 0; }
 
 .cell-name { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
-.cell-name small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.cell-name__text { font-size: 14px; font-weight: 600; color: var(--ink); }
+.cell-name small { font-size: 12.5px; font-weight: 500; color: var(--muted); overflow-wrap: anywhere; }
 
 .cv-flag {
     display: inline-flex;
@@ -1133,7 +1170,14 @@ body.drawer-open { overflow: hidden; }
 .drawer-foot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* Responsive -------------------------------------------------------- */
-@media (max-width: 900px) {
+/* The list must not scroll sideways on a desktop viewport. These two columns
+   drop out first because both values are always available in the preview
+   drawer, which keeps the identity, status and action columns intact. */
+@media (max-width: 1150px) {
+    .col-date { display: none; }
+}
+
+@media (max-width: 1024px) {
     .col-location { display: none; }
 }
 
@@ -1144,7 +1188,6 @@ body.drawer-open { overflow: hidden; }
 }
 
 @media (max-width: 720px) {
-    .col-date { display: none; }
     .toolbar-actions { width: 100%; justify-content: space-between; }
     .drawer { width: 100vw; }
     .drawer-frame { height: 320px; }
