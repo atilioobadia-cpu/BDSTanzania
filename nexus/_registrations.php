@@ -19,7 +19,6 @@ declare(strict_types=1);
 function bdst_reg_sort_columns(): array
 {
     return [
-        'ref'      => 'reference_no',
         'name'     => 'full_name',
         'location' => 'district',
         'status'   => 'status',
