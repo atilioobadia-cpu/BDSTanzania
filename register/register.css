@@ -98,16 +98,27 @@
     text-align: left;
 }
 
+/* The honeypot must never occupy space, but every sizing property here is up
+   against a broader rule that outranks it: main.css styles all bare
+   `input[type="text"]` at `width: 100%`, and the form-control rule gives
+   inputs `padding: 10px 15px`. Both are (0,1,1) selectors against this (0,1,0)
+   class, so they win no matter that register.css is loaded afterwards.
+   Without !important the honeypot is laid out at the full width of the form
+   and the page grows a horizontal scrollbar at every viewport width (36px at
+   390px, 283px at 1440px). Width and height alone are not enough either:
+   with `box-sizing: border-box` a 1px box still clamps up to the padding, so
+   the element stays a ~31x21 box unless padding and border are forced as
+   well. These !importants are load-bearing. */
 .reg-hp {
     position: absolute !important;
-    width: 1px;
-    height: 1px;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    margin: -1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
-    border: 0;
-    padding: 0;
-    margin: -1px;
 }
 
 .reg-form-head {
