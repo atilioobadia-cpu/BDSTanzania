@@ -16,11 +16,18 @@
     --danger: #b42318;
     --danger-bg: #fef3f2;
     --danger-border: #fecdca;
+    --warning: #b45309;
+    --warning-bg: #fef4e6;
+    --warning-border: #fae1bd;
+    --info: #175cd3;
+    --info-bg: #e8f1fd;
+    --info-border: #c7ddfb;
     --radius: 12px;
     --radius-sm: 8px;
     --shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
     --shadow-md: 0 12px 32px -16px rgba(12, 30, 33, 0.25);
     --font: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    --mono: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -513,12 +520,12 @@ body.login-body {
     align-items: center;
     justify-content: center;
 }
-.stat-icon--warning { background: #fef4e6; color: #b45309; }
-.stat-icon--info    { background: #e8f1fd; color: #175cd3; }
-.badge-reg-pending  { background: #fef4e6; color: #b45309; }
-.badge-reg-reviewed { background: #e8f1fd; color: #175cd3; }
-.badge-reg-approved { background: var(--success-bg); color: var(--success); }
-.badge-reg-rejected { background: var(--danger-bg); color: var(--danger); }
+.stat-icon--warning { background: var(--warning-bg); color: var(--warning); }
+.stat-icon--info    { background: var(--info-bg); color: var(--info); }
+.badge-reg-pending  { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-reg-reviewed { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border); }
+.badge-reg-approved { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.badge-reg-rejected { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 
 .filter-bar {
     display: flex;
@@ -543,7 +550,14 @@ body.login-body {
     font-size: 14px;
     background: var(--white);
 }
-.td-ref { font-weight: 700; color: var(--ink); white-space: nowrap; }
+.td-ref {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    white-space: nowrap;
+}
 .cell-avatar {
     width: 34px;
     height: 34px;
@@ -868,6 +882,34 @@ body.login-body {
     align-items: center;
     gap: 8px;
     justify-content: flex-end;
+    /* Actions stay out of the way until the row is hovered, so the table reads
+       as data rather than as a grid of buttons. This uses opacity rather than
+       display/visibility on purpose: the controls stay in the accessibility
+       tree and in the tab order, and :focus-within reveals them the moment a
+       keyboard user tabs onto one. pointer-events is off while hidden so an
+       invisible Delete can never be clicked by accident. */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.table tbody tr:hover .row-actions,
+.table tbody tr:focus-within .row-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Touch devices never hover, so the actions must always be visible there. */
+@media (hover: none) {
+    .row-actions,
+    .table tbody tr .row-actions {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .row-actions { transition: none; }
 }
 
 .row-actions .inline-form { display: inline; margin: 0; }
