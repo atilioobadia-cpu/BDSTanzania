@@ -761,25 +761,28 @@ body.login-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
-    padding: 15px 16px;
+    padding: 15px 14px;
     border-bottom: 1px solid var(--border);
 }
 
+/* Basis is deliberately small so the filters and the page actions stay on one
+   line at 1024px, the narrowest desktop width this list is designed for. The
+   search field takes the leftover space, so nothing looks stretched. */
 .toolbar-form {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    flex: 1 1 420px;
+    flex: 1 1 280px;
     min-width: 0;
 }
 
 .toolbar-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
@@ -789,8 +792,11 @@ body.login-body {
     position: relative;
     display: flex;
     align-items: center;
-    flex: 1 1 260px;
-    min-width: 190px;
+    /* flex-basis 0 so the search box claims whatever space is left instead of
+       claiming a fixed basis that would push the Apply button onto its own
+       line at 1024px. */
+    flex: 1 1 0;
+    min-width: 112px;
 }
 
 .search-field .search-icon {
@@ -839,6 +845,10 @@ body.login-body {
     color: var(--text);
     background: var(--white);
 }
+
+/* A select defaults to a min-width of its widest option, which would push the
+   toolbar onto a second line. Let it shrink inside the toolbar only. */
+.toolbar .select-field select { min-width: 0; }
 
 .search-field input:focus-visible,
 .select-field select:focus-visible,
@@ -1179,6 +1189,24 @@ body.drawer-open { overflow: hidden; }
 
 @media (max-width: 1024px) {
     .col-location { display: none; }
+}
+
+/* Keep the toolbar on a single line down to 1024px. The per-page select and
+   the Clear link both carry accessible names, so their visible labels can drop
+   away without losing any meaning. */
+@media (max-width: 1150px) {
+    .select-field--per > span { display: none; }
+    .btn-clear-label { display: none; }
+    /* Slightly tighter controls, so the filters and the page actions stay on a
+       single line at 1024px even once the Clear button appears. */
+    .toolbar .btn { padding: 10px 13px; }
+}
+
+/* Below the width this list is designed for, the per-page control is the first
+   thing to go: pagination still works, and dropping it keeps the toolbar on one
+   line instead of wrapping to two. */
+@media (max-width: 1023px) {
+    .select-field--per { display: none; }
 }
 
 @media (max-width: 820px) {
