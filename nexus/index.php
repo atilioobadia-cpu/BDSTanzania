@@ -44,27 +44,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="<?= bdst_e(bdst_admin_css()) ?>">
 </head>
 <body class="login-body">
-    <aside class="login-side">
-        <div class="login-side-inner">
-            <span class="login-eyebrow">BDS Tanzania</span>
-            <h1>Manage your updates from one clean place.</h1>
-            <p>Publish, edit and control the news, announcements and updates shown on the BDS Tanzania website — securely and without fuss.</p>
-        </div>
-    </aside>
-
-    <main class="login-main">
+    <main class="login-card">
         <div class="login-card-head">
             <div class="login-brand-img">
-                <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania Logo" width="150" height="56">
+                <img src="../assets/images/logos/logo.webp" alt="BDS Tanzania" width="136" height="64" decoding="async">
             </div>
-            <h2>Welcome back</h2>
+            <h1>Welcome back</h1>
             <p>Sign in to the admin console to continue.</p>
         </div>
 
         <?php if ($error !== ''): ?>
-            <div class="alert alert-error"><?= bdst_e($error) ?></div>
+            <div class="alert alert-error" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><?= bdst_e($error) ?></span>
+            </div>
         <?php elseif ($flash !== null): ?>
-            <div class="alert <?= $flash['type'] === 'error' ? 'alert-error' : 'alert-success' ?>"><?= bdst_e($flash['message']) ?></div>
+            <?php
+            // The only flash that can reach this page is the idle sign-out set by
+            // bdst_require_login(). That is a calm heads-up rather than a failure,
+            // so anything that is not an explicit success is shown in amber.
+            $flashClass = $flash['type'] === 'success' ? 'alert-success' : 'alert-notice';
+            ?>
+            <div class="alert <?= $flashClass ?>" role="status">
+                <?php if ($flashClass === 'alert-success'): ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                <?php else: ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <?php endif; ?>
+                <span><?= bdst_e($flash['message']) ?></span>
+            </div>
         <?php endif; ?>
 
         <form method="post" action="index.php" autocomplete="off" id="loginForm">
@@ -75,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="field">
                 <label for="passwordMask">Password</label>
                 <div class="password-wrap">
-                    <input type="text" id="passwordMask" class="password-mask" placeholder="Password" autocomplete="off" aria-label="Password">
+                    <input type="text" id="passwordMask" class="password-mask" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="off" aria-label="Password">
                     <input type="password" id="password" name="password" class="sr-only" autocomplete="off" tabindex="-1" aria-hidden="true">
                     <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password"></button>
                 </div>

@@ -435,107 +435,188 @@ a:hover { color: var(--primary-dark); }
 .empty-state p { margin-bottom: 18px; }
 
 /* ---- Login ---- */
+/*
+   The login screen is a single centred card over a very light corporate wash.
+   It used to be a two-column split: a dark animated brand panel on the left and
+   a 480px white column flush against the right edge. The panel was hidden below
+   1024px, which left the form floating on the flat page background with nothing
+   to anchor it. Carding the form gives the same, deliberate composition at every
+   width, so there is no longer a width at which the page falls apart.
+*/
 body.login-body {
-    display: flex;
     min-height: 100vh;
-    background: var(--bg);
-    font-family: var(--font);
-}
-
-.login-side {
-    flex: 1;
-    background: linear-gradient(155deg, #0c1e21 0%, #14333a 55%, #1c5f74 120%);
-    background-size: 220% 220%;
-    animation: tj-pan 16s ease infinite;
-    color: #fff;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 60px;
-    position: relative;
-    overflow: hidden;
+    padding: 48px 20px;
+    font-family: var(--font);
+    color: var(--text);
+    background-color: #f6f9fb;
+    background-image:
+        radial-gradient(900px 460px at 50% -8%, rgba(25, 151, 198, 0.10), transparent 62%),
+        radial-gradient(760px 420px at 100% 104%, rgba(18, 129, 171, 0.08), transparent 60%),
+        linear-gradient(180deg, #f8fbfc 0%, #eef3f6 100%);
 }
 
-@keyframes tj-pan {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+/*
+   margin:auto rather than align-items:center. An auto margin centres the card
+   while still letting the page scroll when the card is taller than the viewport,
+   which centring would otherwise clip off the top of on a short landscape phone.
+*/
+.login-card {
+    margin: auto;
+    width: 100%;
+    max-width: 432px;
+    background: var(--white);
+    border: 1px solid rgba(12, 30, 33, 0.07);
+    border-radius: 18px;
+    padding: 38px 36px 30px;
+    box-shadow:
+        0 1px 2px rgba(16, 24, 40, 0.04),
+        0 12px 28px -12px rgba(12, 30, 33, 0.14),
+        0 36px 64px -36px rgba(12, 30, 33, 0.22);
+    animation: tj-card-in 0.5s ease both;
 }
 
-@keyframes tj-fade-up {
-    from { opacity: 0; transform: translateY(18px); }
+@keyframes tj-card-in {
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: none; }
 }
 
-.login-side-inner,
-.login-main,
-.login-footer {
-    animation: tj-fade-up 0.6s ease both;
-}
-
-.login-main { animation-delay: 0.12s; }
-.login-footer { animation-delay: 0.22s; }
-
-.login-side::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(560px 380px at 85% 0%, rgba(25, 151, 198, 0.35), transparent 60%);
-}
-
-.login-side-inner { position: relative; max-width: 430px; }
-.login-side .login-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 1.6px;
-    text-transform: uppercase;
-    color: #7fd4f2;
-    margin-bottom: 18px;
-}
-
-.login-side .login-eyebrow::before {
-    content: '';
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #1997C6;
-    box-shadow: 0 0 0 4px rgba(25, 151, 198, 0.25);
-}
-
-.login-side h1 { font-size: 34px; line-height: 1.2; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 14px; }
-.login-side p { color: rgba(255, 255, 255, 0.78); font-size: 15px; line-height: 1.7; }
-
-.login-main {
-    width: 480px;
-    flex: none;
+/*
+   Brand lockup. logo.webp is 136x64, but the old markup declared 150x56, which
+   stretched it roughly 26% wider than it really is. The attributes now carry the
+   true intrinsic size so nothing shifts while the file decodes, and the height
+   is capped here with width:auto so the real aspect ratio is kept.
+*/
+.login-brand-img {
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    padding: 52px 48px;
-    background: var(--white);
+    margin-bottom: 22px;
+}
+.login-brand-img img {
+    display: block;
+    height: 48px;
+    width: auto;
 }
 
-.login-card-head { margin-bottom: 28px; }
-.login-card-head .login-brand-img { margin-bottom: 22px; }
-.login-card-head h2 { font-size: 24px; font-weight: 800; color: var(--ink); letter-spacing: -0.3px; }
-.login-card-head p { color: var(--muted); margin-top: 4px; font-size: 14px; }
+.login-card-head {
+    text-align: center;
+    margin-bottom: 26px;
+}
+.login-card-head h1 {
+    font-size: 23px;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: var(--ink);
+}
+.login-card-head p {
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--muted);
+}
 
-.login-footer { text-align: center; margin-top: 22px; font-size: 14px; }
+/*
+   Login inputs: a light neutral fill that lifts to white with a clear focus
+   ring, rather than the white-on-white of the shared control style.
+*/
+.login-card .field { margin-bottom: 16px; }
+.login-card .field label { font-size: 13px; margin-bottom: 7px; }
+
+.login-card .field input[type="text"],
+.login-card .field input[type="password"] {
+    padding: 12px 14px;
+    font-size: 14.5px;
+    background: #f7f9fb;
+}
+.login-card .field input[type="text"]:hover,
+.login-card .field input[type="password"]:hover {
+    border-color: #cfd6dd;
+}
+.login-card .field input[type="text"]:focus,
+.login-card .field input[type="password"]:focus {
+    background: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(25, 151, 198, 0.16);
+}
+
+/*
+   Alerts on the login card are compact notices: a small icon beside the
+   message. The idle sign-out is amber so it reads as a helpful note rather than
+   a fault. Scoped to .login-card on purpose - no shared alert rule is touched.
+*/
+.login-card .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 14px;
+    margin-bottom: 22px;
+    font-weight: 500;
+    line-height: 1.45;
+    border-radius: 10px;
+}
+.login-card .alert svg { flex: none; margin-top: 1px; }
+.login-card .alert-notice {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border-color: var(--warning-border);
+}
+
+.login-card .btn-block { margin-top: 22px; padding: 13px 18px; font-size: 15px; }
+.login-card .btn-primary {
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 10px 22px -12px rgba(25, 151, 198, 0.90);
+}
+.login-card .btn-primary:hover {
+    box-shadow: 0 2px 4px rgba(16, 24, 40, 0.08), 0 14px 26px -12px rgba(25, 151, 198, 0.95);
+}
+.login-card .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--white), 0 0 0 5px rgba(25, 151, 198, 0.45);
+}
 
 .password-wrap { position: relative; }
-.password-wrap input { padding-right: 46px; }
+/*
+   The eye button needs a 32px slot inset 8px from the edge, so the input keeps
+   48px of right padding. The selector is deliberately as specific as the shared
+   `.field input[type="text"]` rule above: the previous `.password-wrap input`
+   (a single class) lost that specificity fight outright, so its padding was
+   never applied and typed text could run underneath the button.
+*/
+.login-card .field .password-wrap input { padding-right: 48px; }
+
+/*
+   The duplicate password input exists only so the browser never offers to
+   autofill or save the visible mask field. It was relying on the shared
+   `.sr-only` rule to shrink it to 1px, but `.field input[type="password"]`
+   sets `width:100%` at a higher specificity (0,2,1 versus 0,1,0), so the
+   hidden input was really a full-width absolutely positioned box parked just
+   past the right edge of the card. That box - and only that box - is what put a
+   horizontal scrollbar on the page at every width below 1152px. Re-assert the
+   1px box here, at a specificity the shared form rules cannot outrank.
+*/
+.login-card .field .password-wrap input.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
 .password-toggle {
     position: absolute;
     top: 50%;
-    right: 6px;
+    right: 8px;
     transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
     border: 0;
     background: transparent;
     border-radius: 8px;
@@ -550,21 +631,34 @@ body.login-body {
     width: 16px;
     height: 16px;
     flex: none;
+    display: none;
     border: 2px solid rgba(255, 255, 255, 0.35);
     border-top-color: #fff;
     border-radius: 50%;
-    display: none;
     animation: tj-spin 0.6s linear infinite;
 }
-.btn.loading { opacity: 0.85; cursor: progress; transform: none; }
+.btn.loading { cursor: progress; transform: none; box-shadow: none; }
 .btn.loading .spinner { display: inline-block; }
 
 @keyframes tj-spin { to { transform: rotate(360deg); } }
 
-/* ---- Responsive ---- */
-@media (max-width: 1024px) {
-    .login-side { display: none; }
-    .login-main { width: 100%; }
+.login-footer {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 13.5px;
+}
+.login-footer a { color: var(--muted); font-weight: 600; }
+.login-footer a:hover { color: var(--primary); }
+
+@media (prefers-reduced-motion: reduce) {
+    .login-card { animation: none; }
+}
+
+@media (max-width: 480px) {
+    body.login-body { padding: 24px 16px; }
+    .login-card { padding: 28px 22px 24px; border-radius: 16px; }
 }
 
 @media (max-width: 960px) {
