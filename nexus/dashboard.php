@@ -93,7 +93,7 @@ foreach ($posts as $p) {
                 </div>
             </div>
 
-            <div class="panel">
+            <div class="panel panel--cards">
                 <?php if (empty($posts)): ?>
                     <div class="empty-state">
                         <div class="empty-icon">
@@ -104,7 +104,7 @@ foreach ($posts as $p) {
                     </div>
                 <?php else: ?>
                     <div class="table-wrap">
-                        <table class="table">
+                        <table class="table table--cards">
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -131,13 +131,13 @@ foreach ($posts as $p) {
                                                 <span><?= bdst_e($post['title']) ?></span>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td class="td-status">
                                             <span class="badge badge-<?= $post['status'] === 'published' ? 'published' : 'draft' ?>">
                                                 <?= bdst_e($post['status']) ?>
                                             </span>
                                         </td>
                                         <td class="td-muted"><?= bdst_e(date('M j, Y', strtotime($post['published_at']))) ?></td>
-                                        <td class="th-actions">
+                                        <td class="th-actions td-actions">
                                             <div class="row-actions">
                                                 <a class="btn btn-ghost btn-sm" href="post.php?id=<?= (int) $post['id'] ?>">Edit</a>
                                                 <a class="btn btn-ghost btn-sm" href="../update.php?slug=<?= bdst_e($post['slug']) ?>" target="_blank" rel="noopener">View</a>

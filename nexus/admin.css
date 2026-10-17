@@ -411,7 +411,10 @@ a:hover { color: var(--primary-dark); }
 }
 
 .td-muted { color: var(--muted); }
-.th-actions { text-align: right; }
+/* Scoped to .table on purpose: the generic `.table th, .table td` rule above
+   sets text-align: left at higher specificity, so an unscoped .th-actions would
+   lose and the Actions heading would sit above the left edge of its buttons. */
+.table .th-actions { text-align: right; }
 .row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .row-actions form { display: inline; margin: 0; }
 
@@ -1031,7 +1034,7 @@ body.login-body {
 .table tbody tr.row-clickable.is-selected { background: var(--primary-soft); }
 .table tbody tr.row-clickable.is-selected:hover { background: #dceef8; }
 
-.th-actions { text-align: right; white-space: nowrap; }
+.th-actions { white-space: nowrap; }
 
 /* Shared layout for a cluster of actions. Always visible, everywhere: the
    registrations list, the page header and the save bar on registration.php,
@@ -1310,16 +1313,17 @@ body.drawer-open { overflow: hidden; }
 
 /* Card layout for phones -------------------------------------------- */
 /* Below this width the columns stop being readable side by side and start
-   pushing the row past the right edge of the screen. Each registration becomes
-   a card instead: identity, location, status and actions stacked, with no
-   sideways scrolling at any width. The checkbox moves into the corner so it
-   reads as a selection control rather than as the card's first field. */
+   pushing the row past the right edge of the screen. Each row becomes a card
+   instead: the leading field, then the metadata, then the actions, stacked,
+   with no sideways scrolling at any width. A list opts in with .table--cards on
+   the table and .panel--cards on the panel wrapping it, so both admin tables
+   share one implementation instead of keeping a near-identical copy each. */
 @media (max-width: 700px) {
     /* The panel wrapping the list gives up its own surface on mobile, otherwise
        every card would sit inside a second bordered card and eat 44px of a
        390px screen for nothing. The toolbar, the selection bar and the footer
        each take the card surface instead, so the page reads as one stack. */
-    .panel--registrations {
+    .panel--cards {
         padding: 0;
         border: 0;
         background: transparent;
@@ -1327,9 +1331,9 @@ body.drawer-open { overflow: hidden; }
         margin-bottom: 0;
     }
 
-    .panel--registrations .toolbar,
-    .panel--registrations .table-foot,
-    .panel--registrations .empty-state {
+    .panel--cards .toolbar,
+    .panel--cards .table-foot,
+    .panel--cards .empty-state {
         border: 1px solid var(--border);
         border-radius: var(--radius);
         background: var(--white);
@@ -1337,23 +1341,22 @@ body.drawer-open { overflow: hidden; }
         margin-bottom: 12px;
     }
 
-    .panel--registrations .bulkbar {
+    .panel--cards .bulkbar {
         border: 1px solid #cfe6f2;
         border-radius: var(--radius);
         margin-bottom: 12px;
     }
 
-    /* Scoped to the registrations panel on purpose: the blog list on
-       dashboard.php keeps .table-wrap as a scroll container, because its table
-       is not converted to cards. */
-    .panel--registrations .table-wrap { overflow-x: visible; }
+    /* Scoped to a card panel rather than global: outside one, .table-wrap has to
+       stay a scroll container for tables that are not converted to cards. */
+    .panel--cards .table-wrap { overflow-x: visible; }
 
-    .table-registrations,
-    .table-registrations tbody { display: block; width: 100%; }
+    .table--cards,
+    .table--cards tbody { display: block; width: 100%; }
 
-    .table-registrations thead { display: none; }
+    .table--cards thead { display: none; }
 
-    .table-registrations tbody tr.row-clickable {
+    .table--cards tbody tr {
         display: block;
         position: relative;
         margin-bottom: 10px;
@@ -1363,14 +1366,35 @@ body.drawer-open { overflow: hidden; }
         background: var(--white);
     }
 
-    .table-registrations tbody tr.row-clickable:hover { background: #f8fbfc; }
+    /* Only rows that open something get a hover affordance. The blog list rows
+       are not clickable, so highlighting them would promise an interaction that
+       does not exist. */
+    .table--cards tbody tr.row-clickable:hover { background: #f8fbfc; }
 
-    .table-registrations td { display: block; padding: 0; border: 0; }
-    .table-registrations tbody tr:last-child td { border-bottom: 0; }
+    .table--cards td { display: block; padding: 0; border: 0; }
+    .table--cards tbody tr:last-child td { border-bottom: 0; }
+
+    /* Spacing is applied per role, not to every td: the first field has to keep
+       the card's own top padding so it stays level with a corner checkbox. */
+    .table--cards .td-status { margin-top: 10px; }
+    .table--cards .td-muted { margin-top: 6px; }
+
+    .table--cards .td-actions {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Buttons read left-aligned once they sit on their own line in a card,
+       rather than pushed to the right edge of a table row. */
+    .table--cards .td-actions .row-actions { justify-content: flex-start; }
+
+    /* ---- Registrations specifics ---- */
 
     /* The blanket td rule above outranks the .col-date { display: none } that
        hides the date at 1150px, so repeat the hide here at higher specificity.
-       The date stays available in the drawer, as on the desktop table. */
+       The date stays available in the drawer, as on the desktop table. The blog
+       list on dashboard.php has no drawer, so it keeps its date on the card. */
     .table-registrations .col-date { display: none; }
 
     .table-registrations .td-check {
@@ -1380,6 +1404,7 @@ body.drawer-open { overflow: hidden; }
         width: auto;
     }
 
+    /* Room for the checkbox in the corner. The blog list has no checkbox. */
     .table-registrations .cell-title { padding-right: 26px; }
 
     /* This column is dropped at 1024px, but a card has room and location is the
@@ -1389,14 +1414,4 @@ body.drawer-open { overflow: hidden; }
         margin-top: 6px;
         font-size: 13px;
     }
-
-    .table-registrations .td-status { margin-top: 10px; }
-
-    .table-registrations .td-actions {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border);
-    }
-
-    .table-registrations .td-actions .row-actions { justify-content: flex-start; }
 }

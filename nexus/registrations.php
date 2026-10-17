@@ -410,7 +410,7 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
             <?php endforeach; ?>
         </div>
 
-        <div class="panel panel--registrations">
+        <div class="panel panel--cards panel--registrations">
             <div class="toolbar">
                 <form class="toolbar-form" id="filterForm" method="get" action="registrations.php">
                     <input type="hidden" name="sort" value="<?= bdst_e($state['sort']) ?>">
@@ -500,7 +500,7 @@ $exportUrl   = 'registrations_export.php' . ($exportQuery === '' ? '' : '?' . $e
                 </form>
 
                 <div class="table-wrap">
-                    <table class="table table-registrations">
+                    <table class="table table--cards table-registrations">
                         <caption class="sr-only">Member registrations, sorted by <?= bdst_e($state['sort']) ?></caption>
                         <thead>
                             <tr>
