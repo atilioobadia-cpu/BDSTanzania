@@ -480,35 +480,28 @@ path.leaflet-interactive:focus {
     color: var(--bdst-brand);
 }
 
-/* Location pins: proportional SVG teardrops. The pin tip is the anchor, so the
-   whole shape sits above the reference point and the drop shadow gives it
-   depth over both the street map and the satellite imagery. */
+/* Location pins: tiny circle markers (Leaflet circleMarker). Clean, small,
+   and crisp on both Street and Satellite base layers. */
 .bdst-pin {
-    background: transparent;
-    border: 0;
-    filter: drop-shadow(0 3px 4px rgba(12, 30, 33, 0.28));
+    filter: drop-shadow(0 2px 3px rgba(12, 30, 33, 0.25));
     cursor: pointer;
+    transition: filter 0.18s ease;
 }
 
-.bdst-pin svg {
-    display: block;
-    transform-origin: 50% 100%;
-    transition: transform 0.18s ease;
+.bdst-pin:hover,
+.bdst-pin.is-hover {
+    filter: drop-shadow(0 4px 6px rgba(12, 30, 33, 0.35));
+    /* NO transform scale — prevents vibration/shift on hover */
 }
 
-.bdst-pin:hover svg,
-.bdst-pin.is-hover svg {
-    transform: scale(1.12);
-}
-
-.bdst-pin.is-active svg {
-    transform: scale(1.15);
-    filter: brightness(1.08);
-}
-
-/* A highlighted pin sits a touch higher so it reads as "chosen". */
 .bdst-pin.is-active {
-    transition: transform 0.18s ease;
+    filter: drop-shadow(0 4px 8px rgba(12, 30, 33, 0.4));
+}
+
+/* Leaflet circleMarker renders as SVG <path> (for the circle),
+   so we target the path element for active state. */
+.bdst-pin.is-active path {
+    stroke-width: 3 !important;
 }
 
 /* Pin tooltip styling - dark background for contrast on both base layers */
@@ -1384,7 +1377,7 @@ path.leaflet-interactive:focus {
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-    .bdst-pin svg,
+    .bdst-pin,
     .bdst-pin.is-active,
     .bdst-seg,
     .bdst-icon-btn,
@@ -1402,9 +1395,9 @@ path.leaflet-interactive:focus {
         animation: none !important;
     }
 
-    .bdst-pin:hover svg,
-    .bdst-pin.is-hover svg,
-    .bdst-pin.is-active svg {
+    .bdst-pin:hover,
+    .bdst-pin.is-hover,
+    .bdst-pin.is-active {
         transform: none;
     }
 

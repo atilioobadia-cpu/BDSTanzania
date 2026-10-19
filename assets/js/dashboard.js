@@ -379,34 +379,23 @@
     }
 
     /* ----------------------------------------------------------------------
-       Green location pins (proportional SVG teardrops - smaller & smarter)
+       Green location pins (tiny fixed-size circle markers)
        ---------------------------------------------------------------------- */
 
-    // The pin is a 24x32-viewbox teardrop; its tip is the anchor so the pin
-    // stands exactly on the region reference point.
-    var PIN_PATH = 'M12 0 C5.4 0 0 5.4 0 12 c0 5.6 4.2 11.2 8.3 15.5 L12 32 l3.7 -4.5 C19.8 23.2 24 17.6 24 12 C24 5.4 18.6 0 12 0 Z';
+    // Fixed radius for ALL pins: 6px (12px diameter) — small, uniform, clean.
+    // No proportional scaling so pins never dominate the map.
+    var PIN_RADIUS = 6;
 
-    // Width grows with the square root of the count (area-proportional).
-    // Smaller range: 12px base + up to 16px for max count = 12..28px wide.
-    // This keeps pins compact so multiple regions are distinguishable.
-    function pinSizeFor(count, max) {
-        if (!count || count <= 0) {
-            return 0;
-        }
-        return 12 + 16 * Math.sqrt(count / Math.max(1, max));
-    }
-
-    function pinSvg(size) {
-        var w = Math.max(10, size);
-        var h = w * (32 / 24);
-        // Thinner stroke and smaller inner circle for cleaner small pins.
-        var strokeWidth = Math.max(0.8, 1.4 * (w / 24));
-        var innerR = Math.max(2.5, 4.6 * (w / 24));
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w.toFixed(1) +
-            '" height="' + h.toFixed(1) + '" viewBox="0 0 24 32" aria-hidden="true" focusable="false">' +
-            '<path d="' + PIN_PATH + '" fill="' + BUBBLE + '" stroke="#ffffff" stroke-width="' + strokeWidth.toFixed(1) + '"/>' +
-            '<circle cx="12" cy="12.5" r="' + innerR.toFixed(1) + '" fill="#ffffff" fill-opacity="0.9"/>' +
-            '</svg>';
+    function pinStyle() {
+        return {
+            radius: PIN_RADIUS,
+            fillColor: BUBBLE,
+            fillOpacity: 0.9,
+            color: '#ffffff',
+            weight: 1.5,
+            opacity: 1,
+            className: 'bdst-pin'
+        };
     }
 
     function setPinState(marker, on) {
@@ -425,23 +414,16 @@
         }
         bubbleGroup = window.L.layerGroup().addTo(map);
 
+        var style = pinStyle();
+
         regions.forEach(function (region) {
             var count = region.count;
             if (!count || count <= 0) {
                 return;
             }
-            var size = pinSizeFor(count, max);
-            var w = Math.max(10, size);
-            var h = w * (32 / 24);
-            var marker = window.L.marker([region.lat, region.lon], {
-                pane: 'bdstBubbles',
-                icon: window.L.divIcon({
-                    className: 'bdst-pin',
-                    html: pinSvg(size),
-                    iconSize: [w, h],
-                    iconAnchor: [w / 2, h - 0.5]
-                })
-            });
+            var marker = window.L.circleMarker([region.lat, region.lon], style);
+
+            marker.addTo(bubbleGroup);
 
             marker.bindTooltip(
                 '<strong>' + escapeHtml(region.name) + '</strong><br>' +
@@ -450,24 +432,16 @@
                 { sticky: true, direction: 'top', offset: [0, -4], className: 'bdst-pin-tooltip' }
             );
             marker.on('mouseover', function () {
-                var el = marker.getElement();
-                if (el) {
-                    el.classList.add('is-hover');
-                }
+                // Only change color/opacity, NO scale transform (prevents vibration)
+                marker.setStyle({ fillOpacity: 1, weight: 2.5 });
             });
             marker.on('mouseout', function () {
-                var el = marker.getElement();
-                if (el) {
-                    el.classList.remove('is-hover');
-                }
+                marker.setStyle({ fillOpacity: 0.9, weight: 1.5 });
             });
             marker.on('click', function () {
                 loadRegion(region.code);
             });
-            // Keyboard access: Leaflet 1.9 gives divIcon markers no tabindex of
-            // their own, so make each pin a real interactive control. Enter and
-            // Space activate it exactly like a click. The markers are rebuilt on
-            // every refresh, so the attributes are re-applied here each time.
+            // Keyboard access
             marker.on('add', function () {
                 var el = marker.getElement();
                 if (!el) {
@@ -495,9 +469,6 @@
 
             var ref = regionRefs[region.code] || (regionRefs[region.code] = {});
             ref.marker = marker;
-            ref.radius = size;
-
-            marker.addTo(bubbleGroup);
         });
 
         // If the visitor had keyboard-focussed a pin when the map re-rendered,
@@ -514,21 +485,20 @@
         if (!pinKeyEl || !max || max <= 0) {
             return;
         }
-        var values = [];
-        [1, Math.max(2, Math.round(max / 2)), max].forEach(function (value) {
-            if (values.indexOf(value) === -1) {
-                values.push(value);
-            }
-        });
-
-        var html = '<span class="bdst-key-title">Members per region</span>';
-        values.forEach(function (value) {
-            var size = Math.min(pinSizeFor(value, max), 44);
-            html += '<span class="bdst-key-item">' +
-                '<span class="bdst-key-pin">' + pinSvg(size) + '</span>' +
-                '<span class="bdst-key-label">' + escapeHtml(value) + '</span>' +
-                '</span>';
-        });
+        // Show a single legend entry since all pins are the same size
+        var style = pinStyle();
+        var diameter = PIN_RADIUS * 2;
+        var pinHtml = '<svg xmlns="http://www.w3.org/2000/svg" width="' + diameter + '" height="' + diameter +
+            '" viewBox="0 0 ' + diameter + ' ' + diameter + '" aria-hidden="true" focusable="false">' +
+            '<circle cx="' + PIN_RADIUS + '" cy="' + PIN_RADIUS + '" r="' + (PIN_RADIUS - style.weight / 2) +
+            '" fill="' + style.fillColor + '" fill-opacity="' + style.fillOpacity +
+            '" stroke="' + style.color + '" stroke-width="' + style.weight + '"/>' +
+            '</svg>';
+        var html = '<span class="bdst-key-title">Members per region</span>' +
+            '<span class="bdst-key-item">' +
+            '<span class="bdst-key-pin">' + pinHtml + '</span>' +
+            '<span class="bdst-key-label">Uniform size on map</span>' +
+            '</span>';
         pinKeyEl.innerHTML = html;
         pinKeyEl.hidden = false;
     }
