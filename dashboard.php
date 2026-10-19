@@ -157,6 +157,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <meta name="description" content="Interactive map of BDS Tanzania members by region and district. Aggregate member counts only - no names or addresses.">
     <meta name="keywords" content="BDS Tanzania members map, business development professionals Tanzania, member distribution by region, BDS Tanzania statistics">
     <meta name="author" content="BDS Tanzania">
+    <meta name="copyright" content="BDS Tanzania. Developed by Atilio Obadia.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.bdst.or.tz/dashboard">
 
@@ -166,11 +167,13 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <meta property="og:url" content="https://www.bdst.or.tz/dashboard">
     <meta property="og:site_name" content="BDS Tanzania">
     <meta property="og:image" content="https://www.bdst.or.tz/assets/images/logos/logo.webp">
+    <meta property="og:copyright" content="BDS Tanzania. Developed by Atilio Obadia.">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Member Map | BDS Tanzania Members by Region">
     <meta name="twitter:description" content="Where BDS Tanzania members are based, region by region. Aggregate member counts only.">
     <meta name="twitter:image" content="https://www.bdst.or.tz/assets/images/logos/logo.webp">
+    <meta name="twitter:creator" content="@BDS_Tanzania">
 
     <title>Member Map | BDS Tanzania Members by Region and District</title>
 
@@ -182,7 +185,15 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             "description": "Aggregate counts of approved BDS Tanzania members by region and district. Individual members are not identified.",
             "url": "https://www.bdst.or.tz/dashboard",
             "spatialCoverage": { "@type": "Place", "name": "Tanzania" },
-            "creator": { "@type": "Organization", "name": "Business Development Society of Tanzania" },
+            "creator": { 
+                "@type": "Organization", 
+                "name": "Business Development Society of Tanzania",
+                "copyrightHolder": { "@type": "Organization", "name": "BDS Tanzania" },
+                "author": { "@type": "Person", "name": "Atilio Obadia", "role": "Developer" }
+            },
+            "copyrightHolder": { "@type": "Organization", "name": "BDS Tanzania" },
+            "copyrightYear": "2026",
+            "license": "https://www.bdst.or.tz/terms-and-conditions.html",
             "isAccessibleForFree": true
         }
     </script>
@@ -1070,7 +1081,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="col-12">
                             <div class="copyright-content-area">
                                 <div class="copyright-text">
-                                    <p>&copy; 2026 <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">BDS Tanzania</a>. All rights reserved.</p>
+                                    <p>&copy; 2026 <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">BDS Tanzania</a>. All rights reserved. Developed by <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">Atilio Obadia</a>.</p>
                                 </div>
 
                                 <div class="social-links style-2">
