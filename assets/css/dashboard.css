@@ -35,6 +35,17 @@
 
     --bdst-radius: 18px;
     --bdst-shadow: 0 10px 30px rgba(12, 30, 33, 0.06);
+
+    /* Crisp card shadow, for the white cards sitting on the light band below. */
+    --bdst-card-shadow: 0 1px 2px rgba(12, 30, 33, 0.05), 0 12px 28px rgba(12, 30, 33, 0.07);
+
+    /* The light page band the white cards sit on. */
+    --bdst-surface: #f5f8fa;
+
+    /* Brand colour used as a solid fill behind white text. The light brand
+       blue only reaches 3.4:1 against white, so filled controls use this
+       deeper shade (about 5.9:1) instead. */
+    --bdst-brand-ink: #0c6d89;
 }
 
 /* --------------------------------------------------------------------------
@@ -94,10 +105,101 @@ path.leaflet-interactive:focus {
     stroke-width: 3;
 }
 
-.leaflet-control-zoom a:focus-visible,
-.leaflet-control-layers input:focus-visible {
+.leaflet-control-zoom a:focus-visible {
     outline: 2px solid var(--bdst-focus);
     outline-offset: -2px;
+}
+
+/* --------------------------------------------------------------------------
+   Dashboard surface + section header
+   -------------------------------------------------------------------------- */
+
+/* The National Overview band: a light slate that makes the white cards read as
+   cards and defines the section against the white template around it. */
+.bdst-surface {
+    background: var(--bdst-surface);
+}
+
+.bdst-dash-intro {
+    padding: 58px 0 30px;
+}
+
+/* Title block centred on the page; the privacy badge sits at the top-right on
+   wide screens and falls below the text, centred, on narrower ones. */
+.bdst-page-head {
+    position: relative;
+    text-align: center;
+}
+
+.bdst-page-headtext {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+/* .sec-heading is templated to centre itself at a fixed width; inside the
+   header it is simply the centred text block. */
+.bdst-page-head .sec-heading {
+    width: auto;
+    margin: 0;
+    text-align: center;
+}
+
+.bdst-page-sub {
+    max-width: 700px;
+    margin: 14px auto 0;
+}
+
+.bdst-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 22px;
+    padding: 10px 18px;
+    border: 1px solid var(--bdst-line);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--bdst-muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    box-shadow: var(--bdst-card-shadow);
+    transition: border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* Wide screens have room for the badge beside the centred heading. */
+@media (min-width: 992px) {
+    .bdst-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-top: 0;
+    }
+}
+
+.bdst-badge i {
+    font-size: 15px;
+    color: var(--bdst-brand);
+}
+
+.bdst-badge-text {
+    white-space: nowrap;
+}
+
+.bdst-badge em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--bdst-ink);
+}
+
+.bdst-badge:hover {
+    border-color: rgba(25, 151, 198, 0.4);
+    box-shadow: 0 6px 18px rgba(12, 30, 33, 0.1);
+}
+
+.bdst-badge:focus-visible {
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: 2px;
 }
 
 /* --------------------------------------------------------------------------
@@ -105,7 +207,7 @@ path.leaflet-interactive:focus {
    -------------------------------------------------------------------------- */
 
 .bdst-dash-kpis {
-    padding: 0 0 56px;
+    padding: 0 0 28px;
 }
 
 .bdst-kpi {
@@ -224,7 +326,7 @@ path.leaflet-interactive:focus {
    -------------------------------------------------------------------------- */
 
 .bdst-dash-main {
-    padding: 0 0 70px;
+    padding: 0 0 28px;
 }
 
 .bdst-map-card,
@@ -237,6 +339,15 @@ path.leaflet-interactive:focus {
     border: 1px solid var(--bdst-line);
     border-radius: var(--bdst-radius);
     box-shadow: var(--bdst-shadow);
+}
+
+/* Cards sit on the light surface, so they take the crisper shadow there. */
+.bdst-surface .bdst-kpi,
+.bdst-surface .bdst-map-card,
+.bdst-surface .bdst-panel,
+.bdst-surface .bdst-insight-card,
+.bdst-surface .bdst-trend-card {
+    box-shadow: var(--bdst-card-shadow);
 }
 
 .bdst-card-title {
@@ -270,6 +381,94 @@ path.leaflet-interactive:focus {
    before L.map(), so Leaflet still measures a visible, correctly sized box. */
 #bdst-map:not(.is-ready) {
     display: none;
+}
+
+/* The frame positions the floating pills and legend over the map. */
+.bdst-map-frame {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Street / Satellite pills, floating over the top-right corner. */
+.bdst-map-pills {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    display: inline-flex;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 6px 18px rgba(12, 30, 33, 0.18);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.bdst-map-pill {
+    padding: 7px 15px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--bdst-ink);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+
+.bdst-map-pill:hover {
+    background: rgba(12, 30, 33, 0.06);
+}
+
+.bdst-map-pill.is-active {
+    background: var(--bdst-brand-ink);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(12, 30, 33, 0.22);
+}
+
+.bdst-map-pill.is-active:hover {
+    background: var(--bdst-brand-ink);
+}
+
+.bdst-map-pill:focus-visible {
+    outline: 2px solid var(--bdst-focus);
+    outline-offset: 1px;
+}
+
+/* Legend, floating over the bottom-left corner. It is lifted clear of
+   Leaflet's attribution strip, which stays on the bottom-right. */
+.bdst-map-legend {
+    position: absolute;
+    left: 12px;
+    bottom: 32px;
+    z-index: 5;
+    max-width: calc(100% - 24px);
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 10px 30px rgba(12, 30, 33, 0.18);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.bdst-map-legend[hidden] {
+    display: none;
+}
+
+.bdst-map-legend-title {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bdst-muted);
 }
 
 /* Leaflet uses its own font stack; align it with the site. */
@@ -312,38 +511,6 @@ path.leaflet-interactive:focus {
     transition: transform 0.18s ease;
 }
 
-/* Layer switcher (Street / Satellite) inherits the site's look. */
-.leaflet-control-layers {
-    border: 1px solid var(--bdst-line);
-    border-radius: 12px;
-    box-shadow: 0 8px 22px rgba(12, 30, 33, 0.12);
-    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-    font-size: 13px;
-    color: var(--bdst-ink);
-    background: #ffffff;
-}
-
-.leaflet-control-layers-expanded {
-    padding: 10px 12px;
-}
-
-.leaflet-control-layers label {
-    font-weight: 600;
-}
-
-.leaflet-control-layers-separator {
-    border-top-color: var(--bdst-line);
-}
-
-.leaflet-control-layers input[type="checkbox"] + span,
-.leaflet-control-layers input[type="radio"] + span {
-    font-weight: 600;
-}
-
-.leaflet-control-layers input {
-    accent-color: var(--bdst-bubble);
-}
-
 /* Attribution stays readable on both base layers. */
 .leaflet-bottom.leaflet-right {
     font-size: 11px;
@@ -371,18 +538,19 @@ path.leaflet-interactive:focus {
 .bdst-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 20px;
+    gap: 7px 16px;
     padding: 0;
-    margin: 14px 0 0;
+    margin: 0;
     list-style: none;
 }
 
 .bdst-legend li {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    gap: 7px;
+    font-size: 12.5px;
     color: var(--bdst-muted);
+    white-space: nowrap;
 }
 
 .bdst-legend .bdst-swatch {
@@ -707,7 +875,7 @@ path.leaflet-interactive:focus {
    -------------------------------------------------------------------------- */
 
 .bdst-dash-table {
-    padding: 0 0 110px;
+    padding: 0 0 84px;
 }
 
 .bdst-table-disclosure > summary {
@@ -785,7 +953,7 @@ path.leaflet-interactive:focus {
    -------------------------------------------------------------------------- */
 
 .bdst-dash-trends {
-    padding: 0 0 70px;
+    padding: 0 0 28px;
 }
 
 .bdst-trend-card {
@@ -1014,11 +1182,11 @@ path.leaflet-interactive:focus {
 }
 
 /* --------------------------------------------------------------------------
-   Quick insights: member-share donut + geographic coverage
+   Quick insights: member-share bar + geographic coverage
    -------------------------------------------------------------------------- */
 
 .bdst-dash-insights {
-    padding: 0 0 70px;
+    padding: 0 0 28px;
 }
 
 .bdst-insight-card {
@@ -1043,26 +1211,42 @@ path.leaflet-interactive:focus {
     }
 }
 
-.bdst-donut-wrap {
+/* One proportional strip: each region is a block whose width is its share of
+   the membership, so the split reads at a glance. */
+.bdst-share-bar {
     display: flex;
-    align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
+    width: 100%;
+    height: 24px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #edf2f4;
+    box-shadow: inset 0 0 0 1px rgba(12, 30, 33, 0.06);
 }
 
-.bdst-donut svg {
+.bdst-share-bar:empty {
+    display: none;
+}
+
+.bdst-share-seg {
     display: block;
+    flex-basis: 0%;
+    min-width: 4px;
+    height: 100%;
+    border-right: 2px solid #fff;
+    transition: flex-grow 0.5s ease;
 }
 
-.bdst-donut-legend {
-    flex: 1 1 220px;
-    min-width: 0;
+.bdst-share-seg:last-child {
+    border-right: 0;
+}
+
+.bdst-share-legend {
     padding: 0;
-    margin: 0;
+    margin: 18px 0 0;
     list-style: none;
 }
 
-.bdst-donut-legend li {
+.bdst-share-legend li {
     display: grid;
     grid-template-columns: 14px 1fr auto auto;
     align-items: center;
@@ -1072,17 +1256,17 @@ path.leaflet-interactive:focus {
     font-size: 14px;
 }
 
-.bdst-donut-legend li:last-child {
+.bdst-share-legend li:last-child {
     border-bottom: 0;
 }
 
-.bdst-donut-swatch {
+.bdst-share-swatch {
     width: 14px;
     height: 14px;
     border-radius: 4px;
 }
 
-.bdst-donut-name {
+.bdst-share-name {
     font-weight: 600;
     color: var(--bdst-ink);
     overflow: hidden;
@@ -1090,13 +1274,13 @@ path.leaflet-interactive:focus {
     white-space: nowrap;
 }
 
-.bdst-donut-stat {
+.bdst-share-stat {
     color: var(--bdst-muted);
     font-size: 13px;
     font-variant-numeric: tabular-nums;
 }
 
-.bdst-donut-pct {
+.bdst-share-pct {
     min-width: 44px;
     text-align: right;
     font-weight: 800;
@@ -1104,7 +1288,7 @@ path.leaflet-interactive:focus {
     font-variant-numeric: tabular-nums;
 }
 
-.bdst-donut-note {
+.bdst-share-note {
     margin: 14px 0 0;
     font-size: 13px;
     color: var(--bdst-muted);
@@ -1180,6 +1364,9 @@ path.leaflet-interactive:focus {
     .bdst-seg,
     .bdst-icon-btn,
     .bdst-btn-ghost,
+    .bdst-badge,
+    .bdst-map-pill,
+    .bdst-share-seg,
     .bdst-coverage-fill,
     .bdst-bar,
     .bdst-row-fill,
@@ -1257,16 +1444,30 @@ path.leaflet-interactive:focus {
         font-size: 10px;
     }
 
-    .bdst-donut-wrap {
-        flex-direction: column;
-        align-items: flex-start;
+    .bdst-map-pill {
+        padding: 7px 13px;
     }
 
-    .bdst-donut {
-        align-self: center;
+    /* On narrower screens the floating legend would cover a quarter of the
+       map, so it moves under the map and flows normally instead. */
+    .bdst-map-frame {
+        overflow: visible;
+    }
+
+    .bdst-map-legend {
+        position: static;
+        max-width: none;
+        margin-top: 10px;
+        border-radius: 12px;
     }
 
     .bdst-table-head {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .bdst-dash-intro {
+        padding: 42px 0 26px;
     }
 }

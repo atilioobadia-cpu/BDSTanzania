@@ -29,6 +29,8 @@
     var statusEl       = document.getElementById('bdst-map-status');
     var fallbackEl     = document.getElementById('bdst-map-fallback');
     var legendEl       = document.getElementById('bdst-legend');
+    var legendWrapEl   = document.getElementById('bdst-map-legend');
+    var mapPillsEl     = document.getElementById('bdst-map-pills');
     var pinKeyEl       = document.getElementById('bdst-pin-key');
     var titleEl        = document.getElementById('bdst-detail-title');
     var noteEl         = document.getElementById('bdst-detail-note');
@@ -45,9 +47,9 @@
     var exportBtn      = document.getElementById('bdst-export-csv');
     var updatedEl      = document.getElementById('bdst-updated');
     var tableUpdatedEl = document.getElementById('bdst-table-updated');
-    var donutEl        = document.getElementById('bdst-donut');
-    var donutLegendEl  = document.getElementById('bdst-donut-legend');
-    var donutNoteEl    = document.getElementById('bdst-donut-note');
+    var shareBarEl     = document.getElementById('bdst-share-bar');
+    var shareLegendEl  = document.getElementById('bdst-share-legend');
+    var shareNoteEl    = document.getElementById('bdst-share-note');
     var trendChartEl   = document.getElementById('bdst-trend-chart');
     var trendBarsEl    = document.getElementById('bdst-trend-bars');
     var trendEmptyEl   = document.getElementById('bdst-trend-empty');
@@ -116,8 +118,8 @@
 
     var BUBBLE = cssVar('--bdst-bubble', '#16a34a');
 
-    // Palette for the donut chart - a green family that stays on brand.
-    var DONUT_COLOURS = ['#0f7b3d', '#16a34a', '#3db96d', '#6fce94', '#a5dfba', '#d3eedd'];
+    // Palette for the member-share bar - a green family that stays on brand.
+    var SHARE_COLOURS = ['#0f7b3d', '#16a34a', '#3db96d', '#6fce94', '#a5dfba', '#d3eedd'];
 
     function colourFor(band) {
         return BAND_COLOURS[band] || BAND_COLOURS.withheld;
@@ -162,6 +164,12 @@
         }
         if (legendEl) {
             legendEl.hidden = true;
+        }
+        if (legendWrapEl) {
+            legendWrapEl.hidden = true;
+        }
+        if (mapPillsEl) {
+            mapPillsEl.hidden = true;
         }
         if (pinKeyEl) {
             pinKeyEl.hidden = true;
@@ -283,26 +291,60 @@
         }
     });
 
-    // Choropleth is visible from the start; the layer switcher can still
-    // hide it (auto-refresh re-renders keep referencing the same layer).
+    // Choropleth is visible from the start and stays visible: the base-layer
+    // switch is our own pill group (#bdst-map-pills) rather than Leaflet's
+    // checkbox control, so the switcher matches the card design and works the
+    // same on touch and with the keyboard.
     regionLayer.addTo(map);
 
-    var overlays = { 'Regional shading': regionLayer };
-    var layerControl = window.L.control.layers(baseLayers, overlays, {
-        position: 'topright',
-        collapsed: window.matchMedia('(max-width: 767px)').matches
-    }).addTo(map);
+    function currentBase() {
+        return (baseLayers.Satellite && map.hasLayer(baseLayers.Satellite)) ? 'satellite' : 'street';
+    }
 
-    map.on('baselayerchange', function () {
-        satelliteOn = !!(baseLayers.Satellite && typeof baseLayers.Street === 'undefined'
-            ? false
-            : map.hasLayer(baseLayers.Satellite));
+    function syncPills() {
+        if (!mapPillsEl) {
+            return;
+        }
+        var active = currentBase();
+        Array.prototype.forEach.call(mapPillsEl.querySelectorAll('.bdst-map-pill'), function (btn) {
+            var on = btn.getAttribute('data-base') === active;
+            btn.classList.toggle('is-active', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+    }
+
+    function applyBase(name) {
+        var wanted = name === 'satellite' ? baseLayers.Satellite : baseLayers.Street;
+        if (!wanted) {
+            return;
+        }
+        Object.keys(baseLayers).forEach(function (key) {
+            if (baseLayers[key] !== wanted && map.hasLayer(baseLayers[key])) {
+                map.removeLayer(baseLayers[key]);
+            }
+        });
+        if (!map.hasLayer(wanted)) {
+            wanted.addTo(map);
+        }
+        // The shading is muted over satellite imagery so the tiles stay visible.
+        satelliteOn = wanted === baseLayers.Satellite;
         if (regionLayer && Object.keys(regionRefs).length) {
             regionLayer.setStyle({ fillOpacity: satelliteOn ? 0.3 : 0.85 });
         }
-    });
+        syncPills();
+    }
 
-    map.zoomControl.setPosition('topright');
+    if (mapPillsEl) {
+        Array.prototype.forEach.call(mapPillsEl.querySelectorAll('.bdst-map-pill'), function (btn) {
+            btn.addEventListener('click', function () {
+                applyBase(btn.getAttribute('data-base'));
+            });
+        });
+    }
+    syncPills();
+
+    // The zoom buttons share the top edge with the pills, so they move left.
+    map.zoomControl.setPosition('topleft');
     // Leaflet's zoom links are plain <a> tags; give them real names so a
     // screen reader does not announce a bare "+"/"-".
     ['leaflet-control-zoom-in', 'leaflet-control-zoom-out'].forEach(function (cls) {
@@ -872,27 +914,11 @@
     }
 
     /* ----------------------------------------------------------------------
-       Donut chart + coverage (requester-facing "at a glance" card)
+       Member-share bar + coverage (requester-facing "at a glance" card)
        ---------------------------------------------------------------------- */
 
-    function arcPath(rOuter, rInner, startDeg, endDeg) {
-        function pt(r, a) {
-            var rad = (a - 90) * Math.PI / 180;
-            return [60 + r * Math.cos(rad), 60 + r * Math.sin(rad)];
-        }
-        var large = (endDeg - startDeg) > 180 ? 1 : 0;
-        var sO = pt(rOuter, startDeg);
-        var eO = pt(rOuter, endDeg);
-        var sI = pt(rInner, endDeg);
-        var eI = pt(rInner, startDeg);
-        return 'M' + sO[0].toFixed(3) + ' ' + sO[1].toFixed(3) +
-            ' A' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + eO[0].toFixed(3) + ' ' + eO[1].toFixed(3) +
-            ' L' + sI[0].toFixed(3) + ' ' + sI[1].toFixed(3) +
-            ' A' + rInner + ' ' + rInner + ' 0 ' + large + ' 0 ' + eI[0].toFixed(3) + ' ' + eI[1].toFixed(3) + ' Z';
-    }
-
-    function renderDonut(payload) {
-        if (!donutEl) {
+    function renderShareBar(payload) {
+        if (!shareBarEl) {
             return;
         }
         var regions = (payload.regions || []).filter(function (r) {
@@ -903,14 +929,14 @@
         }, 0);
 
         if (!total) {
-            donutEl.innerHTML = '';
-            if (donutLegendEl) {
-                donutLegendEl.innerHTML = '';
+            shareBarEl.innerHTML = '';
+            if (shareLegendEl) {
+                shareLegendEl.innerHTML = '';
             }
-            setText(donutNoteEl, payload.published
+            setText(shareNoteEl, payload.published
                 ? 'No approved members recorded yet.'
                 : 'Geographic detail is not published.');
-            donutEl.setAttribute('aria-label', payload.published
+            shareBarEl.setAttribute('aria-label', payload.published
                 ? 'No approved members recorded yet.'
                 : 'Geographic detail is not published.');
             return;
@@ -930,46 +956,35 @@
             slices.push({ name: 'Other regions', count: restCount });
         }
 
-        var svg = '<svg viewBox="0 0 120 120" width="150" height="150" role="presentation" focusable="false">';
-        var angle = 0;
-        slices.forEach(function (slice, i) {
-            var frac = slice.count / total;
-            var sweep = frac * 360;
-            var colour = DONUT_COLOURS[i % DONUT_COLOURS.length];
-            if (sweep >= 359.9) {
-                svg += '<circle cx="60" cy="60" r="36" fill="none" stroke="' + colour +
-                    '" stroke-width="16"/>';
-            } else if (sweep > 0.1) {
-                svg += '<path d="' + arcPath(44, 28, angle, angle + sweep) + '" fill="' + colour + '"/>';
-            }
-            angle += sweep;
-        });
-        svg += '<circle cx="60" cy="60" r="17" fill="#ffffff"/>';
-        svg += '<text x="60" y="57" text-anchor="middle" font-size="15" font-weight="700" fill="#0c1e21">' +
-            escapeHtml(payload.regions.length ? String(Math.round(total)) : '0') + '</text>';
-        svg += '<text x="60" y="70" text-anchor="middle" font-size="8" fill="#5a6772">members</text>';
-        svg += '</svg>';
-
-        donutEl.innerHTML = svg;
-
+        // One proportional strip rather than a pie: each region is a block
+        // whose width is its share of the total, so the split reads at a
+        // glance and the legend below carries the exact figures.
+        var barHtml = '';
         var legendHtml = '';
         slices.forEach(function (slice, i) {
+            var colour = SHARE_COLOURS[i % SHARE_COLOURS.length];
             var pct = (slice.count * 100 / total);
+            var name = escapeHtml(slice.name);
+            barHtml += '<span class="bdst-share-seg" style="flex-grow:' + slice.count +
+                ';background:' + colour + '" title="' + name + ': ' +
+                escapeHtml(memberLabel(slice.count)) + ' (' + pct.toFixed(0) + '%)"></span>';
             legendHtml += '<li>' +
-                '<span class="bdst-donut-swatch" style="background:' + DONUT_COLOURS[i % DONUT_COLOURS.length] + '"></span>' +
-                '<span class="bdst-donut-name">' + escapeHtml(slice.name) + '</span>' +
-                '<span class="bdst-donut-stat">' + escapeHtml(memberLabel(slice.count)) + '</span>' +
-                '<span class="bdst-donut-pct">' + pct.toFixed(0) + '%</span>' +
+                '<span class="bdst-share-swatch" style="background:' + colour + '"></span>' +
+                '<span class="bdst-share-name">' + name + '</span>' +
+                '<span class="bdst-share-stat">' + escapeHtml(memberLabel(slice.count)) + '</span>' +
+                '<span class="bdst-share-pct">' + pct.toFixed(0) + '%</span>' +
                 '</li>';
         });
-        if (donutLegendEl) {
-            donutLegendEl.innerHTML = legendHtml;
+
+        shareBarEl.innerHTML = barHtml;
+        if (shareLegendEl) {
+            shareLegendEl.innerHTML = legendHtml;
         }
 
         var topShare = Math.round(slices[0].count * 100 / total);
-        setText(donutNoteEl, topShare + '% of members are based in ' + escapeHtml(slices[0].name) + '.');
-        donutEl.setAttribute('aria-label',
-            'Donut chart of member share by region. ' +
+        setText(shareNoteEl, topShare + '% of members are based in ' + escapeHtml(slices[0].name) + '.');
+        shareBarEl.setAttribute('aria-label',
+            'Share of approved members by region. ' +
             slices.map(function (s) {
                 return s.name + ' ' + Math.round(s.count * 100 / total) + ' percent';
             }).join(', ') + '.');
@@ -1314,7 +1329,7 @@
         if (regionsChanged || !lastRegionsPayload) {
             renderMap(regionsPayload, cachedGeo);
             renderRows(regionsPayload);
-            renderDonut(regionsPayload);
+            renderShareBar(regionsPayload);
             renderKpis(summaryPayload || {}, regionsPayload.regions);
         } else if (summaryChanged && summaryPayload) {
             renderKpis(summaryPayload, regionsPayload.regions);
@@ -1482,7 +1497,7 @@
         lastRegionsJson = JSON.stringify(results[0].regions);
         renderMap(results[0], results[1]);
         renderRows(results[0]);
-        renderDonut(results[0]);
+        renderShareBar(results[0]);
         renderTrend(config.trend || { period: trendPeriod, buckets: [] });
 
         if (config.summaryUrl) {

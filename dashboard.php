@@ -16,6 +16,17 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/geo.php';
 require_once __DIR__ . '/includes/dashboard.php';
 
+/**
+ * Cache-busting token for a page asset, so a changed stylesheet or script is
+ * never served from a stale browser or CDN cache. Mirrors bdst_admin_css().
+ */
+function bdst_dash_asset(string $path): string
+{
+    $file = __DIR__ . '/' . $path;
+
+    return is_file($file) ? (string) filemtime($file) : '0';
+}
+
 $summary = null;
 $dbError = false;
 
@@ -198,7 +209,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <link rel="stylesheet" href="assets/css/meanmenu.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= bdst_dash_asset('assets/css/dashboard.css') ?>">
 </head>
 
 <body>
@@ -596,24 +607,26 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
             <div class="page-header-overlay" data-bg-image="assets/images/shape/pheader-overlay.jpg"></div>
         </section>
 
-        <!-- Intro -->
-        <section class="section-gap">
+        <!-- National Overview -->
+        <div class="bdst-surface">
+        <section class="bdst-dash-intro">
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-9">
-                        <div class="sec-heading text-center">
-                            <span class="sub-title wow fadeInUp" data-wow-delay=".1s">
-                                <i class="tji-box"></i>National Overview
-                            </span>
-                            <h2 class="sec-title wow fadeInUp" data-wow-delay=".2s">BDS Tanzania Members Across the Country</h2>
-                            <p class="wow fadeInUp" data-wow-delay=".3s">
-                                Where our approved members are based, region by region. Only aggregate
-                                counts are published &mdash; individual members are never identified, and
-                                the map's pins are administrative reference points rather than
-                                anybody's address.
-                            </p>
-                        </div>
+                <div class="bdst-page-head">
+                    <div class="bdst-page-headtext sec-heading">
+                        <span class="sub-title wow fadeInUp" data-wow-delay=".1s">
+                            <i class="tji-box"></i>National Overview
+                        </span>
+                        <h2 class="sec-title wow fadeInUp" data-wow-delay=".2s">BDS Tanzania Members Across the Country</h2>
+                        <p class="bdst-page-sub wow fadeInUp" data-wow-delay=".3s">
+                            Where our approved members are based, region by region &mdash; a clear
+                            view of the society's national footprint.
+                        </p>
                     </div>
+                    <a class="bdst-badge wow fadeInUp" data-wow-delay=".4s" href="privacy-policy.html"
+                       title="Only aggregate counts are published. Read the privacy policy.">
+                        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                        <span class="bdst-badge-text">Privacy Protected <em>(Aggregated)</em></span>
+                    </a>
                 </div>
             </div>
         </section>
@@ -693,23 +706,34 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                     </div>
                 <?php endif; ?>
 
-                <div class="bdst-notice">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <div>
-                        <strong>Aggregate figures only.</strong>
-                        This page shows how many members are recorded in each area &mdash; never
-                        names, contact details or addresses. The map's pins sit at administrative
-                        reference points, so they are not anybody's location. See our
-                        <a href="privacy-policy.html">privacy policy</a>.
-                    </div>
-                </div>
-
                 <div class="row g-4">
                     <div class="col-xl-7">
                         <div class="bdst-map-card">
                             <h2 class="bdst-card-title">Member distribution</h2>
-                            <p class="bdst-card-sub">Every green pin is a region, sized by how many approved members are based there. Choose one to see its districts &mdash; or switch to the satellite view with the map controls.</p>
-                            <div id="bdst-map" role="region" aria-label="Map of Tanzania with a green pin for each region, sized by its number of approved members"></div>
+                            <p class="bdst-card-sub">Each green pin is a region, sized by its number of approved members. Choose one to see its districts.</p>
+                            <div class="bdst-map-frame">
+                                <div id="bdst-map" role="region" aria-label="Map of Tanzania with a green pin for each region, sized by its number of approved members"></div>
+                                <div class="bdst-map-pills" id="bdst-map-pills" role="group" aria-label="Map base layer">
+                                    <button type="button" class="bdst-map-pill is-active" data-base="street" aria-pressed="true">Street</button>
+                                    <button type="button" class="bdst-map-pill" data-base="satellite" aria-pressed="false">Satellite</button>
+                                </div>
+                                <div class="bdst-map-legend" id="bdst-map-legend">
+                                    <span class="bdst-map-legend-title">Region shading</span>
+                                    <ul class="bdst-legend" id="bdst-legend">
+                                        <?php
+                                        $legendEntries = $summary['published']
+                                            ? $summary['legend']
+                                            : [['key' => 'withheld', 'label' => 'Not published']];
+                                        ?>
+                                        <?php foreach ($legendEntries as $entry): ?>
+                                            <li>
+                                                <span class="bdst-swatch bdst-swatch--<?= bdst_e($entry['key']) ?>"></span>
+                                                <span><?= bdst_e($entry['label']) ?></span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            </div>
                             <noscript>
                                 <p class="bdst-map-fallback">The interactive map needs JavaScript. The ranked list beside it and the table further down carry the same figures.</p>
                             </noscript>
@@ -717,19 +741,6 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                                 <p>The interactive map could not be displayed. The ranked list and the table further down carry the same figures.</p>
                             </div>
                             <div class="bdst-map-status" id="bdst-map-status" role="status" aria-live="polite"></div>
-                            <ul class="bdst-legend" id="bdst-legend">
-                                <?php
-                                $legendEntries = $summary['published']
-                                    ? $summary['legend']
-                                    : [['key' => 'withheld', 'label' => 'Not published']];
-                                ?>
-                                <?php foreach ($legendEntries as $entry): ?>
-                                    <li>
-                                        <span class="bdst-swatch bdst-swatch--<?= bdst_e($entry['key']) ?>"></span>
-                                        <span><?= bdst_e($entry['label']) ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
                             <div class="bdst-pin-key" id="bdst-pin-key" hidden></div>
                         </div>
                     </div>
@@ -797,12 +808,10 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="bdst-insight-block">
                             <h2 class="bdst-card-title">Member share by region</h2>
                             <p class="bdst-card-sub">How the membership is spread across the areas it reaches.</p>
-                            <div class="bdst-donut-wrap">
-                                <div class="bdst-donut" id="bdst-donut" role="img"
-                                     aria-label="Donut chart of member share by region"></div>
-                                <ul class="bdst-donut-legend" id="bdst-donut-legend"></ul>
-                            </div>
-                            <p class="bdst-donut-note" id="bdst-donut-note">&nbsp;</p>
+                            <div class="bdst-share-bar" id="bdst-share-bar" role="img"
+                                 aria-label="Share of approved members by region"></div>
+                            <ul class="bdst-share-legend" id="bdst-share-legend"></ul>
+                            <p class="bdst-share-note" id="bdst-share-note">&nbsp;</p>
                         </div>
                         <div class="bdst-insight-block">
                             <h2 class="bdst-card-title">Geographic coverage</h2>
@@ -971,6 +980,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
         </section>
 
         <?php endif; ?>
+        </div><!-- /.bdst-surface -->
     </main>
 
     <!-- Footer -->
@@ -1092,7 +1102,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
     <script src="assets/js/meanmenu.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/vendor/leaflet/leaflet.js"></script>
-    <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/dashboard.js?v=<?= bdst_dash_asset('assets/js/dashboard.js') ?>"></script>
 </body>
 
 </html>
