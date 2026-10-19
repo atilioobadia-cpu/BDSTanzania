@@ -1081,7 +1081,7 @@ function bdst_dash_rank_row(array $row, ?int $rank, int $max, bool $zero): strin
                         <div class="col-12">
                             <div class="copyright-content-area">
                                 <div class="copyright-text">
-                                    <p>&copy; 2026 <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">BDS Tanzania</a>. All rights reserved. Developed by <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">Atilio Obadia</a>.</p>
+                                    <p>&copy; 2026 <a href="https://www.bdst.or.tz/" target="_blank" rel="noopener noreferrer">BDS Tanzania</a>. All rights reserved.</p>
                                 </div>
 
                                 <div class="social-links style-2">
