@@ -511,6 +511,31 @@ path.leaflet-interactive:focus {
     transition: transform 0.18s ease;
 }
 
+/* Pin tooltip styling - dark background for contrast on both base layers */
+.bdst-pin-tooltip {
+    background: rgba(12, 30, 33, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(12, 30, 33, 0.35) !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
+
+.bdst-pin-tooltip:before {
+    border-top-color: rgba(12, 30, 33, 0.92) !important;
+}
+
+.bdst-pin-tooltip strong {
+    color: #ffffff !important;
+}
+
+.bdst-pin-tooltip span[style*="color:#666"],
+.bdst-pin-tooltip span[style*="color: #666"] {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
 /* Attribution stays readable on both base layers. */
 .leaflet-bottom.leaflet-right {
     font-size: 11px;

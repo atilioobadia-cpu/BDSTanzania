@@ -379,29 +379,33 @@
     }
 
     /* ----------------------------------------------------------------------
-       Green location pins (proportional SVG teardrops)
+       Green location pins (proportional SVG teardrops - smaller & smarter)
        ---------------------------------------------------------------------- */
 
     // The pin is a 24x32-viewbox teardrop; its tip is the anchor so the pin
     // stands exactly on the region reference point.
     var PIN_PATH = 'M12 0 C5.4 0 0 5.4 0 12 c0 5.6 4.2 11.2 8.3 15.5 L12 32 l3.7 -4.5 C19.8 23.2 24 17.6 24 12 C24 5.4 18.6 0 12 0 Z';
 
-    // Width grows with the square root of the count (area-proportional), so a
-    // region with four times the members reads as a pin with twice the area.
+    // Width grows with the square root of the count (area-proportional).
+    // Smaller range: 12px base + up to 16px for max count = 12..28px wide.
+    // This keeps pins compact so multiple regions are distinguishable.
     function pinSizeFor(count, max) {
         if (!count || count <= 0) {
             return 0;
         }
-        return 20 + 32 * Math.sqrt(count / Math.max(1, max));
+        return 12 + 16 * Math.sqrt(count / Math.max(1, max));
     }
 
     function pinSvg(size) {
         var w = Math.max(10, size);
         var h = w * (32 / 24);
+        // Thinner stroke and smaller inner circle for cleaner small pins.
+        var strokeWidth = Math.max(0.8, 1.4 * (w / 24));
+        var innerR = Math.max(2.5, 4.6 * (w / 24));
         return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w.toFixed(1) +
             '" height="' + h.toFixed(1) + '" viewBox="0 0 24 32" aria-hidden="true" focusable="false">' +
-            '<path d="' + PIN_PATH + '" fill="' + BUBBLE + '" stroke="#ffffff" stroke-width="1.4"/>' +
-            '<circle cx="12" cy="12.5" r="4.6" fill="#ffffff" fill-opacity="0.92"/>' +
+            '<path d="' + PIN_PATH + '" fill="' + BUBBLE + '" stroke="#ffffff" stroke-width="' + strokeWidth.toFixed(1) + '"/>' +
+            '<circle cx="12" cy="12.5" r="' + innerR.toFixed(1) + '" fill="#ffffff" fill-opacity="0.9"/>' +
             '</svg>';
     }
 
@@ -440,8 +444,10 @@
             });
 
             marker.bindTooltip(
-                '<strong>' + escapeHtml(region.name) + '</strong><br>' + escapeHtml(memberLabel(count)),
-                { sticky: true }
+                '<strong>' + escapeHtml(region.name) + '</strong><br>' +
+                escapeHtml(memberLabel(count)) + '<br>' +
+                '<span style="font-size:11px;color:#666;">Click to see districts</span>',
+                { sticky: true, direction: 'top', offset: [0, -4], className: 'bdst-pin-tooltip' }
             );
             marker.on('mouseover', function () {
                 var el = marker.getElement();
@@ -470,7 +476,7 @@
                 el.setAttribute('role', 'button');
                 el.setAttribute('tabindex', '0');
                 el.setAttribute('aria-label',
-                    region.name + ' region: ' + memberLabel(count) + '. Show its districts.');
+                    region.name + ' region: ' + memberLabel(count) + '. Click to see districts.');
                 el.addEventListener('keydown', function (event) {
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
